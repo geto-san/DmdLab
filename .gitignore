@@ -1,0 +1,31 @@
+# dotenv files
+.env
+server/.env
+client/.env
+server/data/
+# MongoDB dumps
+dump/
+
+# Local IDE/config
+.vscode/
+.idea/
+
+# React build
+build/
+dist/
+package-lock.json
+client/package-lock.json
+server/package-lock.json
+scripts/
+# Node modules
+client/node_modules/
+server/node_modules/
+
+# Cloudinary or other config files (if saved locally)
+cloudinary_config.js
+
+# Coverage reports
+coverage/
+
+# OS files
+.DS_Store

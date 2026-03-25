@@ -1,0 +1,5 @@
+.nav-link.active,
+.nav-link-mobile.active {
+    color: #2563eb;
+    font-weight: 600;
+}
