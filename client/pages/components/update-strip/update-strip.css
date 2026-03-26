@@ -1,0 +1,133 @@
+/* ================================
+   UPDATE STRIP CONTAINER
+================================ */
+.update-strip {
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+/* ================================
+   HEADER
+================================ */
+.update-strip-header {
+  background: var(--bg-tertiary);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.update-strip-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.update-strip-title h3 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ================================
+   VIEW ALL
+================================ */
+.view-all-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  text-decoration: none;
+}
+
+.view-all-btn:hover {
+  text-decoration: underline;
+}
+
+/* ================================
+   BODY
+================================ */
+.update-strip-body {
+  padding: 20px;
+}
+
+.update-loading {
+  color: var(--text-secondary);
+}
+
+/* ================================
+   ANNOUNCEMENT ITEM
+================================ */
+.announcement-item {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  gap: 12px;
+}
+
+.announcement-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* PRIORITY DOT */
+.priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.priority-low {
+  background: #10b981;
+}
+.priority-medium {
+  background: #f59e0b;
+}
+.priority-high {
+  background: #ef4444;
+}
+
+/* TEXT */
+.announcement-content h4 {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.announcement-content p {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* META */
+.announcement-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ================================
+   ICONS (PURE CSS / INLINE SVG)
+================================ */
+.icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+}

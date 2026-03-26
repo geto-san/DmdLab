@@ -1,0 +1,253 @@
+/* Page-level styles - minimal, clean (tomshaw.dev inspired) */
+
+.page { padding: var(--spacing-xl, 2rem) 0; }
+
+.page-header { margin-bottom: var(--spacing-2xl, 3rem); }
+.page-header h1 { font-size: var(--font-size-3xl, 1.875rem); font-weight: 700; margin-bottom: 0.5rem; }
+.page-subtitle { color: var(--text-secondary); font-size: var(--font-size-md); }
+.section-desc { color: var(--text-secondary); margin-bottom: var(--spacing-lg); }
+
+.container-narrow { max-width: 48rem; margin: 0 auto; }
+
+/* =============================
+   D-Lab Page (merged lobby+video+articles+events)
+   ============================= */
+
+.dlab-page .container { max-width: 1200px; }
+
+/* Hero (tomshaw.dev: centered, single column) */
+.dlab-hero {
+  text-align: center;
+  max-width: 42rem;
+  margin: 0 auto var(--spacing-3xl);
+}
+
+.dlab-hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.dlab-tagline {
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-sm);
+}
+
+.dlab-mission {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.dlab-cta {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.dlab-cta:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.dlab-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+}
+
+.dlab-cta-secondary {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dlab-cta-secondary:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-muted);
+}
+
+/* Sections */
+.dlab-section {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.dlab-section h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+/* Articles grid */
+.dlab-articles-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .dlab-articles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Events grid */
+.dlab-events-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .dlab-events-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .dlab-events-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Cards */
+.dlab-card {
+  padding: var(--spacing-lg);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.dlab-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-muted);
+}
+
+.dlab-card h4 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.dlab-card p {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.dlab-event-card .link-arrow {
+  font-size: var(--font-size-sm);
+}
+
+.dlab-updates {
+  margin-top: var(--spacing-2xl);
+}
+
+.link-arrow { color: var(--accent); text-decoration: none; font-size: var(--font-size-sm); }
+.link-arrow:hover { text-decoration: underline; }
+
+/* Team page */
+.team-section { margin-bottom: var(--spacing-3xl, 4rem); }
+.team-section-title { font-size: var(--font-size-xl); font-weight: 600; margin-bottom: var(--spacing-lg); color: var(--text-primary); }
+.team-empty { color: var(--text-secondary); font-style: italic; }
+
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-xl);
+}
+
+@media (min-width: 640px) {
+  .team-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .team-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.team-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.team-card:hover { box-shadow: var(--shadow-md); }
+
+.team-card-inner { display: flex; flex-direction: column; }
+.team-card-image {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.team-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.team-card-body { padding: var(--spacing-lg); }
+.team-card-name { font-size: var(--font-size-lg); font-weight: 600; margin-bottom: 0.25rem; }
+.team-card-role { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: 0.5rem; }
+.team-card-bio { font-size: var(--font-size-sm); color: var(--text-primary); line-height: 1.5; margin-bottom: 0.75rem; }
+
+.team-card-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: var(--font-size-xs);
+}
+
+.team-card-links a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.team-card-links a:hover { text-decoration: underline; }
+
+/* Projects page */
+.projects-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-lg);
+}
+
+@media (min-width: 640px) {
+  .projects-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .projects-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.project-card {
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  transition: box-shadow 0.2s;
+}
+
+.project-card:hover { box-shadow: var(--shadow-md); }
+.project-card h3 { font-size: var(--font-size-lg); margin-bottom: 0.5rem; color: var(--text-primary); }
+.project-card p { font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: 0.75rem; }
+
+/* Discussions page (tomshaw.dev style) */
+.discussions-page .container-narrow { max-width: 48rem; }
+.discussions-hero { text-align: center; margin-bottom: var(--spacing-2xl); }
+.discussions-content { color: var(--text-secondary); }

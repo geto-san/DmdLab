@@ -1,0 +1,72 @@
+/* Quick Navigation Styles */
+.quick-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.quick-nav-item {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-decoration: none;
+}
+
+.quick-nav-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quick-nav-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.quick-nav-icon svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.quick-nav-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.quick-nav-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.quick-nav-arrow {
+  margin-left: auto;
+  color: #9ca3af;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-nav-item {
+    transition: none;
+  }
+  .quick-nav-item:hover {
+    transform: none;
+  }
+}

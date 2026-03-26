@@ -1,0 +1,6 @@
+# Config with secrets
+config/.env
+
+# OS
+.DS_Store
+Thumbs.db
