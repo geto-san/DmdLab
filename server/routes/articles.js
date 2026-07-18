@@ -7,7 +7,10 @@ const Article = require('../models/Article');
 router.get('/', async (req, res) => {
   try {
     const { category, page = 1, limit = 10 } = req.query;
-    const filter = category && category !== 'all' ? { category } : {};
+    // case-insensitive match — the client always sends lowercased categories
+    const filter = category && category !== 'all'
+      ? { category: new RegExp(`^${category}$`, 'i') }
+      : {};
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const articles = await Article.find(filter)
       .sort({ date: -1 })
@@ -30,16 +33,10 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
-// POST new article
-router.post('/', async (req, res) => {
-  try {
-    const newArticle = new Article(req.body);
-    const saved = await newArticle.save();
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(400).json({ error: 'Failed to add article' });
-  }
-});
+// Note: article creation/update/deletion is intentionally only available at
+// POST/PUT/DELETE /admin/articles (see routes/admin.js) — that path is
+// protected by adminAuth and handles Multer + Cloudinary image upload.
+// An unauthenticated POST / used to live here as a duplicate, unprotected
+// way to create articles; it has been removed as a security fix.
 
 module.exports = router;

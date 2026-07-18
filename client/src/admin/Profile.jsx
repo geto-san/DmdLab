@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import API_BASE from '../utils/api';
 
 const Profile = ({ token }) => {
   const [profile, setProfile] = useState(null);
@@ -6,9 +7,11 @@ const Profile = ({ token }) => {
     if (!token) return;
     (async ()=>{
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/admin/profile`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/admin/profile`, { headers: { Authorization: `Bearer ${token}` } });
         const d = await res.json(); setProfile(d);
-      } catch(e){}
+      } catch {
+        // ignore — profile fetch failure just leaves the placeholder state
+      }
     })();
   }, [token]);
   if (!profile) return null;

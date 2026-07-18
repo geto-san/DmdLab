@@ -1,161 +1,174 @@
-DmdLab
+# DmdLab
 
-Welcome to the DmdLab! This repository hosts the digital platform for the Deepminds Research Lab, a multidisciplinary academic research group led by a university professor and comprising students.
+DmdLab is the digital platform for the Deepminds Research Lab — a
+multidisciplinary academic research group led by a university professor and
+made up of student researchers. It's a MERN application with two apps in
+this repository:
 
-# DmdLab Portal
+- `client/` — React + Vite frontend (TailwindCSS, React Router)
+- `server/` — Node.js + Express backend (MongoDB/Mongoose, Socket.IO, JWT
+  admin auth, Multer + Cloudinary for image uploads)
 
-Deepminds is a full-stack web portal (MERN) that provides a collaborative platform for a university research lab. This repository contains two apps in the project root:
+## What it actually does
 
-- `client/` — React + Vite frontend
-- `server/` — Node.js + Express backend (API + Socket.IO)
+DmdLab is a **content and admin portal**, not a social network. Visitors can
+browse the lab's public content; a single admin account manages it all
+through a protected dashboard.
 
-This README explains how to set up, run, and develop the project locally. It's modelled on the Friendly project's README and tailored for Deepminds.
+Public site:
+- Browse **Articles** with category filtering and title search, view a
+  single article (with cover image, when set)
+- Browse **Videos** pulled live from the lab's YouTube channel, with
+  category filtering, search, and related-video click tracking
+- View **Announcements**
+- Quick navigation with live article/video counts
 
-## Features
-
-- User authentication (JWT)
-- Real-time messaging via Socket.IO
-- Post creation with file uploads (Cloudinary)
-- Follow/unfollow and notifications
-- Search and bookmarking
-- Password reset via email
+Admin dashboard (`/admin`, protected by JWT login):
+- Create/edit/delete articles, with Cloudinary image upload and progress
+- Create/edit/delete announcements, members, footer/about content
+- Manage a separate database-backed video catalog (note: this is not the
+  same list of videos shown on the public Videos page, which pulls live
+  from YouTube — see "Known gaps" below)
+- Dashboard stats and content lists update live over Socket.IO when any
+  admin (in any open tab) makes a change
 
 ## Tech stack
 
-### Frontend (client)
+### Frontend (`client/`)
 - React + Vite
 - TailwindCSS
 - React Router
-- Socket.IO client
+- Socket.IO client (live-updates the admin dashboard)
 
-### Backend (server)
+### Backend (`server/`)
 - Node.js + Express
 - MongoDB with Mongoose
-- Socket.IO server
-- JWT-based auth, Bcrypt
-- Multer (file upload) and Cloudinary for storage
+- Socket.IO server (emits on admin create/update/delete)
+- JWT-based admin auth (single shared admin account, not per-user accounts)
+- Multer (in-memory) + Cloudinary for article image uploads
+- YouTube Data API integration for the public video catalog
 
 ## Project structure
 
 ```
-├── client/                 # Frontend application (Vite + React)
+├── client/
 │   ├── src/
+│   │   ├── Pages/            # Lobby, ArticleLayout, ArticlePage, VideoListePage, VideoPage
+│   │   ├── admin/             # Admin login + dashboard (articles, videos, profile)
+│   │   ├── components/        # Article/Video cards, filters, search, layout
+│   │   ├── hooks/              # useVideos
+│   │   └── utils/              # api.js (API base URL), socket.js, articleCategories.js
 │   └── public/
-├── server/                 # Backend application (Express)
-│   ├── config/
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── socket/
-│   └── utils/
+├── server/
+│   ├── controllers/            # admin.controller.js (generic CRUD + article upload logic)
+│   ├── middleware/             # adminAuth.js (JWT check)
+│   ├── models/                 # Article, Announcement, Member, Post, Video, VideoClick, About
+│   ├── routes/                 # articles, videos, announcements, admin
+│   ├── utils/                   # cloudinary.js
+│   ├── socket.js                # Socket.IO setup
+│   └── server.js
 └── README.md
 ```
 
 ## Prerequisites
 
-- Node.js (v14+; Node 18 recommended)
-- npm or yarn
+- Node.js 18+
+- npm
 - A running MongoDB instance (Atlas or local)
-- Cloudinary account (for image uploads)
-- An email account/service for sending reset emails (or a service like Mailgun/SendGrid)
-- (Optional) YouTube API key if you want video-related features
+- A Cloudinary account (for article image uploads)
+- A YouTube Data API v3 key + the lab's channel ID (for the public video
+  catalog and related-video links)
 
 ## Installation (local dev)
 
-1. Clone the repository:
-
 ```bash
-git clone <repository-url>
-cd deepminds
-```
+git clone https://github.com/geto-san/DmdLab.git
+cd DmdLab
 
-2. Install server dependencies:
-
-```bash
-cd server
-npm install
-```
-
-3. Install client dependencies:
-
-```bash
-cd ../client
-npm install
+cd server && npm install
+cd ../client && npm install
 ```
 
 ## Environment variables
 
-Create a `.env` file in the `server/` directory and (optionally) a `.env` file in the `client/` directory. Do NOT commit real secrets to git. Below are the variable names used by the project and a short description for each.
+Neither `server/.env` nor `client/.env` is committed (both are gitignored) —
+create them yourself from the values below. **Never commit real secrets.**
 
-Server (`server/.env`):
+### `server/.env`
 
-- MONGO_URI — MongoDB connection string (example: mongodb+srv://user:pass@cluster0.mongodb.net/<db>?retryWrites=true&w=majority)
-- DB_NAME — Optional DB name
-- YOUTUBE_API_KEY — (optional) YouTube Data API v3 key (for video features)
-- YOUTUBE_CHANNEL_ID — (optional) default channel id used by the app
-- CLOUDINARY_CLOUD_NAME — Cloudinary cloud name
-- CLOUDINARY_API_KEY — Cloudinary API key
-- CLOUDINARY_API_SECRET — Cloudinary API secret
-- JWT_SECRET — Secret used to sign JWTs
-- ADMIN_USER — Initial admin username (used by admin auth middleware)
-- ADMIN_PASS — Initial admin password
-- PORT — Port for the backend server (default: 8500)
-- NODE_ENV — Node environment (development/production)
+| Variable | Required | Description |
+|---|---|---|
+| `MONGO_URI` | yes | MongoDB connection string |
+| `DB_NAME` | no | Overrides the DB name from the URI |
+| `PORT` | no | Defaults to `8500` |
+| `ADMIN_USER` | **yes in production** | Admin login username. Defaults to `admin` if unset — do not leave this default in production |
+| `ADMIN_PASS` | **yes in production** | Admin login password. Defaults to `password` if unset — do not leave this default in production |
+| `ADMIN_JWT_SECRET` | **yes in production** | Signs admin JWTs. Defaults to a hardcoded string if unset — do not leave this default in production |
+| `ADMIN_JWT_EXPIRES` | no | Token lifetime, defaults to `8h` |
+| `CLOUDINARY_CLOUD_NAME` | yes (for uploads) | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | yes (for uploads) | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | yes (for uploads) | Cloudinary API secret |
+| `YOUTUBE_API_KEY` | yes (for videos) | YouTube Data API v3 key |
+| `YOUTUBE_CHANNEL_ID` | yes (for videos) | The lab's YouTube channel ID |
+| `CORS_ORIGINS` | no | Comma-separated extra allowed origins, beyond the deployed defaults and `localhost:5173` |
 
-Client (`client/.env`) — Vite exposes variables starting with `VITE_`:
+### `client/.env` (copy from `client/.env.example`)
 
-- VITE_API_BASE — Frontend API base URL (e.g. http://localhost:8500)
-- API_BASE_URL — Some components read this directly (kept for compatibility)
-- APP_NAME — Friendly app display name
-- VITE_CLOUDINARY_CLOUD_NAME — Cloudinary cloud name used client-side for unsigned uploads (if applicable)
+| Variable | Description |
+|---|---|
+| `VITE_API_BASE` | Backend API base URL, e.g. `http://localhost:8500` |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Must match the server's `CLOUDINARY_CLOUD_NAME` — used to build thumbnail URLs directly in the admin UI |
 
-Example (do NOT use real secrets in source):
-
-```env
-# server/.env
-MONGO_URI=your_mongo_connection_string
-JWT_SECRET=some_long_random_secret
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-PORT=8500
-
-# client/.env
-VITE_API_BASE=http://localhost:8500
-VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
-```
+Only variables named exactly `.env`, `.env.local`, or `.env.[mode]` are
+picked up by Vite automatically — don't rename this file.
 
 ## Running the app (development)
 
-1. Start the backend server
-
 ```bash
+# terminal 1
 cd server
-npm run dev   # or `node server.js` depending on package scripts
-```
+npm run dev      # nodemon server.js
 
-2. Start the frontend dev server
-
-```bash
+# terminal 2
 cd client
-npm run dev
+npm run dev      # vite dev server, usually http://localhost:5173
 ```
 
-Open your browser at the Vite dev server URL (usually `http://localhost:5173`). The frontend should make API calls to the backend at `http://localhost:8500` (or whatever `VITE_API_BASE` is set to).
+The client talks to the API at whatever `VITE_API_BASE` points to.
 
-## Production / Deployment notes
+## Production notes
 
-- Ensure `NODE_ENV=production` and a secure `JWT_SECRET` in production.
-- Use Cloudinary or similar for uploaded assets and configure the backend to sign uploads if needed.
-- Configure CORS allowed origins in `server/server.js` or the relevant config.
+- Set real, non-default values for `ADMIN_USER`, `ADMIN_PASS`, and
+  `ADMIN_JWT_SECRET` — the code silently falls back to weak defaults
+  (`admin` / `password` / a hardcoded JWT secret) if these are unset.
+- `server.js` connects to Mongo before it starts listening at all; if the
+  DB is unreachable, the process exits rather than serving a degraded app.
+- CORS is restricted to a small allowlist (`server.js`) rather than `*` —
+  add any additional deployed frontend origins via `CORS_ORIGINS`.
 
-## Common troubleshooting
+## Known gaps / things to be aware of
 
-- If the frontend fails to contact the API, verify `VITE_API_BASE`/`API_BASE_URL` and CORS settings in the backend.
-- If MongoDB connection fails with DNS errors for an Atlas SRV string, ensure your network/DNS is working and the URI is correct.
-- If uploads fail, double-check Cloudinary credentials and upload presets.
+- The admin "Manage Videos" panel writes to a separate MongoDB `Video`
+  collection, but the public Videos page reads live from the YouTube API
+  instead. The two are not currently connected — admin-created video
+  records aren't shown publicly. Deciding whether to unify these (e.g.
+  publish DB videos, or drop the DB video model in favor of YouTube-only)
+  is a product decision, not something this codebase resolves today.
+- `Member`, `About`, and `Post` have admin CRUD but no public route or page
+  yet — nothing on the public site currently reads them.
+- Article view counts (`views`) are tracked but nothing currently
+  increments them.
+
+## Troubleshooting
+
+- Frontend can't reach the API → check `VITE_API_BASE` in `client/.env`
+  and the CORS allowlist in `server/server.js`.
+- Mongo connection fails → run `node server/temp_check_mongo.js` (reads
+  `MONGO_URI` from `server/.env`) to test the connection in isolation.
+- Image uploads fail → double-check the three `CLOUDINARY_*` values match
+  your Cloudinary account.
 
 ## Contributing
 
-Contributions are welcome. Open issues or PRs and follow repository conventions.
+Contributions are welcome — open an issue or PR and follow the existing
+code conventions in each app.

@@ -38,7 +38,7 @@ const VideoPage = () => {
         if (!res.ok) throw new Error('Failed to load related');
         const data = await res.json();
         setRelatedVideos(data || []);
-      } catch (e) {
+      } catch {
         // ignore
       }
     };

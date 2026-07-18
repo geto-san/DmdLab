@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import API_BASE_URL from '../utils/api';
 
 const ArticlePage = () => {
   const { id } = useParams();
@@ -48,8 +47,20 @@ const ArticlePage = () => {
       <div style={{ color: '#888', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
         By <strong>{article.author || 'Unknown'}</strong> • {new Date(article.date).toDateString()} • {article.category}
       </div>
-      <div style={{ fontSize: '1.1rem', color: '#333', marginBottom: '2rem' }}>
-        {article.excerpt}
+      {article.image && (
+        <img
+          src={article.image}
+          alt={article.title}
+          style={{ width: '100%', borderRadius: '12px', marginBottom: '1.5rem' }}
+        />
+      )}
+      {article.description && (
+        <div style={{ fontSize: '1.1rem', color: '#333', marginBottom: '1rem', fontWeight: 500 }}>
+          {article.description}
+        </div>
+      )}
+      <div style={{ fontSize: '1rem', color: '#333', marginBottom: '2rem', whiteSpace: 'pre-wrap' }}>
+        {article.content}
       </div>
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
         {article.tags?.map((tag, idx) => (

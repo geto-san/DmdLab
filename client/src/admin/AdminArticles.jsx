@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { connectSocket } from '../utils/socket';
 import CreateArticle from './CreateArticle.jsx';
+import API_BASE from '../utils/api';
 
 export default function AdminArticles({ token }) {
   const [articles, setArticles] = useState([]);
@@ -11,7 +12,7 @@ export default function AdminArticles({ token }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/articles`);
+      const res = await fetch(`${API_BASE}/articles`);
       const data = await res.json();
       setArticles(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -36,36 +37,17 @@ export default function AdminArticles({ token }) {
     };
   }, []);
 
-  async function onCreate(article) {
-    // POST with token
-    try {
-  const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/admin/articles`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(article)
-      });
-      let data;
-      try { data = await res.json(); } catch(e){ data = null }
-      if (!res.ok) {
-        const serverMsg = data && typeof data === 'object' ? JSON.stringify(data) : (data || res.statusText);
-        throw new Error(`Server ${res.status}: ${serverMsg}`);
-      }
-      load();
-    } catch (err) {
-      setError(err.message || String(err));
-    }
-  }
 
   async function onDelete(id) {
     if (!confirm('Delete this article? This cannot be undone.')) return;
     setError(null);
     try {
-  const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/admin/articles/` + id, {
+  const res = await fetch(`${API_BASE}/admin/articles/` + id, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       let data;
-      try { data = await res.json(); } catch(e){ data = null }
+      try { data = await res.json(); } catch { data = null }
       if (!res.ok) {
         const serverMsg = data && typeof data === 'object' ? JSON.stringify(data) : (data || res.statusText);
         throw new Error(`Server ${res.status}: ${serverMsg}`);
@@ -84,23 +66,23 @@ export default function AdminArticles({ token }) {
         // send multipart via XHR to preserve file content
         await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          xhr.open('PUT', `${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/admin/articles/` + id);
+          xhr.open('PUT', `${API_BASE}/admin/articles/` + id);
           if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) return resolve(JSON.parse(xhr.responseText || '{}'));
-            try { const d = JSON.parse(xhr.responseText); return reject(new Error(`Server ${xhr.status}: ${JSON.stringify(d)}`)); } catch (e) { return reject(new Error(`Server ${xhr.status}: ${xhr.statusText}`)); }
+            try { const d = JSON.parse(xhr.responseText); return reject(new Error(`Server ${xhr.status}: ${JSON.stringify(d)}`)); } catch { return reject(new Error(`Server ${xhr.status}: ${xhr.statusText}`)); }
           };
           xhr.onerror = () => reject(new Error('Network error'));
           xhr.send(body);
         });
       } else {
-  const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/admin/articles/` + id, {
+  const res = await fetch(`${API_BASE}/admin/articles/` + id, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(body)
         });
         let data;
-        try { data = await res.json(); } catch(e){ data = null }
+        try { data = await res.json(); } catch { data = null }
         if (!res.ok) {
           const serverMsg = data && typeof data === 'object' ? JSON.stringify(data) : (data || res.statusText);
           throw new Error(`Server ${res.status}: ${serverMsg}`);
@@ -115,7 +97,7 @@ export default function AdminArticles({ token }) {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h2 className="text-2xl font-semibold mb-4">Manage Articles</h2>
-      <CreateArticle onCreate={onCreate} token={token} />
+      <CreateArticle token={token} />
       <div className="mt-6">
         {loading && <div>Loading...</div>}
   {error && <div className="text-red-600 whitespace-pre-wrap">{error}</div>}
@@ -157,7 +139,7 @@ function ArticleRow({ article, onDelete, onUpdate }) {
       setEditing(false);
       setFile(null);
       setProgress(0);
-    } catch (e) {
+    } catch {
       // parent will set error state
     } finally { setSaving(false); }
   }

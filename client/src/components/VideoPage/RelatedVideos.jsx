@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import API_BASE from '../../utils/api';
 
 const formatViews = (n) => {
   const num = Number(n) || 0;
@@ -14,12 +15,12 @@ const RelatedVideos = ({ videos = [] }) => {
   const handleClick = async (toVideoId) => {
     try {
       // send click telemetry to server
-      await fetch(`/videos/${window.location.pathname.split('/').pop()}/click`, {
+      await fetch(`${API_BASE}/videos/${window.location.pathname.split('/').pop()}/click`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toVideoId })
       });
-    } catch (e) {
+    } catch {
       // ignore telemetry failures
     }
   };

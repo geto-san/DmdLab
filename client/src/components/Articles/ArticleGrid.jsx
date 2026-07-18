@@ -3,8 +3,6 @@ import ArticleCard from './ArticleCard';
 import { Link } from 'react-router-dom';
 import API_BASE from '../../utils/api';
 
-const API_BASE_URL1 = API_BASE;
-
 const ArticleList = ({ selectedCategory, searchTerm }) => {
   const [loading, setLoading] = useState(false);
   const [articles, setArticles] = useState([]);
@@ -23,7 +21,7 @@ const ArticleList = ({ selectedCategory, searchTerm }) => {
         limit: limit.toString(),
       });
 
-      const res = await fetch(`${API_BASE_URL1}/articles?${query}`);
+      const res = await fetch(`${API_BASE}/articles?${query}`);
       const text = await res.text();
 
       try {
@@ -46,10 +44,12 @@ const ArticleList = ({ selectedCategory, searchTerm }) => {
     setPage(1);
     setHasMore(true);
     fetchArticles(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the category filter changes
   }, [selectedCategory]);
 
   useEffect(() => {
     if (page > 1) fetchArticles(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the page changes
   }, [page]);
 
   useEffect(() => {

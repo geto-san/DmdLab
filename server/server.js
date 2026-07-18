@@ -8,6 +8,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8500;
 
+// Known deployed frontends + local dev, extendable via CORS_ORIGINS (comma-separated)
+const allowedOrigins = [
+  'https://dmd-lab.vercel.app',
+  'https://dmdlab.onrender.com',
+  'http://localhost:5173',
+  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()) : []),
+];
+
 // Security
 app.use(
   helmet.contentSecurityPolicy({
@@ -19,7 +27,13 @@ app.use(
 );
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow non-browser tools (curl, server-to-server) with no Origin header
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 
 // Routes
@@ -50,7 +64,7 @@ mongoose
     const http = require('http');
     const server = http.createServer(app);
     const { setupSocket } = require('./socket');
-    setupSocket(server);
+    setupSocket(server, allowedOrigins);
     server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
   .catch((err) => {

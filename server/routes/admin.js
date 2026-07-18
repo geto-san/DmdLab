@@ -39,6 +39,7 @@ router.post('/about', adminAuth, adminController.about.create);
 router.put('/about/:id', adminAuth, adminController.about.update);
 router.delete('/about/:id', adminAuth, adminController.about.delete);
 
+router.get('/videos', adminAuth, adminController.video.list);
 router.post('/videos', adminAuth, adminController.video.create);
 router.put('/videos/:id', adminAuth, adminController.video.update);
 router.delete('/videos/:id', adminAuth, adminController.video.delete);

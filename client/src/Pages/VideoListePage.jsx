@@ -68,6 +68,7 @@ const VideoListPage = () => {
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="sidebar-content">
+            <VideoSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             <VideoFilters selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
             <div className="summary-card">
               <h4>Summary</h4>

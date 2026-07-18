@@ -1,23 +1,18 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import API_BASE from '../utils/api';
 
 export default function LoginPage({ onLogin }) {
-  // Prefer credentials provided via Vite env for quick local login
-  const envUser = import.meta.env.VITE_ADMIN_USER || '';
-  const envPass = import.meta.env.VITE_ADMIN_PASS || '';
-
-  const [email, setEmail] = useState(envUser);
-  const [password, setPassword] = useState(envPass);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+    if (!username) {
+      newErrors.username = 'Username is required';
     }
     if (!password) {
       newErrors.password = 'Password is required';
@@ -33,14 +28,10 @@ export default function LoginPage({ onLogin }) {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      // If env-provided credentials exist, prefer them to ensure a server-signed token is returned
-      const usernameToSend = envUser || email;
-      const passwordToSend = envPass || password;
-
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/admin/login`, {
+      const res = await fetch(`${API_BASE}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: usernameToSend, password: passwordToSend })
+        body: JSON.stringify({ username, password })
       });
       const data = await res.json().catch(()=>null);
       if (!res.ok) throw new Error((data && data.error) || res.statusText || 'Login failed');
@@ -71,14 +62,14 @@ export default function LoginPage({ onLogin }) {
           <form onSubmit={handleSubmit} className="space-y-6">
             {errors.form && <div className="text-red-600">{errors.form}</div>}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+              <label htmlFor="username" className="block text-sm font-medium text-slate-700 mb-2">Username</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-400" />
+                  <User className="h-5 w-5 text-slate-400" />
                 </div>
-                <input id="email" type="email" value={email} onChange={(e)=>{ setEmail(e.target.value); if (errors.email) setErrors({ ...errors, email: '' }); }} className={`block w-full pl-10 pr-3 py-3 border ${errors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors`} placeholder="admin@yourdomain.com" />
+                <input id="username" type="text" value={username} onChange={(e)=>{ setUsername(e.target.value); if (errors.username) setErrors({ ...errors, username: '' }); }} className={`block w-full pl-10 pr-3 py-3 border ${errors.username ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors`} placeholder="admin" />
               </div>
-              {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
+              {errors.username && <p className="mt-2 text-sm text-red-600">{errors.username}</p>}
             </div>
 
             <div>

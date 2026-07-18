@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { ARTICLE_CATEGORIES } from '../../utils/articleCategories';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const categories = [];
+const categories = ['all', ...ARTICLE_CATEGORIES];
 
 const ArticleFilters = ({ selectedCategory, setSelectedCategory }) => {
 
@@ -22,7 +22,7 @@ const ArticleFilters = ({ selectedCategory, setSelectedCategory }) => {
             transition: '0.3s',
           }}
         >
-          {category}
+          {category === 'all' ? 'All' : category}
         </button>
       ))}
     </div>

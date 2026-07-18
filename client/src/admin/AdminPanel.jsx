@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import Login from './LoginPage.jsx';
 import AdminDashboard from './AdminDashboard.jsx';
+import { disconnectSocket } from '../utils/socket';
 
 export default function AdminPanel() {
   const [token, setToken] = useState(null);
-  const [tab, setTab] = useState('articles');
 
   const handleLogout = () => {
+    disconnectSocket();
     setToken(null);
   };
 

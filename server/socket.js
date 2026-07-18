@@ -1,9 +1,9 @@
 const { Server } = require('socket.io');
 let io;
 
-function setupSocket(httpServer) {
+function setupSocket(httpServer, allowedOrigins) {
   io = new Server(httpServer, {
-    cors: { origin: '*' }
+    cors: { origin: allowedOrigins && allowedOrigins.length ? allowedOrigins : '*' }
   });
 
   io.on('connection', (socket) => {

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import AdminArticles from './AdminArticles.jsx';
 import { connectSocket } from '../utils/socket';
+import API_BASE from '../utils/api';
 
 export default function AdminDashboard({ token, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -37,7 +38,7 @@ export default function AdminDashboard({ token, onLogout }) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const base = import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL;
+        const base = API_BASE;
         const headers = { 'Authorization': `Bearer ${token}` };
         const [annRes, memRes, aboutRes, artRes] = await Promise.all([
           fetch(`${base}/admin/announcements`, { headers }),
@@ -134,7 +135,7 @@ export default function AdminDashboard({ token, onLogout }) {
   const handleDelete = async (section, id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        const base = import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL;
+        const base = API_BASE;
         const headers = { 'Authorization': `Bearer ${token}` };
         const response = await fetch(`${base}/admin/${section}/${id}`, {
           method: 'DELETE',
@@ -166,7 +167,7 @@ export default function AdminDashboard({ token, onLogout }) {
 
   const handleSaveAbout = async () => {
     try {
-      const base = import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL;
+      const base = API_BASE;
       const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
       const response = await fetch(`${base}/admin/about/${aboutContent._id}`, {
         method: 'PUT',
@@ -186,7 +187,7 @@ export default function AdminDashboard({ token, onLogout }) {
 
   const handleSaveModal = async () => {
     try {
-      const base = import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL;
+      const base = API_BASE;
       const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
       let url, method;
       if (modalMode === 'create') {
@@ -234,6 +235,7 @@ export default function AdminDashboard({ token, onLogout }) {
   const DashboardOverview = () => (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+      {loading && <p className="text-sm text-gray-500">Loading dashboard data…</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Total Articles', count: articles.length, color: 'blue' },

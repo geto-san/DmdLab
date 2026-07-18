@@ -19,7 +19,7 @@ const QuickNavigation = () => {
         const vRes = await fetch(`${API_BASE}/videos?maxResults=50`);
         const vData = vRes.ok ? await vRes.json() : [];
         if (!cancelled) setCounts({ articles: Array.isArray(aData) ? aData.length : 0, videos: Array.isArray(vData) ? vData.length : 0 });
-      } catch (e) {
+      } catch {
         if (!cancelled) setCounts({ articles: null, videos: null });
       }
     };
