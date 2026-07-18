@@ -5,9 +5,55 @@ require('dotenv').config();
 const router = express.Router();
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID;
+const CHANNEL_ID_RAW = process.env.YOUTUBE_CHANNEL_ID;
 const VideoClick = require('../models/VideoClick');
 const Video = null; // placeholder for future video DB model
+
+// YOUTUBE_CHANNEL_ID needs to be the raw channel ID (starts with "UC"), but
+// it's easy to instead set it to the channel URL or @handle you'd copy from
+// a browser. Resolve those automatically via the API's forHandle lookup,
+// rather than silently failing every video request.
+let resolvedChannelId = null;
+let resolvingPromise = null;
+
+function extractHandle(raw) {
+  if (!raw) return null;
+  if (/^UC[\w-]{22}$/.test(raw)) return null; // already a real channel ID
+  const urlMatch = raw.match(/youtube\.com\/@([\w.-]+)/i);
+  if (urlMatch) return urlMatch[1];
+  if (raw.startsWith('@')) return raw.slice(1);
+  return null;
+}
+
+async function getChannelId() {
+  if (resolvedChannelId) return resolvedChannelId;
+  if (!CHANNEL_ID_RAW) return null;
+  if (/^UC[\w-]{22}$/.test(CHANNEL_ID_RAW)) {
+    resolvedChannelId = CHANNEL_ID_RAW;
+    return resolvedChannelId;
+  }
+  const handle = extractHandle(CHANNEL_ID_RAW);
+  if (!handle) {
+    resolvedChannelId = CHANNEL_ID_RAW; // unrecognized format — use as-is, let the API report the real error
+    return resolvedChannelId;
+  }
+  if (!resolvingPromise) {
+    resolvingPromise = axios.get('https://www.googleapis.com/youtube/v3/channels', {
+      params: { key: YOUTUBE_API_KEY, forHandle: handle, part: 'id' },
+    }).then(res => {
+      resolvedChannelId = res.data.items?.[0]?.id || CHANNEL_ID_RAW;
+      if (!res.data.items?.[0]?.id) {
+        console.error(`Could not resolve YouTube handle "${handle}" to a channel ID`);
+      }
+      return resolvedChannelId;
+    }).catch(err => {
+      console.error('Failed to resolve YouTube handle to channel ID:', err.message);
+      resolvedChannelId = CHANNEL_ID_RAW;
+      return resolvedChannelId;
+    });
+  }
+  return resolvingPromise;
+}
 
 
 // GET /videos
@@ -17,7 +63,7 @@ router.get('/', async (req, res) => {
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
       params: {
         key: YOUTUBE_API_KEY,
-        channelId: CHANNEL_ID,
+        channelId: await getChannelId(),
         part: 'snippet',
         order: 'date',
         maxResults
@@ -87,7 +133,7 @@ router.get('/:id/related', async (req, res) => {
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
       params: {
         key: YOUTUBE_API_KEY,
-        channelId: CHANNEL_ID,
+        channelId: await getChannelId(),
         part: 'snippet',
         order: 'date',
         maxResults

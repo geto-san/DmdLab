@@ -12,16 +12,31 @@ const PORT = process.env.PORT || 8500;
 const allowedOrigins = [
   'https://dmd-lab.vercel.app',
   'https://dmdlab.onrender.com',
+  'https://dmdlab-504h.onrender.com', // actual Render service URL
+  'https://dmd-72dkuis5b-geto-sans-projects.vercel.app', // known Vercel preview deploy
   'http://localhost:5173',
   ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()) : []),
 ];
+
+// Vercel preview deployments get a unique hash per deploy
+// (e.g. https://dmd-72dkuis5b-geto-sans-projects.vercel.app), so an exact
+// allowlist alone breaks on every new preview. Allow any origin ending in
+// a known suffix too, e.g. CORS_ORIGIN_SUFFIXES=-geto-sans-projects.vercel.app
+const allowedOriginSuffixes = process.env.CORS_ORIGIN_SUFFIXES
+  ? process.env.CORS_ORIGIN_SUFFIXES.split(',').map(s => s.trim())
+  : [];
+
+function isOriginAllowed(origin) {
+  if (allowedOrigins.includes(origin)) return true;
+  return allowedOriginSuffixes.some(suffix => origin.endsWith(suffix));
+}
 
 // Security
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "https://dmd-lab.vercel.app", "https://dmdlab.onrender.com", "data:"],
+      imgSrc: ["'self'", "https://dmd-lab.vercel.app", "https://dmdlab.onrender.com", "https://dmdlab-504h.onrender.com", "data:"],
     },
   })
 );
@@ -30,7 +45,7 @@ app.use(
 app.use(cors({
   origin: (origin, callback) => {
     // allow non-browser tools (curl, server-to-server) with no Origin header
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || isOriginAllowed(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
 }));
@@ -47,15 +62,35 @@ app.use('/admin', adminRoutes);
 const announcementsRoutes = require('./routes/announcements');
 app.use('/announcements', announcementsRoutes);
 
-// Serve static files from the React app build directory
-app.use(express.static(path.join(__dirname, '../client/dist')));
+// Serve static files from the React app build directory — only if it was
+// actually built alongside the server (monolith deploy). In a split deploy
+// (e.g. this server on Render, client on Vercel) client/dist never exists
+// here, so skip this entirely rather than erroring on every request.
+const fs = require('fs');
+const clientDistPath = path.join(__dirname, '../client/dist');
+const clientIndexPath = path.join(clientDistPath, 'index.html');
+const hasClientBuild = fs.existsSync(clientIndexPath);
 
-// Catch all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
+if (hasClientBuild) {
+  app.use(express.static(clientDistPath));
+  // Catch-all: send back React's index.html for any non-API route (SPA routing)
+  app.get('*', (req, res) => res.sendFile(clientIndexPath));
+} else {
+  // API-only deploy: a simple health check at / instead of a broken SPA fallback
+  app.get('/', (req, res) => res.json({ status: 'ok', service: 'dmdlab-api' }));
+  // Anything else unmatched is a real 404, not an attempt to serve a missing file
+  app.use((req, res) => res.status(404).json({ error: 'Not found' }));
+}
 
 // Connect to Mongo and start server
+if (process.env.DB_NAME && /^cluster\d*$/i.test(process.env.DB_NAME.trim())) {
+  console.warn(
+    `⚠️  DB_NAME="${process.env.DB_NAME}" looks like an Atlas *cluster* name, not a database name. ` +
+    `Mongo will happily create/use a database literally called "${process.env.DB_NAME}", which is ` +
+    `probably not the database your collections actually live in. Double-check this value.`
+  );
+}
+
 mongoose
   .connect(process.env.MONGO_URI, { dbName: process.env.DB_NAME || undefined })
   .then(() => {
