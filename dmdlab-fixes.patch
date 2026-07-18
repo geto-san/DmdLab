@@ -2051,11 +2051,91 @@ index 7f7187b..936e26a 100755
 +// way to create articles; it has been removed as a security fix.
  
  module.exports = router;
+diff --git a/server/routes/videos.js b/server/routes/videos.js
+index 324f465..8a85413 100755
+--- a/server/routes/videos.js
++++ b/server/routes/videos.js
+@@ -5,10 +5,56 @@ require('dotenv').config();
+ const router = express.Router();
+ 
+ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+-const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID;
++const CHANNEL_ID_RAW = process.env.YOUTUBE_CHANNEL_ID;
+ const VideoClick = require('../models/VideoClick');
+ const Video = null; // placeholder for future video DB model
+ 
++// YOUTUBE_CHANNEL_ID needs to be the raw channel ID (starts with "UC"), but
++// it's easy to instead set it to the channel URL or @handle you'd copy from
++// a browser. Resolve those automatically via the API's forHandle lookup,
++// rather than silently failing every video request.
++let resolvedChannelId = null;
++let resolvingPromise = null;
++
++function extractHandle(raw) {
++  if (!raw) return null;
++  if (/^UC[\w-]{22}$/.test(raw)) return null; // already a real channel ID
++  const urlMatch = raw.match(/youtube\.com\/@([\w.-]+)/i);
++  if (urlMatch) return urlMatch[1];
++  if (raw.startsWith('@')) return raw.slice(1);
++  return null;
++}
++
++async function getChannelId() {
++  if (resolvedChannelId) return resolvedChannelId;
++  if (!CHANNEL_ID_RAW) return null;
++  if (/^UC[\w-]{22}$/.test(CHANNEL_ID_RAW)) {
++    resolvedChannelId = CHANNEL_ID_RAW;
++    return resolvedChannelId;
++  }
++  const handle = extractHandle(CHANNEL_ID_RAW);
++  if (!handle) {
++    resolvedChannelId = CHANNEL_ID_RAW; // unrecognized format — use as-is, let the API report the real error
++    return resolvedChannelId;
++  }
++  if (!resolvingPromise) {
++    resolvingPromise = axios.get('https://www.googleapis.com/youtube/v3/channels', {
++      params: { key: YOUTUBE_API_KEY, forHandle: handle, part: 'id' },
++    }).then(res => {
++      resolvedChannelId = res.data.items?.[0]?.id || CHANNEL_ID_RAW;
++      if (!res.data.items?.[0]?.id) {
++        console.error(`Could not resolve YouTube handle "${handle}" to a channel ID`);
++      }
++      return resolvedChannelId;
++    }).catch(err => {
++      console.error('Failed to resolve YouTube handle to channel ID:', err.message);
++      resolvedChannelId = CHANNEL_ID_RAW;
++      return resolvedChannelId;
++    });
++  }
++  return resolvingPromise;
++}
++
+ 
+ // GET /videos
+ router.get('/', async (req, res) => {
+@@ -17,7 +63,7 @@ router.get('/', async (req, res) => {
+     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+       params: {
+         key: YOUTUBE_API_KEY,
+-        channelId: CHANNEL_ID,
++        channelId: await getChannelId(),
+         part: 'snippet',
+         order: 'date',
+         maxResults
+@@ -87,7 +133,7 @@ router.get('/:id/related', async (req, res) => {
+     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+       params: {
+         key: YOUTUBE_API_KEY,
+-        channelId: CHANNEL_ID,
++        channelId: await getChannelId(),
+         part: 'snippet',
+         order: 'date',
+         maxResults
 diff --git a/server/server.js b/server/server.js
-index 51d9b3e..9024c9c 100755
+index 51d9b3e..14b92c1 100755
 --- a/server/server.js
 +++ b/server/server.js
-@@ -8,6 +8,14 @@ const path = require('path');
+@@ -8,18 +8,47 @@ const path = require('path');
  const app = express();
  const PORT = process.env.PORT || 8500;
  
@@ -2063,14 +2143,34 @@ index 51d9b3e..9024c9c 100755
 +const allowedOrigins = [
 +  'https://dmd-lab.vercel.app',
 +  'https://dmdlab.onrender.com',
++  'https://dmdlab-504h.onrender.com', // actual Render service URL
++  'https://dmd-72dkuis5b-geto-sans-projects.vercel.app', // known Vercel preview deploy
 +  'http://localhost:5173',
 +  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()) : []),
 +];
 +
++// Vercel preview deployments get a unique hash per deploy
++// (e.g. https://dmd-72dkuis5b-geto-sans-projects.vercel.app), so an exact
++// allowlist alone breaks on every new preview. Allow any origin ending in
++// a known suffix too, e.g. CORS_ORIGIN_SUFFIXES=-geto-sans-projects.vercel.app
++const allowedOriginSuffixes = process.env.CORS_ORIGIN_SUFFIXES
++  ? process.env.CORS_ORIGIN_SUFFIXES.split(',').map(s => s.trim())
++  : [];
++
++function isOriginAllowed(origin) {
++  if (allowedOrigins.includes(origin)) return true;
++  return allowedOriginSuffixes.some(suffix => origin.endsWith(suffix));
++}
++
  // Security
  app.use(
    helmet.contentSecurityPolicy({
-@@ -19,7 +27,13 @@ app.use(
+     directives: {
+       defaultSrc: ["'self'"],
+-      imgSrc: ["'self'", "https://dmd-lab.vercel.app", "https://dmdlab.onrender.com", "data:"],
++      imgSrc: ["'self'", "https://dmd-lab.vercel.app", "https://dmdlab.onrender.com", "https://dmdlab-504h.onrender.com", "data:"],
+     },
+   })
  );
  
  // Middleware
@@ -2078,14 +2178,56 @@ index 51d9b3e..9024c9c 100755
 +app.use(cors({
 +  origin: (origin, callback) => {
 +    // allow non-browser tools (curl, server-to-server) with no Origin header
-+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
++    if (!origin || isOriginAllowed(origin)) return callback(null, true);
 +    callback(new Error('Not allowed by CORS'));
 +  },
 +}));
  app.use(express.json());
  
  // Routes
-@@ -50,7 +64,7 @@ mongoose
+@@ -33,15 +62,35 @@ app.use('/admin', adminRoutes);
+ const announcementsRoutes = require('./routes/announcements');
+ app.use('/announcements', announcementsRoutes);
+ 
+-// Serve static files from the React app build directory
+-app.use(express.static(path.join(__dirname, '../client/dist')));
++// Serve static files from the React app build directory — only if it was
++// actually built alongside the server (monolith deploy). In a split deploy
++// (e.g. this server on Render, client on Vercel) client/dist never exists
++// here, so skip this entirely rather than erroring on every request.
++const fs = require('fs');
++const clientDistPath = path.join(__dirname, '../client/dist');
++const clientIndexPath = path.join(clientDistPath, 'index.html');
++const hasClientBuild = fs.existsSync(clientIndexPath);
+ 
+-// Catch all handler: send back React's index.html file for any non-API routes
+-app.get('*', (req, res) => {
+-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+-});
++if (hasClientBuild) {
++  app.use(express.static(clientDistPath));
++  // Catch-all: send back React's index.html for any non-API route (SPA routing)
++  app.get('*', (req, res) => res.sendFile(clientIndexPath));
++} else {
++  // API-only deploy: a simple health check at / instead of a broken SPA fallback
++  app.get('/', (req, res) => res.json({ status: 'ok', service: 'dmdlab-api' }));
++  // Anything else unmatched is a real 404, not an attempt to serve a missing file
++  app.use((req, res) => res.status(404).json({ error: 'Not found' }));
++}
+ 
+ // Connect to Mongo and start server
++if (process.env.DB_NAME && /^cluster\d*$/i.test(process.env.DB_NAME.trim())) {
++  console.warn(
++    `⚠️  DB_NAME="${process.env.DB_NAME}" looks like an Atlas *cluster* name, not a database name. ` +
++    `Mongo will happily create/use a database literally called "${process.env.DB_NAME}", which is ` +
++    `probably not the database your collections actually live in. Double-check this value.`
++  );
++}
++
+ mongoose
+   .connect(process.env.MONGO_URI, { dbName: process.env.DB_NAME || undefined })
+   .then(() => {
+@@ -50,7 +99,7 @@ mongoose
      const http = require('http');
      const server = http.createServer(app);
      const { setupSocket } = require('./socket');
