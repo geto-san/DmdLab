@@ -1,11 +1,9 @@
-const MobileMenuButton = ({ isMenuOpen, toggleMenu, createRipple }) => (
+const MobileMenuButton = ({ isMenuOpen, toggleMenu }) => (
   <button
-    onClick={e => {
-      createRipple(e);
-      toggleMenu();
-    }}
-    className="nav-link text-gray-700 p-2 rounded-md"
+    onClick={toggleMenu}
+    className="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/5 transition-colors"
     aria-label="Toggle menu"
+    aria-expanded={isMenuOpen}
   >
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       {isMenuOpen ? (
