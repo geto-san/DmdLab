@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import VideoPlayer from "../components/VideoPage/VideoPlayer";
 import VideoInfo from "../components/VideoPage/VideoInfo";
 import RelatedVideos from "../components/VideoPage/RelatedVideos";
@@ -31,7 +32,6 @@ const VideoPage = () => {
   }, [id]);
 
   useEffect(() => {
-    // Fetch related videos from server-side related endpoint
     const fetchRelated = async () => {
       try {
         const res = await fetch(`${API_BASE}/videos/${id}/related`);
@@ -46,190 +46,33 @@ const VideoPage = () => {
   }, [id]);
 
   if (error) {
-    return (
-      <div className="error-container">
-        Error loading video: {error}
-      </div>
-    );
+    return <div className="text-center py-20 text-red-500">Error loading video: {error}</div>;
   }
   if (loading) {
-    return (
-      <div className="loading-container">Loading video...</div>
-    );
+    return <div className="text-center py-20 text-muted">Loading video…</div>;
   }
   if (!videoData) {
-    return (
-      <div className="error-container">
-        Video not found.
-      </div>
-    );
+    return <div className="text-center py-20 text-red-500">Video not found.</div>;
   }
 
   return (
-    <div className="video-page">
-      <div className="video-page-container">
+    <div className="bg-paper min-h-screen">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
+        <Link to="/videos" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-signal mb-5 transition-colors">
+          <ArrowLeft size={15} /> Back to videos
+        </Link>
+
         <VideoPlayer videoId={videoData._id} duration={videoData.duration} />
-        <div className="video-content-grid">
-          <div className="main-video-content">
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 mt-2">
+          <div className="min-w-0">
             <VideoInfo videoData={videoData} />
           </div>
-          <div className="related-videos-sidebar">
+          <div className="min-w-0 border-t lg:border-t-0 lg:border-l border-black/8 pt-6 lg:pt-0 lg:pl-6">
             <RelatedVideos videos={relatedVideos} />
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .video-page {
-          background-color: #ffffff;
-          min-height: 100vh;
-        }
-
-        .video-page-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-
-        .video-content-grid {
-          display: grid;
-          grid-template-columns: 1fr 300px;
-          gap: 30px;
-          margin-top: 20px;
-        }
-
-        .main-video-content {
-          min-width: 0; /* Prevent flex/grid item overflow */
-        }
-
-        .related-videos-sidebar {
-          min-width: 0; /* Prevent flex/grid item overflow */
-        }
-
-        .error-container, .loading-container {
-          text-align: center;
-          margin-top: 40px;
-          padding: 20px;
-        }
-
-        .error-container {
-          color: #d73a49;
-        }
-
-        .loading-container {
-          color: #586069;
-        }
-
-        /* Media Queries */
-        @media (max-width: 1024px) {
-          .video-page-container {
-            padding: 18px;
-          }
-
-          .video-content-grid {
-            grid-template-columns: 1fr 280px;
-            gap: 24px;
-          }
-        }
-
-        @media (max-width: 900px) {
-          .video-content-grid {
-            grid-template-columns: 1fr 260px;
-            gap: 20px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .video-page-container {
-            padding: 16px;
-          }
-
-          .video-content-grid {
-            grid-template-columns: 1fr;
-            gap: 0;
-          }
-
-          .related-videos-sidebar {
-            margin-top: 30px;
-            border-top: 1px solid #e1e4e8;
-            padding-top: 30px;
-          }
-        }
-
-        @media (max-width: 640px) {
-          .video-page-container {
-            padding: 12px;
-          }
-
-          .video-content-grid {
-            margin-top: 16px;
-          }
-
-          .related-videos-sidebar {
-            margin-top: 24px;
-            padding-top: 24px;
-          }
-
-          .error-container, .loading-container {
-            margin-top: 30px;
-            padding: 16px;
-            font-size: 0.95rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .video-page-container {
-            padding: 8px;
-          }
-
-          .video-content-grid {
-            margin-top: 12px;
-          }
-
-          .related-videos-sidebar {
-            margin-top: 20px;
-            padding-top: 20px;
-          }
-
-          .error-container, .loading-container {
-            margin-top: 20px;
-            padding: 12px;
-            font-size: 0.9rem;
-          }
-        }
-
-        @media (max-width: 360px) {
-          .video-page-container {
-            padding: 6px;
-          }
-
-          .video-content-grid {
-            margin-top: 10px;
-          }
-
-          .related-videos-sidebar {
-            margin-top: 16px;
-            padding-top: 16px;
-          }
-        }
-
-        /* Print Styles */
-        @media print {
-          .video-page-container {
-            max-width: none;
-            padding: 0;
-          }
-
-          .video-content-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
-
-          .related-videos-sidebar {
-            display: none;
-          }
-        }
-      `}</style>
     </div>
   );
 };
