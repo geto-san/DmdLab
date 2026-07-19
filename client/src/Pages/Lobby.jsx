@@ -4,21 +4,10 @@ import ArticleGrid from '../components/Articles/ArticleGrid';
 
 const Lobby = () => {
   return (
-    <div style={{
-      backgroundColor: '#f8fafc',
-      padding: '20px'
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
+    <div className="bg-slate-50 p-5">
+      <div className="max-w-[1200px] mx-auto">
         <QuickNavigation />
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 420px',
-          gap: '30px',
-          marginBottom: '30px'
-        }}>
+        <div className="grid grid-cols-[1fr_420px] gap-[30px] mb-[30px]">
           <div>
             <ArticleGrid />
           </div>

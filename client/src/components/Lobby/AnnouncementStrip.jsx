@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Bell, Clock, ChevronRight } from 'lucide-react';
+import API_BASE from '../../utils/api';
 
 const Announcements = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -12,7 +13,7 @@ const Announcements = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE || import.meta.env.API_BASE_URL}/announcements?limit=6`);
+        const res = await fetch(`${API_BASE}/announcements?limit=6`);
         if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
         const data = await res.json();
         if (!cancelled) setAnnouncements(Array.isArray(data) ? data : []);
@@ -31,44 +32,39 @@ const Announcements = () => {
   ];
 
   return (
-    <div style={{
-      backgroundColor: 'white',
-      border: '1px solid #e5e7eb',
-      borderRadius: '12px',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        backgroundColor: '#f8fafc',
-        padding: '16px 20px',
-        borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
+    <div className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden">
+      <div className="bg-slate-50 py-4 px-5 border-b border-[#e5e7eb] flex items-center justify-between">
+        <div className="flex items-center gap-2">
           <Bell size={20} color="#3b82f6" />
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: '#1f2937' }}>Announcements</h3>
+          <h3 className="m-0 text-[1.1rem] font-semibold text-gray-800">Announcements</h3>
         </div>
-        <button style={{ backgroundColor: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <button className="bg-transparent border-none text-blue-500 cursor-pointer text-[0.9rem] flex items-center gap-1">
           View All
           <ChevronRight size={16} />
         </button>
       </div>
-      <div style={{ padding: '20px' }}>
-        {loading && <div style={{ color: '#6b7280' }}>Loading announcements…</div>}
-        {error && <div style={{ color: '#ef4444' }}>Failed to load: {error}</div>}
+      <div className="p-5">
+        {loading && <div className="text-gray-500">Loading announcements…</div>}
+        {error && <div className="text-red-500">Failed to load: {error}</div>}
         {!loading && !error && items.map((announcement, index) => (
-          <div key={announcement._id || index} style={{ paddingBottom: '16px', marginBottom: '16px', borderBottom: index < items.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: announcement.priority === 'high' ? '#ef4444' : announcement.priority === 'medium' ? '#f59e0b' : '#10b981', marginTop: '6px', flexShrink: 0 }}></div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ margin: '0 0 4px 0', fontSize: '0.95rem', fontWeight: '600', color: '#1f2937' }}>{announcement.title}</h4>
-                <p style={{ margin: '0 0 6px 0', fontSize: '0.85rem', color: '#6b7280', lineHeight: '1.4' }}>{announcement.body || announcement.excerpt || ''}</p>
-                <div style={{ fontSize: '0.8rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div
+            key={announcement._id || index}
+            className={`pb-4 mb-4 ${index < items.length - 1 ? 'border-b border-[#f3f4f6]' : 'border-b-0'}`}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                  announcement.priority === 'high'
+                    ? 'bg-red-500'
+                    : announcement.priority === 'medium'
+                    ? 'bg-amber-500'
+                    : 'bg-emerald-500'
+                }`}
+              ></div>
+              <div className="flex-1">
+                <h4 className="m-0 mb-1 text-[0.95rem] font-semibold text-gray-800">{announcement.title}</h4>
+                <p className="m-0 mb-1.5 text-[0.85rem] text-gray-500 leading-[1.4]">{announcement.body || announcement.excerpt || ''}</p>
+                <div className="text-[0.8rem] text-gray-400 flex items-center gap-1">
                   <Clock size={12} />
                   {new Date(announcement.date).toLocaleString()}
                 </div>

@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const announcements = await Announcement.find({}).sort({ date: -1 }).limit(limit);
     res.json(announcements);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch announcements' });
   }
 });

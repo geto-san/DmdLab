@@ -12,50 +12,30 @@ const ArticleCard = ({ article }) => {
   } = article;
 
   return (
-    <div
-      style={{
-        border: '1px solid #ddd',
-        borderRadius: '16px',
-        padding: '1rem',
-        marginBottom: '1.5rem',
-        backgroundColor: '#fff',
-        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
-        maxWidth: '600px'
-      }}
-    >
+    <div className="border border-[#ddd] rounded-2xl p-4 mb-6 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.05)] max-w-[600px]">
       {image && (
         <img
           src={image}
           alt={title}
-          style={{
-            width: '100%',
-            borderRadius: '12px',
-            marginBottom: '0.75rem'
-          }}
+          className="w-full rounded-xl mb-3"
         />
       )}
 
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{title}</h2>
+      <h2 className="text-xl mb-2">{title}</h2>
 
-      <p style={{ color: '#666', fontSize: '0.95rem', marginBottom: '0.75rem' }}>
+      <p className="text-[#666] text-[0.95rem] mb-3">
         {description}
       </p>
 
-      <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '0.75rem' }}>
+      <div className="text-[0.8rem] text-[#888] mb-3">
         By <strong>{author || 'Unknown'}</strong> • {new Date(date).toDateString()} • {category}
       </div>
 
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+      <div className="flex gap-[0.4rem] flex-wrap">
         {tags.map((tag, index) => (
           <span
             key={index}
-            style={{
-              backgroundColor: '#e0e7ff',
-              padding: '0.3rem 0.6rem',
-              borderRadius: '12px',
-              fontSize: '0.75rem',
-              color: '#1e40af'
-            }}
+            className="bg-indigo-100 px-[0.6rem] py-[0.3rem] rounded-xl text-xs text-blue-800"
           >
             #{tag}
           </span>

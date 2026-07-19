@@ -78,7 +78,7 @@ const ArticleList = ({ selectedCategory, searchTerm }) => {
         </Link>
       ))}
       {!hasMore && (
-        <p style={{ textAlign: 'center', color: '#888', marginTop: '1rem' }}>
+        <p className="text-center text-[#888] mt-4">
           No more articles.
         </p>
       )}

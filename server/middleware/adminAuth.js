@@ -11,7 +11,7 @@ module.exports = (req, res, next) => {
     const payload = jwt.verify(token, JWT_SECRET);
     req.admin = payload;
     next();
-  } catch (e) {
+  } catch {
     return res.status(401).json({ error: 'Invalid token' });
   }
 };

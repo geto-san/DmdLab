@@ -6,21 +6,16 @@ const categories = ['all', ...ARTICLE_CATEGORIES];
 const ArticleFilters = ({ selectedCategory, setSelectedCategory }) => {
 
   return (
-    <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+    <div className="mb-4 flex gap-2 flex-wrap">
       {categories.map((category) => (
         <button
           key={category}
           onClick={() => setSelectedCategory(category)}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '20px',
-            border: '1px solid #ccc',
-            backgroundColor: selectedCategory === category ? '#004080' : '#f2f2f2',
-            color: selectedCategory === category ? 'white' : '#333',
-            cursor: 'pointer',
-            fontWeight: selectedCategory === category ? 'bold' : 'normal',
-            transition: '0.3s',
-          }}
+          className={`px-4 py-2 rounded-full border border-[#ccc] cursor-pointer transition-[0.3s] ${
+            selectedCategory === category
+              ? 'bg-[#004080] text-white font-bold'
+              : 'bg-[#f2f2f2] text-[#333] font-normal'
+          }`}
         >
           {category === 'all' ? 'All' : category}
         </button>

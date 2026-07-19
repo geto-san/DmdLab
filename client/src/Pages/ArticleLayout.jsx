@@ -8,8 +8,8 @@ const ArticleLayout = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   return (
-    <div style={{ backgroundColor: '#ffffff' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 20px' }}>
+    <div className="bg-white">
+      <div className="max-w-[1200px] mx-auto px-5 py-8">
         <ArticleSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
         <ArticleFilter selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
         <ArticleGrid selectedCategory={selectedCategory} searchTerm={searchTerm} />

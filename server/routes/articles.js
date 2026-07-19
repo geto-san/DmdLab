@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
     res.json(articles);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch articles' });
   }
 });
@@ -28,7 +28,7 @@ router.get('/:id', async (req, res) => {
     const article = await Article.findById(req.params.id);
     if (!article) return res.status(404).json({ error: 'Article not found' });
     res.json(article);
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: 'Error fetching article' });
   }
 });

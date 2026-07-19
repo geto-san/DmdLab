@@ -4,265 +4,117 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer style={{
-      backgroundColor: '#f8f9fa',
-      color: '#6c757d',
-      fontSize: '14px',
-      lineHeight: '1.5'
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '40px 20px 20px 20px'
-      }}>
+    <footer className="bg-[#f8f9fa] text-[#6c757d] text-sm leading-[1.5]">
+      <div className="max-w-[1200px] mx-auto px-5 pt-10 pb-5">
 
         {/* Main Footer Content */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '30px',
-          marginBottom: '30px'
-        }}>
-          
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-[30px] mb-[30px]">
+
           {/* About Section */}
           <div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '15px'
-            }}>
-              <img 
+            <div className="flex items-center mb-[15px]">
+              <img
                 src="/logo-7402580_1920.png"
                 alt="DMRLab Logo"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  marginRight: '10px'
-                }}
+                className="w-8 h-8 mr-[10px]"
               />
               <div>
-                <h3 style={{
-                  margin: 0,
-                  fontSize: '18px',
-                  fontWeight: '600',
-                  color: '#343a40'
-                }}>
+                <h3 className="m-0 text-[18px] font-semibold text-[#343a40]">
                   DMRLab
                 </h3>
-                <p style={{
-                  margin: 0,
-                  fontSize: '12px',
-                  color: '#6c757d'
-                }}>
+                <p className="m-0 text-xs text-[#6c757d]">
                   Research & Innovation
                 </p>
               </div>
             </div>
-            <p style={{
-              margin: '0 0 15px 0',
-              maxWidth: '300px',
-              color: '#6c757d'
-            }}>
+            <p className="m-0 mb-[15px] max-w-[300px] text-[#6c757d]">
               DeepsMinds ResearchLab is dedicated to advancing machine learning and artificial intelligence research through innovative projects and collaborative discussions.
             </p>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              fontSize: '12px',
-              color: '#28a745'
-            }}>
-              <span style={{
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#28a745',
-                borderRadius: '50%',
-                marginRight: '8px'
-              }}></span>
+            <div className="flex items-center text-xs text-[#28a745]">
+              <span className="w-2 h-2 bg-[#28a745] rounded-full mr-2"></span>
               Active
             </div>
           </div>
 
           {/* Research Areas */}
           <div>
-            <h4 style={{
-              margin: '0 0 15px 0',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: '#343a40'
-            }}>
+            <h4 className="m-0 mb-[15px] text-base font-semibold text-[#343a40]">
               Research Focus
             </h4>
-            <ul style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0
-            }}>
-              <li style={{ marginBottom: '10px' }}>
-                <div style={{ color: '#495057', fontWeight: '500' }}>Deep Learning</div>
-                <div style={{ fontSize: '12px', color: '#6c757d' }}>Neural Networks & AI</div>
+            <ul className="list-none p-0 m-0">
+              <li className="mb-[10px]">
+                <div className="text-[#495057] font-medium">Deep Learning</div>
+                <div className="text-xs text-[#6c757d]">Neural Networks & AI</div>
               </li>
-              <li style={{ marginBottom: '10px' }}>
-                <div style={{ color: '#495057', fontWeight: '500' }}>Machine Learning</div>
-                <div style={{ fontSize: '12px', color: '#6c757d' }}>Algorithms & Models</div>
+              <li className="mb-[10px]">
+                <div className="text-[#495057] font-medium">Machine Learning</div>
+                <div className="text-xs text-[#6c757d]">Algorithms & Models</div>
               </li>
-              <li style={{ marginBottom: '10px' }}>
-                <div style={{ color: '#495057', fontWeight: '500' }}>Data Science</div>
-                <div style={{ fontSize: '12px', color: '#6c757d' }}>Analysis & Visualization</div>
+              <li className="mb-[10px]">
+                <div className="text-[#495057] font-medium">Data Science</div>
+                <div className="text-xs text-[#6c757d]">Analysis & Visualization</div>
               </li>
             </ul>
           </div>
 
           {/* Contact Info */}
          <div>
-           <h4 style={{
-             margin: '0 0 15px 0',
-             fontSize: '16px',
-             fontWeight: '600',
-             color: '#343a40'
-           }}>
+           <h4 className="m-0 mb-[15px] text-base font-semibold text-[#343a40]">
              Contact
            </h4>
-           <div style={{ marginBottom: '15px' }}>
-             <div style={{
-               display: 'flex',
-               alignItems: 'flex-start',
-               marginBottom: '10px'
-             }}>
-               <Mail style={{
-                 width: '16px',
-                 height: '16px',
-                 marginRight: '8px',
-                 marginTop: '2px',
-                 color: '#6c757d'
-               }} />
+           <div className="mb-[15px]">
+             <div className="flex items-start mb-[10px]">
+               <Mail className="w-4 h-4 mr-2 mt-0.5 text-[#6c757d]" />
                <div>
-                 <a href="mailto:contact@dmrlab.org" style={{ color: '#495057', textDecoration: 'none' }}>
+                 <a href="mailto:contact@dmrlab.org" className="text-[#495057] no-underline">
                    kimrichies@gmail.com
                  </a>
-                 <div style={{ fontSize: '12px', color: '#6c757d' }}>Dr.Richard Kimera</div>
+                 <div className="text-xs text-[#6c757d]">Dr.Richard Kimera</div>
                </div>
              </div>
-             <div style={{
-               display: 'flex',
-               alignItems: 'flex-start',
-               marginBottom: '10px'
-             }}>
-               <Phone style={{
-                 width: '16px',
-                 height: '16px',
-                 marginRight: '8px',
-                 marginTop: '2px',
-                 color: '#6c757d'
-               }} />
+             <div className="flex items-start mb-[10px]">
+               <Phone className="w-4 h-4 mr-2 mt-0.5 text-[#6c757d]" />
                <div>
-                 <a href="tel:+256774437989" style={{ color: '#495057', textDecoration: 'none' }}>
+                 <a href="tel:+256774437989" className="text-[#495057] no-underline">
                    +256 774 437989
                  </a>
-                 <div style={{ fontSize: '12px', color: '#6c757d' }}>Dr. Richard Kimera</div>
+                 <div className="text-xs text-[#6c757d]">Dr. Richard Kimera</div>
                </div>
              </div>
-             <div style={{
-               display: 'flex',
-               alignItems: 'flex-start'
-             }}>
-               <MapPin style={{
-                 width: '16px',
-                 height: '16px',
-                 marginRight: '8px',
-                 marginTop: '2px',
-                 color: '#6c757d'
-               }} />
+             <div className="flex items-start">
+               <MapPin className="w-4 h-4 mr-2 mt-0.5 text-[#6c757d]" />
                <div>
-                 <div style={{ color: '#495057' }}>MUST</div>
-                 <div style={{ fontSize: '12px', color: '#6c757d' }}>Kihumuro Campus</div>
+                 <div className="text-[#495057]">MUST</div>
+                 <div className="text-xs text-[#6c757d]">Kihumuro Campus</div>
                </div>
              </div>
            </div>
-            
+
             {/* Social Links */}
-            <div style={{
-              display: 'flex',
-              gap: '10px'
-            }}>
-              <a 
-                href="https://github.com/" 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '36px',
-                  height: '36px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #dee2e6',
-                  borderRadius: '6px',
-                  color: '#6c757d',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f8f9fa';
-                  e.target.style.borderColor = '#adb5bd';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#ffffff';
-                  e.target.style.borderColor = '#dee2e6';
-                }}
+            <div className="flex gap-[10px]">
+              <a
+                href="https://github.com/"
+                className="flex items-center justify-center w-9 h-9 bg-white border border-[#dee2e6] rounded-md text-[#6c757d] no-underline transition-all duration-200 ease-in-out hover:bg-[#f8f9fa] hover:border-[#adb5bd]"
               >
-                <Github style={{ width: '18px', height: '18px' }} />
+                <Github className="w-[18px] h-[18px]" />
               </a>
-              <a 
-                href="mailto:contact@dmrlab.org" 
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '36px',
-                  height: '36px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #dee2e6',
-                  borderRadius: '6px',
-                  color: '#6c757d',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f8f9fa';
-                  e.target.style.borderColor = '#adb5bd';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#ffffff';
-                  e.target.style.borderColor = '#dee2e6';
-                }}
+              <a
+                href="mailto:contact@dmrlab.org"
+                className="flex items-center justify-center w-9 h-9 bg-white border border-[#dee2e6] rounded-md text-[#6c757d] no-underline transition-all duration-200 ease-in-out hover:bg-[#f8f9fa] hover:border-[#adb5bd]"
               >
-                <Mail style={{ width: '18px', height: '18px' }} />
+                <Mail className="w-[18px] h-[18px]" />
               </a>
             </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div style={{
-          borderTop: '1px solid #e9ecef',
-          paddingTop: '20px',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '15px',
-            flexWrap: 'wrap'
-          }}>
-            <div style={{
-              fontSize: '13px',
-              color: '#6c757d'
-            }}>
+        <div className="border-t border-[#e9ecef] pt-5 text-center">
+          <div className="flex justify-center items-center gap-[15px] flex-wrap">
+            <div className="text-[13px] text-[#6c757d]">
               © {currentYear} DeepsMinds Research Lab. All rights reserved.
             </div>
-            <div style={{
-              fontSize: '12px',
-              color: '#adb5bd'
-            }}>
+            <div className="text-xs text-[#adb5bd]">
               Version 9.1.0
             </div>
           </div>
@@ -565,23 +417,6 @@ const Footer = () => {
 
           footer > div > div:last-child > div > div:last-child {
             font-size: 9px;
-          }
-
-          /* Bottom bar */
-          footer > div > div:last-child {
-            padding-top: 14px;
-          }
-
-          footer > div > div:last-child > div {
-            gap: 4px;
-          }
-
-          footer > div > div:last-child > div > div:first-child {
-            font-size: 9px;
-          }
-
-          footer > div > div:last-child > div > div:last-child {
-            font-size: 8px;
           }
         }
       `}</style>

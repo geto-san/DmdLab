@@ -31,11 +31,11 @@ const RelatedVideos = ({ videos = [] }) => {
       <ul className="space-y-3">
         {videos.map((video) => (
           <li key={video._id} className="flex gap-3 hover:bg-gray-100 p-2 rounded">
-            <Link to={`/videos/${video._id}`} style={{ display: 'flex', gap: 12, textDecoration: 'none', color: 'inherit' }} onClick={() => handleClick(video._id)}>
+            <Link to={`/videos/${video._id}`} className="flex gap-3 no-underline text-inherit" onClick={() => handleClick(video._id)}>
               <img src={video.thumbnail} alt={video.title} className="w-24 h-16 object-cover rounded" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.95rem', fontWeight: 600, lineHeight: '1.1rem' }}>{video.title}</div>
-                <div style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: 6 }}>{formatViews(video.views)} views</div>
+              <div className="flex-1">
+                <div className="text-[0.95rem] font-semibold leading-[1.1rem]">{video.title}</div>
+                <div className="text-[0.85rem] text-gray-500 mt-1.5">{formatViews(video.views)} views</div>
               </div>
             </Link>
           </li>

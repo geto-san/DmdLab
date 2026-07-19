@@ -27,52 +27,41 @@ const ArticlePage = () => {
   }, [id]);
 
   if (error) {
-    return <div style={{ color: 'red', textAlign: 'center', marginTop: 40 }}>Error loading article: {error}</div>;
+    return <div className="text-center mt-10 text-red-600">Error loading article: {error}</div>;
   }
   if (loading) {
-    return <div style={{ textAlign: 'center', marginTop: 40 }}>Loading article...</div>;
+    return <div className="text-center mt-10">Loading article...</div>;
   }
   if (!article) {
-    return <div style={{ color: 'red', textAlign: 'center', marginTop: 40 }}>Article not found.</div>;
+    return <div className="text-center mt-10 text-red-600">Article not found.</div>;
   }
 
   return (
-    <div style={{
-      backgroundColor: '#fff',
-      maxWidth: '100vh',
-      margin: '0 auto',
-      padding: '2rem'
-    }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem' }}>{article.title}</h1>
-      <div style={{ color: '#888', fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+    <div className="bg-white max-w-3xl mx-auto p-8">
+      <h1 className="text-[2rem] font-bold mb-4">{article.title}</h1>
+      <div className="text-gray-500 text-[0.95rem] mb-6">
         By <strong>{article.author || 'Unknown'}</strong> • {new Date(article.date).toDateString()} • {article.category}
       </div>
       {article.image && (
         <img
           src={article.image}
           alt={article.title}
-          style={{ width: '100%', borderRadius: '12px', marginBottom: '1.5rem' }}
+          className="w-full rounded-xl mb-6"
         />
       )}
       {article.description && (
-        <div style={{ fontSize: '1.1rem', color: '#333', marginBottom: '1rem', fontWeight: 500 }}>
+        <div className="text-[1.1rem] text-gray-800 mb-4 font-medium">
           {article.description}
         </div>
       )}
-      <div style={{ fontSize: '1rem', color: '#333', marginBottom: '2rem', whiteSpace: 'pre-wrap' }}>
+      <div className="text-base text-gray-800 mb-8 whitespace-pre-wrap">
         {article.content}
       </div>
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+      <div className="flex gap-[0.4rem] flex-wrap">
         {article.tags?.map((tag, idx) => (
           <span
             key={idx}
-            style={{
-              backgroundColor: '#e0e7ff',
-              padding: '0.3rem 0.6rem',
-              borderRadius: '12px',
-              fontSize: '0.85rem',
-              color: '#1e40af'
-            }}
+            className="bg-indigo-100 px-[0.6rem] py-[0.3rem] rounded-xl text-[0.85rem] text-blue-800"
           >
             #{tag}
           </span>

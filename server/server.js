@@ -49,6 +49,14 @@ app.use(cors({
     callback(new Error('Not allowed by CORS'));
   },
 }));
+// Give CORS rejections a clean 403 instead of falling through to a generic
+// 500 — keeps real server errors distinguishable from CORS mismatches in logs.
+app.use((err, req, res, next) => {
+  if (err && err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ error: 'Not allowed by CORS', origin: req.headers.origin });
+  }
+  next(err);
+});
 app.use(express.json());
 
 // Routes

@@ -7,7 +7,6 @@ const router = express.Router();
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID_RAW = process.env.YOUTUBE_CHANNEL_ID;
 const VideoClick = require('../models/VideoClick');
-const Video = null; // placeholder for future video DB model
 
 // YOUTUBE_CHANNEL_ID needs to be the raw channel ID (starts with "UC"), but
 // it's easy to instead set it to the channel URL or @handle you'd copy from
@@ -147,11 +146,13 @@ router.get('/:id/related', async (req, res) => {
         description: item.snippet.description,
         thumbnail: item.snippet.thumbnails.medium?.url,
         uploadDate: item.snippet.publishedAt
-      }));
+      }))
+      .filter(item => item._id !== id); // never recommend the video you're currently watching
 
-    // Compute click counts where toVideoId equals candidate._id and fromVideoId equals current id
+    // Compute click counts specifically for "clicked from this video" (fromVideoId),
+    // not global click counts across the whole site.
     const clickAgg = await VideoClick.aggregate([
-      { $match: { toVideoId: { $in: items.map(i => i._id) } } },
+      { $match: { fromVideoId: id, toVideoId: { $in: items.map(i => i._id) } } },
       { $group: { _id: '$toVideoId', clicks: { $sum: 1 } } }
     ]);
     const clickMap = clickAgg.reduce((acc, cur) => { acc[cur._id] = cur.clicks; return acc; }, {});

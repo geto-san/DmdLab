@@ -57,7 +57,7 @@ const VideoCard = ({ video, onClick }) => {
     const uploadTime = new Date(date);
     const diffTime = Math.abs(now - uploadTime);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 7) {
       return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     } else if (diffDays < 30) {
@@ -77,68 +77,28 @@ const VideoCard = ({ video, onClick }) => {
       onClick={() => onClick(video)}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="video-card"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#ffffff',
-        borderRadius: '12px',
-        marginBottom: '16px',
-        cursor: 'pointer',
-        transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
-        transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
-        boxShadow: isHovered 
-          ? '0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08)' 
-          : '0 2px 8px rgba(0, 0, 0, 0.04)',
-        border: '1px solid',
-        borderColor: isHovered ? 'rgba(0, 0, 0, 0.08)' : 'transparent',
-        padding: '0',
-        overflow: 'hidden',
-        maxWidth: '100%',
-        minHeight: '94px'
-      }}
+      className={`video-card flex flex-col bg-white rounded-xl mb-4 cursor-pointer transition-all duration-200 ease-[cubic-bezier(0.4,0.0,0.2,1)] border p-0 overflow-hidden max-w-full min-h-[94px] ${
+        isHovered
+          ? '-translate-y-px shadow-[0_8px_25px_rgba(0,0,0,0.12),0_4px_10px_rgba(0,0,0,0.08)] border-[rgba(0,0,0,0.08)]'
+          : 'translate-y-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border-transparent'
+      }`}
     >
       <div className="video-card-content">
         {/* Video Thumbnail Container */}
-        <div className="thumbnail-container" style={{
-          width: '168px',
-          height: '94px',
-          flexShrink: 0,
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          margin: '12px',
-          position: 'relative',
-          overflow: 'hidden',
-          border: '1px solid rgba(0, 0, 0, 0.06)'
-        }}>
+        <div className="thumbnail-container w-[168px] h-[94px] shrink-0 bg-[#f8f9fa] rounded-lg m-3 relative overflow-hidden border border-[rgba(0,0,0,0.06)]">
           {/* Thumbnail Image */}
           {!isHovered && !imageError && (
             <img
               src={thumbnail}
               alt={title}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                borderRadius: '8px'
-              }}
+              className="w-full h-full object-cover rounded-lg"
               onError={() => setImageError(true)}
             />
           )}
 
           {/* Fallback for missing thumbnail */}
           {(imageError || !thumbnail) && !isHovered && (
-            <div style={{
-              width: '100%',
-              height: '100%',
-              backgroundColor: '#f1f3f4',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              color: '#5f6368',
-              borderRadius: '8px'
-            }}>
+            <div className="w-full h-full bg-[#f1f3f4] flex items-center justify-center text-2xl text-[#5f6368] rounded-lg">
               🎥
             </div>
           )}
@@ -151,53 +111,18 @@ const VideoCard = ({ video, onClick }) => {
             playsInline
             loop
             onLoadedData={() => setIsLoaded(true)}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              opacity: isHovered ? 1 : 0,
-              transition: 'opacity 0.3s ease',
-              borderRadius: '8px'
-            }}
+            className={`w-full h-full object-cover absolute top-0 left-0 transition-opacity duration-300 ease rounded-lg ${isHovered ? 'opacity-100' : 'opacity-0'}`}
           />
 
           {/* Play Button Overlay */}
           {!isHovered && (
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              borderRadius: '50%',
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease'
-            }}>
-              <Play size={16} color="white" style={{ marginLeft: '2px' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[rgba(0,0,0,0.8)] rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 ease">
+              <Play size={16} color="white" className="ml-0.5" />
             </div>
           )}
 
           {/* Duration Badge */}
-          <div style={{
-            position: 'absolute',
-            bottom: '4px',
-            right: '4px',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: 'white',
-            padding: '2px 6px',
-            borderRadius: '4px',
-            fontSize: '11px',
-            fontWeight: '500',
-            letterSpacing: '0.5px',
-            fontFamily: 'monospace'
-          }}>
+          <div className="absolute bottom-1 right-1 bg-[rgba(0,0,0,0.8)] text-white py-0.5 px-1.5 rounded text-[11px] font-medium tracking-[0.5px] font-mono">
             {duration || '0:00'}
           </div>
 
@@ -205,22 +130,7 @@ const VideoCard = ({ video, onClick }) => {
           {isHovered && (
             <button
               onClick={toggleMute}
-              style={{
-                position: 'absolute',
-                top: '6px',
-                right: '6px',
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '28px',
-                height: '28px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease',
-                zIndex: 10
-              }}
+              className="absolute top-1.5 right-1.5 bg-[rgba(0,0,0,0.7)] border-none rounded-full w-7 h-7 flex items-center justify-center cursor-pointer transition-colors duration-200 ease z-10"
             >
               {isMuted ? <VolumeX size={12} color="white" /> : <Volume2 size={12} color="white" />}
             </button>
@@ -228,98 +138,41 @@ const VideoCard = ({ video, onClick }) => {
         </div>
 
         {/* Video Info Container */}
-        <div className="video-info" style={{
-          flex: 1,
-          padding: '12px 16px 12px 0',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '94px'
-        }}>
+        <div className="video-info flex-1 py-3 pr-4 pl-0 flex flex-col justify-between min-h-[94px]">
           {/* Title */}
           <div>
-            <h3 style={{
-              fontSize: '16px',
-              lineHeight: '1.3',
-              color: '#1a0dab',
-              margin: '0 0 4px 0',
-              fontWeight: '400',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              textDecoration: isHovered ? 'underline' : 'none',
-              cursor: 'pointer'
-            }}>
+            <h3 className={`text-base leading-[1.3] text-[#1a0dab] m-0 mb-1 font-normal line-clamp-2 cursor-pointer ${isHovered ? 'underline' : 'no-underline'}`}>
               {title}
             </h3>
-            
+
             {/* Source and Meta Info */}
-            <div style={{
-              fontSize: '14px',
-              color: '#5f6368',
-              lineHeight: '1.4',
-              marginBottom: '2px'
-            }}>
-              <span style={{ 
-                color: '#202124',
-                marginRight: '8px'
-              }}>
+            <div className="text-sm text-[#5f6368] leading-[1.4] mb-0.5">
+              <span className="text-[#202124] mr-2">
                 {author}
               </span>
-              <span style={{ marginRight: '8px' }}>•</span>
+              <span className="mr-2">•</span>
               <span>{formatViews(views)} views</span>
-              <span style={{ marginLeft: '8px', marginRight: '8px' }}>•</span>
+              <span className="ml-2 mr-2">•</span>
               <span>{getTimeAgo(uploadDate)}</span>
             </div>
           </div>
 
           {/* Description */}
-          <div className="video-description" style={{
-            fontSize: '14px',
-            color: '#5f6368',
-            lineHeight: '1.4',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            marginTop: '4px'
-          }}>
+          <div className="video-description text-sm text-[#5f6368] leading-[1.4] line-clamp-2 mt-1">
             {description}
           </div>
 
           {/* Tags and Category */}
-          <div className="tags-container" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginTop: '8px',
-            flexWrap: 'wrap'
-          }}>
+          <div className="tags-container flex items-center gap-2 mt-2 flex-wrap">
             {category && (
-              <span style={{
-                backgroundColor: '#f8f9fa',
-                color: '#5f6368',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontSize: '12px',
-                fontWeight: '500',
-                border: '1px solid #e8eaed'
-              }}>
+              <span className="bg-[#f8f9fa] text-[#5f6368] px-2 py-0.5 rounded-xl text-xs font-medium border border-[#e8eaed]">
                 {category}
               </span>
             )}
             {tags.slice(0, 2).map((tag, i) => (
               <span
                 key={i}
-                style={{
-                  backgroundColor: '#e8f0fe',
-                  color: '#1a73e8',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  fontWeight: '500'
-                }}
+                className="bg-[#e8f0fe] text-[#1a73e8] px-2 py-0.5 rounded-xl text-xs font-medium"
               >
                 #{tag}
               </span>
@@ -328,25 +181,10 @@ const VideoCard = ({ video, onClick }) => {
         </div>
 
         {/* More Options Button */}
-        <div className="more-options" style={{
-          padding: '12px 16px 12px 0',
-          display: 'flex',
-          alignItems: 'flex-start'
-        }}>
+        <div className="more-options py-3 pr-4 pl-0 flex items-start">
           <button
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '8px',
-              borderRadius: '50%',
-              color: '#5f6368',
-              transition: 'background-color 0.2s ease',
-              opacity: isHovered ? 1 : 0.7
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f3f4'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            className={`bg-transparent border-none cursor-pointer p-2 rounded-full text-[#5f6368] transition-colors duration-200 ease hover:bg-[#f1f3f4] ${isHovered ? 'opacity-100' : 'opacity-70'}`}
           >
             <MoreVertical size={16} />
           </button>
@@ -358,12 +196,12 @@ const VideoCard = ({ video, onClick }) => {
           display: flex;
           width: 100%;
         }
-        
+
         @media (max-width: 768px) {
           .video-card-content {
             flex-direction: column;
           }
-          
+
           .thumbnail-container {
             width: 100% !important;
             height: 200px !important;
@@ -371,41 +209,41 @@ const VideoCard = ({ video, onClick }) => {
             border-radius: 0 !important;
             border: none !important;
           }
-          
+
           .video-info {
             padding: 12px !important;
             min-height: auto !important;
           }
-          
+
           .more-options {
             padding: 0 12px 12px 12px !important;
             align-items: center !important;
             justify-content: flex-end;
           }
-          
+
           .video-description {
             -webkit-line-clamp: 3 !important;
           }
-          
+
           .tags-container {
             margin-top: 12px !important;
           }
         }
-        
+
         @media (max-width: 480px) {
           .thumbnail-container {
             height: 180px !important;
           }
-          
+
           h3 {
             font-size: 15px !important;
           }
-          
+
           .video-description {
             font-size: 13px !important;
           }
         }
-        
+
         @media (max-width: 360px) {
           .thumbnail-container {
             height: 160px !important;

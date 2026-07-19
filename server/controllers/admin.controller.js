@@ -37,7 +37,7 @@ exports.createArticle = async (req, res) => {
     }
     const newArticle = new Article(data);
     const saved = await newArticle.save();
-    try { getIo().emit('article:created', saved); } catch(e) { /* socket not ready */ }
+    try { getIo().emit('article:created', saved); } catch { /* socket not ready */ }
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: 'Failed to add article', details: err.message });
@@ -51,7 +51,7 @@ exports.updateArticle = async (req, res) => {
       // if existing article had an image, remove it
       const existing = await Article.findById(req.params.id);
       if (existing && existing.image_public_id) {
-        try { await cloudinary.uploader.destroy(existing.image_public_id); } catch (e) { /* ignore */ }
+        try { await cloudinary.uploader.destroy(existing.image_public_id); } catch { /* ignore */ }
       }
       const result = await uploadStream(req.file.buffer, { folder: 'deepminds/articles' });
       data.image = result.secure_url;
@@ -59,7 +59,7 @@ exports.updateArticle = async (req, res) => {
     }
     const updated = await Article.findByIdAndUpdate(req.params.id, data, { new: true });
     if (!updated) return res.status(404).json({ error: 'Article not found' });
-  try { getIo().emit('article:updated', updated); } catch(e) { /* socket not ready */ }
+  try { getIo().emit('article:updated', updated); } catch { /* socket not ready */ }
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: 'Failed to update article', details: err.message });
@@ -71,9 +71,9 @@ exports.deleteArticle = async (req, res) => {
     const removed = await Article.findByIdAndDelete(req.params.id);
     if (!removed) return res.status(404).json({ error: 'Article not found' });
     if (removed.image_public_id) {
-      try { await cloudinary.uploader.destroy(removed.image_public_id); } catch (e) { /* ignore */ }
+      try { await cloudinary.uploader.destroy(removed.image_public_id); } catch { /* ignore */ }
     }
-    try { getIo().emit('article:deleted', { id: req.params.id }); } catch(e) { /* socket not ready */ }
+    try { getIo().emit('article:deleted', { id: req.params.id }); } catch { /* socket not ready */ }
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: 'Failed to delete article', details: err.message });
@@ -92,7 +92,7 @@ const makeCrud = (Model, eventPrefix) => ({
     try {
       const doc = new Model(req.body);
       const saved = await doc.save();
-      try { getIo().emit(`${eventPrefix}:created`, saved); } catch(e) { /* socket not ready */ }
+      try { getIo().emit(`${eventPrefix}:created`, saved); } catch { /* socket not ready */ }
       res.status(201).json(saved);
     } catch (err) { res.status(400).json({ error: err.message }); }
   },
@@ -100,7 +100,7 @@ const makeCrud = (Model, eventPrefix) => ({
     try {
       const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
       if (!updated) return res.status(404).json({ error: 'Not found' });
-      try { getIo().emit(`${eventPrefix}:updated`, updated); } catch(e) { /* socket not ready */ }
+      try { getIo().emit(`${eventPrefix}:updated`, updated); } catch { /* socket not ready */ }
       res.json(updated);
     } catch (err) { res.status(400).json({ error: err.message }); }
   },
@@ -108,7 +108,7 @@ const makeCrud = (Model, eventPrefix) => ({
     try {
       const removed = await Model.findByIdAndDelete(req.params.id);
       if (!removed) return res.status(404).json({ error: 'Not found' });
-      try { getIo().emit(`${eventPrefix}:deleted`, { id: req.params.id }); } catch(e) { /* socket not ready */ }
+      try { getIo().emit(`${eventPrefix}:deleted`, { id: req.params.id }); } catch { /* socket not ready */ }
       res.json({ success: true });
     } catch (err) { res.status(400).json({ error: err.message }); }
   }
