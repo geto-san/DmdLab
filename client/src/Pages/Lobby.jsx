@@ -1,4 +1,5 @@
 import Hero from '../components/Lobby/Hero';
+import ProcessStrip from '../components/Lobby/ProcessStrip';
 import ProjectsStrip from '../components/Lobby/ProjectsStrip';
 import QuickNavigation from '../components/Lobby/QuickNavigation';
 import Announcements from '../components/Lobby/AnnouncementStrip';
@@ -10,6 +11,7 @@ const Lobby = () => {
   return (
     <div className="bg-paper">
       <Hero />
+      <ProcessStrip />
       <ProjectsStrip />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-14">

@@ -234,8 +234,8 @@ export default function AdminDashboard({ token, onLogout }) {
 
   const DashboardOverview = () => (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-      {loading && <p className="text-sm text-gray-500">Loading dashboard data…</p>}
+      <h2 className="text-2xl font-display font-semibold text-ink-text">Dashboard Overview</h2>
+      {loading && <p className="text-sm text-muted">Loading dashboard data…</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Total Articles', count: articles.length, color: 'blue' },
@@ -243,15 +243,15 @@ export default function AdminDashboard({ token, onLogout }) {
           { label: 'Team Members', count: members.length, color: 'purple' },
           { label: 'Footer Links', count: footerElements.length, color: 'orange' }
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-600">
-            <div className="text-sm font-medium text-gray-600">{stat.label}</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">{stat.count}</div>
+          <div key={idx} className="bg-white rounded-xl shadow p-6 border-l-4 border-signal">
+            <div className="text-sm font-medium text-muted">{stat.label}</div>
+            <div className="text-3xl font-display font-semibold text-ink-text mt-2">{stat.count}</div>
           </div>
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="bg-white rounded-xl shadow p-6">
+          <h3 className="text-lg font-semibold text-ink-text mb-4">Recent Activity</h3>
           <div className="space-y-3">
             {[
               'Article "AI in Healthcare" published',
@@ -260,17 +260,17 @@ export default function AdminDashboard({ token, onLogout }) {
               'Footer link updated'
             ].map((activity, idx) => (
               <div key={idx} className="flex items-center text-sm">
-                <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
-                <span className="text-gray-700">{activity}</span>
+                <div className="w-2 h-2 bg-signal rounded-full mr-3"></div>
+                <span className="text-ink-text">{activity}</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="bg-white rounded-xl shadow p-6">
+          <h3 className="text-lg font-semibold text-ink-text mb-4">Quick Actions</h3>
           <div className="space-y-2">
             {['Create Article', 'Add Announcement', 'Add Team Member', 'Edit About Us'].map((action, idx) => (
-              <button key={idx} onClick={() => handleCreate(action.toLowerCase().split(' ')[1])} className="w-full text-left px-4 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition-colors">{action}</button>
+              <button key={idx} onClick={() => handleCreate(action.toLowerCase().split(' ')[1])} className="w-full text-left px-4 py-2 bg-signal/10 hover:bg-signal/15 rounded-xl text-signal-soft font-medium transition-colors">{action}</button>
             ))}
           </div>
         </div>
@@ -279,28 +279,28 @@ export default function AdminDashboard({ token, onLogout }) {
   );
 
   const ContentTable = ({ data, columns, onEdit, onDelete, section }) => (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white rounded-xl shadow overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-paper border-b border-black/8">
             <tr>
               {columns.map((col, idx) => (
-                <th key={idx} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{col}</th>
+                <th key={idx} className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">{col}</th>
               ))}
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-muted uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-black/8">
             {data.length === 0 ? (
-              <tr><td colSpan={columns.length + 1} className="px-6 py-4 text-center text-gray-500">No items found</td></tr>
+              <tr><td colSpan={columns.length + 1} className="px-6 py-4 text-center text-muted">No items found</td></tr>
             ) : (
               data.map((item) => (
-                <tr key={item._id} className="hover:bg-gray-50">
+                <tr key={item._id} className="hover:bg-paper">
                   {columns.map((col, i) => (
-                    <td key={i} className="px-6 py-4 text-sm text-gray-900">{item[col]}</td>
+                    <td key={i} className="px-6 py-4 text-sm text-ink-text">{item[col]}</td>
                   ))}
                   <td className="px-6 py-4 text-right text-sm space-x-2">
-                    <button onClick={() => onEdit(item)} className="text-blue-600 hover:text-blue-800 inline-flex items-center"><Edit className="w-4 h-4 mr-1"/>Edit</button>
+                    <button onClick={() => onEdit(item)} className="text-signal hover:text-signal inline-flex items-center"><Edit className="w-4 h-4 mr-1"/>Edit</button>
                     <button onClick={() => onDelete(section, item._id)} className="text-red-600 hover:text-red-800 inline-flex items-center"><Trash2 className="w-4 h-4 mr-1"/>Delete</button>
                   </td>
                 </tr>
@@ -319,8 +319,8 @@ export default function AdminDashboard({ token, onLogout }) {
       case 'announcements': return (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Announcements</h2>
-            <button onClick={() => handleCreate('announcements')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"><Plus className="w-4 h-4 mr-2"/>Add Announcement</button>
+            <h2 className="text-2xl font-display font-semibold text-ink-text">Announcements</h2>
+            <button onClick={() => handleCreate('announcements')} className="bg-signal text-white px-4 py-2 rounded-xl hover:bg-signal-soft flex items-center"><Plus className="w-4 h-4 mr-2"/>Add Announcement</button>
           </div>
           <ContentTable data={announcements} columns={["title","body","date"]} onEdit={handleEdit} onDelete={handleDelete} section="announcements" />
         </div>
@@ -328,8 +328,8 @@ export default function AdminDashboard({ token, onLogout }) {
       case 'members': return (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Team Members</h2>
-            <button onClick={() => handleCreate('members')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"><Plus className="w-4 h-4 mr-2"/>Add Member</button>
+            <h2 className="text-2xl font-display font-semibold text-ink-text">Team Members</h2>
+            <button onClick={() => handleCreate('members')} className="bg-signal text-white px-4 py-2 rounded-xl hover:bg-signal-soft flex items-center"><Plus className="w-4 h-4 mr-2"/>Add Member</button>
           </div>
           <ContentTable data={members} columns={["name","role","bio"]} onEdit={handleEdit} onDelete={handleDelete} section="members" />
         </div>
@@ -337,29 +337,29 @@ export default function AdminDashboard({ token, onLogout }) {
       case 'footer': return (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Footer Elements</h2>
-            <button onClick={() => handleCreate('footer')} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"><Plus className="w-4 h-4 mr-2"/>Add Link</button>
+            <h2 className="text-2xl font-display font-semibold text-ink-text">Footer Elements</h2>
+            <button onClick={() => handleCreate('footer')} className="bg-signal text-white px-4 py-2 rounded-xl hover:bg-signal-soft flex items-center"><Plus className="w-4 h-4 mr-2"/>Add Link</button>
           </div>
           <ContentTable data={footerElements} columns={["title","content","updatedAt"]} onEdit={handleEdit} onDelete={handleDelete} section="footer" />
         </div>
       );
       case 'about': return (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">About Us Content</h2>
-          <div className="bg-white rounded-lg shadow p-6 space-y-6">
+          <h2 className="text-2xl font-display font-semibold text-ink-text mb-6">About Us Content</h2>
+          <div className="bg-white rounded-xl shadow p-6 space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Mission Statement</label>
-              <textarea value={aboutContent.mission} onChange={(e)=>setAboutContent({...aboutContent, mission: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4" />
+              <label className="block text-sm font-medium text-ink-text mb-2">Mission Statement</label>
+              <textarea value={aboutContent.mission} onChange={(e)=>setAboutContent({...aboutContent, mission: e.target.value})} className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal" rows="4" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Vision</label>
-              <textarea value={aboutContent.vision} onChange={(e)=>setAboutContent({...aboutContent, vision: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4" />
+              <label className="block text-sm font-medium text-ink-text mb-2">Vision</label>
+              <textarea value={aboutContent.vision} onChange={(e)=>setAboutContent({...aboutContent, vision: e.target.value})} className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal" rows="4" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">History</label>
-              <textarea value={aboutContent.history} onChange={(e)=>setAboutContent({...aboutContent, history: e.target.value})} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="4" />
+              <label className="block text-sm font-medium text-ink-text mb-2">History</label>
+              <textarea value={aboutContent.history} onChange={(e)=>setAboutContent({...aboutContent, history: e.target.value})} className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal" rows="4" />
             </div>
-            <button onClick={handleSaveAbout} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center"><Save className="w-4 h-4 mr-2"/>Save Changes</button>
+            <button onClick={handleSaveAbout} className="bg-signal text-white px-6 py-2 rounded-xl hover:bg-signal-soft flex items-center"><Save className="w-4 h-4 mr-2"/>Save Changes</button>
           </div>
         </div>
       );
@@ -368,21 +368,21 @@ export default function AdminDashboard({ token, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-paper-2">
       {/* Top Navigation Bar */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+      <div className="bg-white shadow-sm border-b border-black/8 sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-600 hover:text-gray-900 lg:hidden">{sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}</button>
-            <h1 className="text-xl font-bold text-blue-600">DmdLab Admin</h1>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-muted hover:text-ink-text lg:hidden">{sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}</button>
+            <h1 className="text-xl font-display font-semibold text-signal">DmdLab Admin</h1>
           </div>
           <div className="flex items-center space-x-4">
             <div className="relative hidden md:block">
-              <input type="text" placeholder="Search..." value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64" />
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+              <input type="text" placeholder="Search..." value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal w-64" />
+              <Search className="w-5 h-5 text-muted-2 absolute left-3 top-2.5" />
             </div>
-            <button className="text-gray-600 hover:text-gray-900"><Bell className="w-6 h-6" /></button>
-            <div className="flex items-center space-x-2"><div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">A</div><ChevronDown className="w-4 h-4 text-gray-600" /></div>
+            <button className="text-muted hover:text-ink-text"><Bell className="w-6 h-6" /></button>
+            <div className="flex items-center space-x-2"><div className="w-8 h-8 bg-signal rounded-full flex items-center justify-center text-white font-semibold">A</div><ChevronDown className="w-4 h-4 text-muted" /></div>
           </div>
         </div>
       </div>
@@ -392,14 +392,14 @@ export default function AdminDashboard({ token, onLogout }) {
         <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out mt-[57px] lg:mt-0`}>
           <nav className="p-4 space-y-1 h-full overflow-y-auto">
             {navigation.map((item) => (
-              <button key={item.section} onClick={() => { setActiveSection(item.section); if (window.innerWidth < 1024) setSidebarOpen(false); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${activeSection === item.section ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-50'}`}>
+              <button key={item.section} onClick={() => { setActiveSection(item.section); if (window.innerWidth < 1024) setSidebarOpen(false); }} className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-colors ${activeSection === item.section ? 'bg-signal/10 text-signal-soft font-medium' : 'text-ink-text hover:bg-paper'}`}>
                 <div className="flex items-center space-x-3"><item.icon className="w-5 h-5" /><span>{item.name}</span></div>
-                {item.count !== undefined && (<span className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">{item.count}</span>)}
+                {item.count !== undefined && (<span className="bg-black/8 text-ink-text px-2 py-1 rounded-full text-xs font-semibold">{item.count}</span>)}
               </button>
             ))}
-            <div className="pt-4 mt-4 border-t border-gray-200">
-              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"><Settings className="w-5 h-5" /><span>Settings</span></button>
-              <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"><LogOut className="w-5 h-5" /><span>Logout</span></button>
+            <div className="pt-4 mt-4 border-t border-black/8">
+              <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-ink-text hover:bg-paper transition-colors"><Settings className="w-5 h-5" /><span>Settings</span></button>
+              <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"><LogOut className="w-5 h-5" /><span>Logout</span></button>
             </div>
           </nav>
         </aside>
@@ -414,38 +414,38 @@ export default function AdminDashboard({ token, onLogout }) {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">{modalMode === 'create' ? 'Create' : 'Edit'} {activeSection.slice(0, -1)}</h3>
             <div className="space-y-4">
               {activeSection === 'announcements' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Title</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       placeholder="Announcement title"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Body</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Body</label>
                     <textarea
                       value={formData.body}
                       onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       rows="4"
                       placeholder="Announcement content"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Date</label>
                     <input
                       type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                     />
                   </div>
                 </>
@@ -453,31 +453,31 @@ export default function AdminDashboard({ token, onLogout }) {
               {activeSection === 'members' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Name</label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       placeholder="Member name"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Role</label>
                     <input
                       type="text"
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       placeholder="Member role"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Bio</label>
                     <textarea
                       value={formData.bio}
                       onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       rows="3"
                       placeholder="Member bio"
                     />
@@ -487,22 +487,22 @@ export default function AdminDashboard({ token, onLogout }) {
               {activeSection === 'footer' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Title</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       placeholder="Link title"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Content</label>
+                    <label className="block text-sm font-medium text-ink-text mb-2">Content</label>
                     <input
                       type="text"
                       value={formData.content}
                       onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-signal focus:border-signal"
                       placeholder="Link URL or content"
                     />
                   </div>
@@ -510,8 +510,8 @@ export default function AdminDashboard({ token, onLogout }) {
               )}
             </div>
             <div className="flex justify-end space-x-2 mt-4">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-              <button onClick={handleSaveModal} className="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-black/10 rounded">Cancel</button>
+              <button onClick={handleSaveModal} className="px-4 py-2 bg-signal text-white rounded">Save</button>
             </div>
           </div>
         </div>

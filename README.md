@@ -159,16 +159,25 @@ The client talks to the API at whatever `VITE_API_BASE` points to.
 - Article view counts (`views`) are tracked but nothing currently
   increments them.
 
+## Design system
+
+The frontend uses a small set of design tokens defined in
+`client/src/index.css` (via Tailwind v4's `@theme`) — `ink` / `paper`
+surfaces, a `signal` accent, and the `Space Grotesk` / `Inter` / `JetBrains
+Mono` type stack. Both the public site and the `/admin` dashboard share
+these tokens, so any new UI should reuse the existing color, radius, and
+shadow utilities (`rounded-2xl`, `border-black/8`, pill buttons, etc.)
+rather than introducing new ad-hoc styles.
+
 ## Troubleshooting
 
 - Frontend can't reach the API → check `VITE_API_BASE` in `client/.env`
   and the CORS allowlist in `server/server.js`.
-- Mongo connection fails → run `node server/temp_check_mongo.js` (reads
-  `MONGO_URI` from `server/.env`) to test the connection in isolation.
+- Mongo connection fails → verify `MONGO_URI` in `server/.env` and that
+  your IP/network is allow-listed if you're using Atlas.
 - Image uploads fail → double-check the three `CLOUDINARY_*` values match
   your Cloudinary account.
 
 ## Contributing
 
-Contributions are welcome — open an issue or PR and follow the existing
-code conventions in each app.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
