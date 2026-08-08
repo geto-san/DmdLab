@@ -1,18 +1,16 @@
-import React from 'react';
+import { Search } from 'lucide-react';
 
-const ArticleSearch = ({ searchTerm, setSearchTerm }) => {
-  return (
-    <div className="mb-4 flex items-center">
-      <input
-        type="text"
-        placeholder="Search articles..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="flex-1 px-4 py-2 text-base rounded-md border border-[#ccc]"
-      />
-      <span className="ml-[-30px] text-[#888]">🔍</span>
-    </div>
-  );
-};
+const ArticleSearch = ({ searchTerm, setSearchTerm }) => (
+  <div className="mb-4 relative max-w-md">
+    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-2" />
+    <input
+      type="text"
+      placeholder="Search articles..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full pl-10 pr-4 py-2.5 text-sm rounded-full border border-black/10 bg-white focus:border-signal focus:ring-2 focus:ring-signal/15 outline-none transition-colors"
+    />
+  </div>
+);
 
 export default ArticleSearch;

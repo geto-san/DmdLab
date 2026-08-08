@@ -1,54 +1,44 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
-const NavLinks = ({ createRipple, isMobile = false, onLinkClick }) => {
+const links = [
+  { to: "/", label: "Lobby", end: true },
+  { to: "/articles", label: "Articles" },
+  { to: "/videos", label: "Videos" },
+];
+
+const NavLinks = ({ isMobile = false, onLinkClick }) => {
   const baseClass = isMobile
-    ? "nav-link block px-3 py-3 text-gray-700 hover:bg-gray-50 text-base rounded-md transition"
-    : "nav-link text-gray-700 font-normal text-base py-2 px-3 rounded-md transition duration-200 active:scale-95";
+    ? "block px-4 py-3 text-[15px] text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+    : "relative text-[14px] font-medium py-2 transition-colors";
 
   return (
     <>
-      <Link
-        to="/"
-        className={baseClass}
-        onClick={e => {
-          createRipple(e);
-          onLinkClick && onLinkClick();
-        }}
-      >
-        Lobby
-      </Link>
-      <Link
-        to="/articles"
-        className={baseClass}
-        onClick={e => {
-          createRipple(e);
-          onLinkClick && onLinkClick();
-        }}
-      >
-        Articles
-      </Link>
-      <Link
-        to="/videos"
-        className={baseClass}
-        onClick={e => {
-          createRipple(e);
-          onLinkClick && onLinkClick();
-        }}
-      >
-        Video
-      </Link>
-      {isMobile && (
-        <Link
-          to="/projects"
-          className={baseClass}
-          onClick={e => {
-            createRipple(e);
-            onLinkClick && onLinkClick();
-          }}
+      {links.map(({ to, label, end }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={end}
+          onClick={onLinkClick}
+          className={({ isActive }) =>
+            isMobile
+              ? `${baseClass} ${isActive ? 'text-white bg-white/5' : ''}`
+              : `${baseClass} ${isActive ? 'text-white' : 'text-white/65 hover:text-white'} group`
+          }
         >
-          Projects
-        </Link>
-      )}
+          {({ isActive }) => (
+            <>
+              {label}
+              {!isMobile && (
+                <span
+                  className={`absolute left-0 -bottom-1 h-[2px] rounded-full bg-signal transition-all duration-200 ${
+                    isActive ? 'w-full' : 'w-0 group-hover:w-full'
+                  }`}
+                />
+              )}
+            </>
+          )}
+        </NavLink>
+      ))}
     </>
   );
 };

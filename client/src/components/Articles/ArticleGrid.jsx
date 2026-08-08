@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import ArticleCard from './ArticleCard';
 import { Link } from 'react-router-dom';
 import API_BASE from '../../utils/api';
 
-const ArticleList = ({ selectedCategory, searchTerm }) => {
+const ArticleGrid = ({ selectedCategory, searchTerm, columns = 1 }) => {
   const [loading, setLoading] = useState(false);
   const [articles, setArticles] = useState([]);
   const [page, setPage] = useState(1);
@@ -70,20 +70,33 @@ const ArticleList = ({ selectedCategory, searchTerm }) => {
     article.title.toLowerCase().includes((searchTerm || '').toLowerCase())
   );
 
+  const gridClass = columns === 2
+    ? 'grid grid-cols-1 sm:grid-cols-2 gap-5'
+    : '';
+
+  if (!loading && filteredArticles.length === 0) {
+    return (
+      <div className="text-center py-16 border border-dashed border-black/10 rounded-2xl">
+        <p className="text-muted text-sm">No articles found yet.</p>
+      </div>
+    );
+  }
+
   return (
     <div>
-      {filteredArticles.map(article => (
-        <Link key={article._id} to={`/articles/${article._id}`}>
-          <ArticleCard article={article} />
-        </Link>
-      ))}
-      {!hasMore && (
-        <p className="text-center text-[#888] mt-4">
-          No more articles.
-        </p>
+      <div className={gridClass}>
+        {filteredArticles.map(article => (
+          <Link key={article._id} to={`/articles/${article._id}`}>
+            <ArticleCard article={article} />
+          </Link>
+        ))}
+      </div>
+      {loading && <p className="text-center text-muted text-sm py-4">Loading…</p>}
+      {!hasMore && filteredArticles.length > 0 && (
+        <p className="text-center text-muted-2 text-sm mt-4">No more articles.</p>
       )}
     </div>
   );
 };
 
-export default ArticleList;
+export default ArticleGrid;

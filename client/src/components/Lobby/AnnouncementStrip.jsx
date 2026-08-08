@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Bell, Clock, ChevronRight } from 'lucide-react';
+import { Bell, Clock } from 'lucide-react';
 import API_BASE from '../../utils/api';
 
 const Announcements = () => {
@@ -27,45 +27,30 @@ const Announcements = () => {
     return () => { cancelled = true; };
   }, []);
 
-  const items = announcements.length > 0 ? announcements : [
-    { title: 'No announcements yet', body: 'Check back soon', date: new Date().toISOString(), priority: 'low' }
-  ];
-
   return (
-    <div className="bg-white border border-[#e5e7eb] rounded-xl overflow-hidden">
-      <div className="bg-slate-50 py-4 px-5 border-b border-[#e5e7eb] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Bell size={20} color="#3b82f6" />
-          <h3 className="m-0 text-[1.1rem] font-semibold text-gray-800">Announcements</h3>
-        </div>
-        <button className="bg-transparent border-none text-blue-500 cursor-pointer text-[0.9rem] flex items-center gap-1">
-          View All
-          <ChevronRight size={16} />
-        </button>
+    <div className="bg-white border border-black/8 rounded-2xl overflow-hidden sticky top-24">
+      <div className="bg-paper-2/60 py-4 px-5 border-b border-black/8 flex items-center gap-2">
+        <Bell size={18} className="text-signal" />
+        <h3 className="m-0 font-display font-semibold text-ink-text">Announcements</h3>
       </div>
       <div className="p-5">
-        {loading && <div className="text-gray-500">Loading announcements…</div>}
-        {error && <div className="text-red-500">Failed to load: {error}</div>}
-        {!loading && !error && items.map((announcement, index) => (
+        {loading && <div className="text-muted text-sm">Loading announcements…</div>}
+        {error && <div className="text-red-500 text-sm">Failed to load: {error}</div>}
+        {!loading && !error && announcements.length === 0 && (
+          <div className="text-muted text-sm">No announcements yet — check back soon.</div>
+        )}
+        {!loading && !error && announcements.map((announcement, index) => (
           <div
             key={announcement._id || index}
-            className={`pb-4 mb-4 ${index < items.length - 1 ? 'border-b border-[#f3f4f6]' : 'border-b-0'}`}
+            className={`pb-4 mb-4 ${index < announcements.length - 1 ? 'border-b border-black/[0.06]' : 'border-b-0 pb-0 mb-0'}`}
           >
             <div className="flex items-start gap-3">
-              <div
-                className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                  announcement.priority === 'high'
-                    ? 'bg-red-500'
-                    : announcement.priority === 'medium'
-                    ? 'bg-amber-500'
-                    : 'bg-emerald-500'
-                }`}
-              ></div>
-              <div className="flex-1">
-                <h4 className="m-0 mb-1 text-[0.95rem] font-semibold text-gray-800">{announcement.title}</h4>
-                <p className="m-0 mb-1.5 text-[0.85rem] text-gray-500 leading-[1.4]">{announcement.body || announcement.excerpt || ''}</p>
-                <div className="text-[0.8rem] text-gray-400 flex items-center gap-1">
-                  <Clock size={12} />
+              <div className="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-signal" />
+              <div className="flex-1 min-w-0">
+                <h4 className="m-0 mb-1 text-[14px] font-semibold text-ink-text">{announcement.title}</h4>
+                <p className="m-0 mb-1.5 text-[13px] text-muted leading-relaxed">{announcement.body || announcement.excerpt || ''}</p>
+                <div className="text-[11px] text-muted-2 flex items-center gap-1">
+                  <Clock size={11} />
                   {new Date(announcement.date).toLocaleString()}
                 </div>
               </div>
