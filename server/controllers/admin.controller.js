@@ -158,12 +158,15 @@ exports.content = {
       if (!key || !/^[a-z0-9-]+$/.test(String(key))) {
         return res.status(400).json({ error: 'key must be lowercase alphanumeric with dashes (e.g. hero)' });
       }
+      if (payload !== undefined && (typeof payload !== 'object' || Array.isArray(payload) || payload === null)) {
+        return res.status(400).json({ error: 'payload must be a JSON object' });
+      }
       const doc = new Content({
         key: String(key).trim().toLowerCase(),
         section: String(section || 'general').trim(),
         title: String(title || ''),
         enabled: enabled !== false,
-        payload: payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {},
+        payload: payload || {},
       });
       const saved = await doc.save();
       try { getIo().emit('content:created', saved); } catch { /* socket not ready */ }
@@ -180,8 +183,11 @@ exports.content = {
       if (data.key !== undefined && !/^[a-z0-9-]+$/.test(String(data.key))) {
         return res.status(400).json({ error: 'key must be lowercase alphanumeric with dashes (e.g. hero)' });
       }
-      if (data.payload !== undefined && (typeof data.payload !== 'object' || Array.isArray(data.payload))) {
-        data.payload = {};
+      if (data.payload !== undefined && (typeof data.payload !== 'object' || Array.isArray(data.payload) || data.payload === null)) {
+        // Previously this silently replaced a malformed payload with {},
+        // which looked like a successful save while actually wiping the
+        // content block. Reject it instead so the admin sees the mistake.
+        return res.status(400).json({ error: 'payload must be a JSON object' });
       }
       const updated = await Content.findByIdAndUpdate(req.params.id, data, { new: true });
       if (!updated) return res.status(404).json({ error: 'Not found' });

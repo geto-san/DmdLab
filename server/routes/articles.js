@@ -12,10 +12,13 @@ router.get('/', async (req, res) => {
       ? { category: new RegExp(`^${category}$`, 'i') }
       : {};
     const skip = (parseInt(page) - 1) * parseInt(limit);
+    // Read-only, JSON-serialized response — .lean() skips hydrating full
+    // Mongoose documents (getters/setters/methods) we never use here.
     const articles = await Article.find(filter)
       .sort({ date: -1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
     res.json(articles);
   } catch {
     res.status(500).json({ error: 'Failed to fetch articles' });
@@ -25,7 +28,14 @@ router.get('/', async (req, res) => {
 // GET /articles/:id
 router.get('/:id', async (req, res) => {
   try {
-    const article = await Article.findById(req.params.id);
+    // Atomically increments the view counter and returns the updated doc
+    // in one round trip — the `views` field existed on the model but
+    // nothing was ever incrementing it.
+    const article = await Article.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { views: 1 } },
+      { new: true }
+    ).lean();
     if (!article) return res.status(404).json({ error: 'Article not found' });
     res.json(article);
   } catch {

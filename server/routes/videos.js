@@ -94,6 +94,13 @@ function inferCategory(title = '', description = '') {
   return 'Research';
 }
 
+// Shared by both routes that accept a maxResults query param, so a client
+// (or attacker) can't request an unbounded batch and burn YouTube API
+// quota / cache memory in one call.
+function clampMaxResults(value, fallback = 10) {
+  return Math.min(Math.max(parseInt(value, 10) || fallback, 1), 50);
+}
+
 function bestThumb(thumbnails) {
   return (
     thumbnails.maxres?.url ||
@@ -153,7 +160,7 @@ async function fetchChannelVideos(maxResults = 10) {
 // GET /videos
 router.get('/', async (req, res) => {
   try {
-    const maxResults = Math.min(Math.max(parseInt(req.query.maxResults, 10) || 10, 1), 50);
+    const maxResults = clampMaxResults(req.query.maxResults, 10);
     const videos = await fetchChannelVideos(maxResults);
     res.json(videos);
   } catch (error) {
