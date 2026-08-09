@@ -69,6 +69,8 @@ const adminRoutes = require('./routes/admin');
 app.use('/admin', adminRoutes);
 const announcementsRoutes = require('./routes/announcements');
 app.use('/announcements', announcementsRoutes);
+const contentRoutes = require('./routes/content');
+app.use('/content', contentRoutes);
 
 // Serve static files from the React app build directory — only if it was
 // actually built alongside the server (monolith deploy). In a split deploy

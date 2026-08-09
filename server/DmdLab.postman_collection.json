@@ -1,0 +1,246 @@
+{
+  "info": {
+    "name": "DmdLab API",
+    "description": "Entry-page (Lobby) endpoints first, then Videos and Admin auth. Set the baseUrl variable to your local server (default http://localhost:8500) or your deployed Render URL.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8500" },
+    { "key": "articleId", "value": "" },
+    { "key": "announcementId", "value": "" },
+    { "key": "videoId", "value": "" },
+    { "key": "adminToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+      }
+    },
+    {
+      "name": "Entry page (Lobby)",
+      "item": [
+        {
+          "name": "Get articles (default)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/articles?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body) && body.length) pm.collectionVariables.set('articleId', body[0]._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get articles filtered by category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/articles?category=research&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles"],
+              "query": [
+                { "key": "category", "value": "research" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get single article by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/articles/{{articleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["articles", "{{articleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get announcements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/announcements?limit=6",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements"],
+              "query": [{ "key": "limit", "value": "6" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body) && body.length) pm.collectionVariables.set('announcementId', body[0]._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get single announcement by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/announcements/{{announcementId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["announcements", "{{announcementId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Videos (public)",
+      "item": [
+        {
+          "name": "List videos (from YouTube)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/videos?maxResults=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["videos"],
+              "query": [{ "key": "maxResults", "value": "10" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body) && body.length) pm.collectionVariables.set('videoId', body[0]._id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get single video by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/videos/{{videoId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["videos", "{{videoId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get related videos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/videos/{{videoId}}/related",
+              "host": ["{{baseUrl}}"],
+              "path": ["videos", "{{videoId}}", "related"]
+            }
+          }
+        },
+        {
+          "name": "Log a related-video click",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/videos/{{videoId}}/click",
+              "host": ["{{baseUrl}}"],
+              "path": ["videos", "{{videoId}}", "click"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toVideoId\": \"PUT_ANOTHER_VIDEO_ID_HERE\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "if (body.token) pm.collectionVariables.set('adminToken', body.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get profile (protected)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/admin/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Create announcement (protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/announcements",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "announcements"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test announcement\",\n  \"body\": \"Created from Postman\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

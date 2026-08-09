@@ -1,43 +1,78 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import NodeGraph from '../NodeGraph';
+import { useContent } from '../../hooks/useContent';
 
-const Hero = () => (
-  <section className="relative overflow-hidden bg-ink text-white">
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(91,110,245,0.18),transparent_55%)]" />
-    <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 lg:py-28 relative grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
-      <div style={{ animation: 'fade-up 0.7s ease-out both' }}>
-        <span className="eyebrow text-amber">Deepminds Research Lab · MUST</span>
-        <h1 className="font-display font-semibold text-[2.5rem] sm:text-[3.2rem] leading-[1.05] tracking-tight mt-4 mb-6">
-          Research that watches,<br />listens, and translates.
-        </h1>
-        <p className="text-white/65 text-lg leading-relaxed max-w-xl mb-8">
-          A multidisciplinary lab of student researchers building applied ML —
-          from reporting human-wildlife conflict in real time to translating
-          speech into Uganda Sign Language.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            to="/articles"
-            className="inline-flex items-center gap-2 rounded-full bg-signal px-5 py-3 text-sm font-semibold hover:bg-signal-soft transition-colors"
-          >
-            Read our research
-            <ArrowRight size={16} />
-          </Link>
-          <Link
-            to="/videos"
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-3 text-sm font-semibold hover:bg-white/5 transition-colors"
-          >
-            Watch the lab
-          </Link>
+const DEFAULT_HERO = {
+  eyebrow: 'Deepminds Research Lab · MUST',
+  title: { before: 'AI Research that ', highlight: 'Watches', after: ', Listens, and Translates.' },
+  description: 'We are a multidisciplinary lab at MUST building applied ML solutions — from real-time wildlife conflict reporting to automated Sign Language translation.',
+  primaryCta: { label: 'Explore Research', to: '/articles' },
+  secondaryCta: { label: 'Watch Lab Activities', to: '/videos' },
+  stats: [
+    { value: '15+', label: 'Active Projects' },
+    { value: '500+', label: 'Recorded Hours' },
+  ],
+};
+
+const Hero = () => {
+  const { data } = useContent('hero', DEFAULT_HERO);
+  const title = data.title || {};
+
+  return (
+    <section className="relative overflow-hidden bg-white pt-32 pb-16 lg:pt-48 lg:pb-24">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl">
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-brand-primary/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 relative grid lg:grid-cols-2 gap-16 items-center">
+        <div className="animate-fade-up">
+          <span className="eyebrow">{data.eyebrow}</span>
+          <h1 className="text-4xl sm:text-6xl font-bold text-ink leading-[1.1] mb-8">
+            {title.before}
+            <span className="text-brand-primary accent-soften">{title.highlight}</span>
+            {title.after}
+          </h1>
+          <p className="text-lg text-ink/60 leading-relaxed max-w-xl mb-10">
+            {data.description}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link to={data.primaryCta?.to || '/articles'} className="btn-primary">
+              {data.primaryCta?.label || 'Explore Research'}
+              <ArrowRight size={18} />
+            </Link>
+            <Link to={data.secondaryCta?.to || '/videos'} className="btn-secondary">
+              {data.secondaryCta?.label || 'Watch Lab Activities'}
+            </Link>
+          </div>
+
+          <div className="mt-12 flex items-center gap-6 border-t border-gray-100 pt-8">
+            {(data.stats || []).map((stat, idx) => (
+              <div key={idx} className="flex items-center gap-6">
+                {idx > 0 && <div className="w-px h-8 bg-gray-200" />}
+                <div>
+                  <div className="text-2xl font-bold text-ink">{stat.value}</div>
+                  <div className="text-xs text-ink/40 uppercase tracking-wider font-semibold">{stat.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="relative animate-fade-up" style={{ animationDelay: '0.2s' }}>
+          <div className="relative z-10 bg-white rounded-3xl p-4 shadow-elevated border border-gray-100">
+            <div className="aspect-video rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
+              <NodeGraph className="w-full h-full" />
+            </div>
+          </div>
+          {/* Decorative elements */}
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-brand-primary/10 rounded-2xl -rotate-12" />
+          <div className="absolute -bottom-6 -left-6 w-32 h-32 border-2 border-gray-100 rounded-3xl rotate-12" />
         </div>
       </div>
-
-      <div className="relative h-[300px] lg:h-[380px]" style={{ animation: 'fade-up 0.9s ease-out 0.15s both' }}>
-        <NodeGraph className="w-full h-full" />
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Hero;

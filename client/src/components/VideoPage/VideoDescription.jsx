@@ -1,17 +1,17 @@
-// components/VideoPage/VideoDescription.jsx
 import React from 'react';
+import { Tag } from 'lucide-react';
 
-const VideoDescription = ({ description, tags }) => {
+const VideoDescription = ({ description, tags = [] }) => {
   return (
-    <div className="mt-4">
-      <p className="text-[15px] leading-[1.6] mb-2.5">{description}</p>
+    <div className="space-y-6">
+      <p className="text-lg text-text-secondary leading-relaxed">
+        {description}
+      </p>
       <div className="flex flex-wrap gap-2">
-        {tags.map((tag, index) => (
-          <span
-            key={index}
-            className="bg-[#f1f1f1] rounded-2xl px-3 py-1 text-[13px] text-[#333]"
-          >
-            #{tag}
+        {tags.map((tag, i) => (
+          <span key={i} className="flex items-center gap-2 bg-bg-surface border border-border-subtle px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-text-secondary transition-colors hover:border-brand-primary/20">
+            <Tag size={10} className="text-brand-primary accent-soften" />
+            {tag}
           </span>
         ))}
       </div>

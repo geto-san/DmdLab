@@ -8,6 +8,27 @@ const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID_RAW = process.env.YOUTUBE_CHANNEL_ID;
 const VideoClick = require('../models/VideoClick');
 
+const SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
+const DETAILS_URL = 'https://www.googleapis.com/youtube/v3/videos';
+const LIST_TTL = 5 * 60 * 1000; // 5 min
+const DETAIL_TTL = 10 * 60 * 1000; // 10 min
+
+// Tiny in-memory TTL cache so repeated page loads / related lookups reuse the
+// same YouTube API responses instead of burning quota on every request.
+const CACHE = new Map();
+function cacheGet(key) {
+  const entry = CACHE.get(key);
+  if (!entry) return null;
+  if (entry.expires <= Date.now()) {
+    CACHE.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+function cacheSet(key, value, ttlMs) {
+  CACHE.set(key, { value, expires: Date.now() + ttlMs });
+}
+
 // YOUTUBE_CHANNEL_ID needs to be the raw channel ID (starts with "UC"), but
 // it's easy to instead set it to the channel URL or @handle you'd copy from
 // a browser. Resolve those automatically via the API's forHandle lookup,
@@ -54,32 +75,86 @@ async function getChannelId() {
   return resolvingPromise;
 }
 
+function formatDuration(iso) {
+  if (!iso) return null;
+  const m = iso.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  if (!m) return iso;
+  const h = +(m[1] || 0);
+  const min = +(m[2] || 0);
+  const s = +(m[3] || 0);
+  const pad = n => String(n).padStart(2, '0');
+  return h ? `${h}:${pad(min)}:${pad(s)}` : `${min}:${pad(s)}`;
+}
+
+function inferCategory(title = '', description = '') {
+  const text = `${title} ${description}`.toLowerCase();
+  if (/\b(lecture|talk|seminar|guest|presentation|speaker|discussion)\b/.test(text)) return 'Lecture';
+  if (/\b(meeting|sync|standup|check-in|catch-up|update)\b/.test(text)) return 'Meeting';
+  if (/\b(tutorial|guide|how to|demo|walkthrough|workshop|intro)\b/.test(text)) return 'Tutorial';
+  return 'Research';
+}
+
+function bestThumb(thumbnails) {
+  return (
+    thumbnails.maxres?.url ||
+    thumbnails.high?.url ||
+    thumbnails.medium?.url ||
+    thumbnails.default?.url
+  );
+}
+
+async function fetchChannelVideos(maxResults = 10) {
+  const cacheKey = `list:${maxResults}`;
+  const cached = cacheGet(cacheKey);
+  if (cached) return cached;
+
+  const search = await axios.get(SEARCH_URL, {
+    params: {
+      key: YOUTUBE_API_KEY,
+      channelId: await getChannelId(),
+      part: 'snippet',
+      order: 'date',
+      maxResults,
+    },
+  });
+
+  const base = search.data.items
+    .filter(item => item.id.kind === 'youtube#video')
+    .map(item => ({
+      _id: item.id.videoId,
+      title: item.snippet.title,
+      description: item.snippet.description,
+      thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
+      author: item.snippet.channelTitle,
+      uploadDate: item.snippet.publishedAt,
+      category: inferCategory(item.snippet.title, item.snippet.description),
+    }));
+
+  const ids = base.map(v => v._id);
+  if (ids.length) {
+    const details = await axios.get(DETAILS_URL, {
+      params: { key: YOUTUBE_API_KEY, id: ids.join(','), part: 'contentDetails,statistics' },
+    });
+    const byId = new Map(details.data.items.map(it => [it.id, it]));
+    for (const v of base) {
+      const d = byId.get(v._id);
+      if (!d) continue;
+      v.duration = d.contentDetails?.duration || null;
+      v.durationLabel = formatDuration(v.duration);
+      v.views = d.statistics?.viewCount || '0';
+      v.likes = d.statistics?.likeCount || '0';
+    }
+  }
+
+  cacheSet(cacheKey, base, LIST_TTL);
+  return base;
+}
 
 // GET /videos
 router.get('/', async (req, res) => {
   try {
-    const maxResults = req.query.maxResults || 10;
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-      params: {
-        key: YOUTUBE_API_KEY,
-        channelId: await getChannelId(),
-        part: 'snippet',
-        order: 'date',
-        maxResults
-      },
-    });
-
-    const videos = response.data.items
-      .filter(item => item.id.kind === 'youtube#video')
-      .map(item => ({
-        _id: item.id.videoId,
-        title: item.snippet.title,
-        description: item.snippet.description,
-        thumbnail: item.snippet.thumbnails.medium.url,
-        author: item.snippet.channelTitle,
-        uploadDate: item.snippet.publishedAt
-      }));
-
+    const maxResults = Math.min(Math.max(parseInt(req.query.maxResults, 10) || 10, 1), 50);
+    const videos = await fetchChannelVideos(maxResults);
     res.json(videos);
   } catch (error) {
     console.error('Failed to fetch YouTube videos:', error.message);
@@ -90,7 +165,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+    const cacheKey = `detail:${id}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
+    const response = await axios.get(DETAILS_URL, {
       params: {
         key: YOUTUBE_API_KEY,
         id,
@@ -107,15 +186,17 @@ router.get('/:id', async (req, res) => {
       _id: id,
       title: video.snippet.title,
       description: video.snippet.description,
-      thumbnail: video.snippet.thumbnails.medium.url,
+      thumbnail: bestThumb(video.snippet.thumbnails),
       author: video.snippet.channelTitle,
       uploadDate: video.snippet.publishedAt,
-      category: 'YouTube',
-      views: video.statistics.viewCount,
-      likes: video.statistics.likeCount,
-      duration: video.contentDetails.duration,
+      category: inferCategory(video.snippet.title, video.snippet.description),
+      views: video.statistics?.viewCount || '0',
+      likes: video.statistics?.likeCount || '0',
+      duration: video.contentDetails?.duration || null,
+      durationLabel: formatDuration(video.contentDetails?.duration),
     };
 
+    cacheSet(cacheKey, formattedVideo, DETAIL_TTL);
     res.json(formattedVideo);
   } catch (error) {
     console.error('Failed to fetch video by ID:', error.message);
@@ -127,27 +208,21 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/related', async (req, res) => {
   try {
     const { id } = req.params;
-    // fetch a batch of candidate videos from YouTube
+    // fetch a batch of candidate videos from YouTube (cached when possible)
     const maxResults = req.query.maxResults || 12;
-    const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-      params: {
-        key: YOUTUBE_API_KEY,
-        channelId: await getChannelId(),
-        part: 'snippet',
-        order: 'date',
-        maxResults
-      }
-    });
+    const pool = await fetchChannelVideos(maxResults);
 
-    const items = response.data.items.filter(item => item.id.kind === 'youtube#video')
-      .map(item => ({
-        _id: item.id.videoId,
-        title: item.snippet.title,
-        description: item.snippet.description,
-        thumbnail: item.snippet.thumbnails.medium?.url,
-        uploadDate: item.snippet.publishedAt
-      }))
-      .filter(item => item._id !== id); // never recommend the video you're currently watching
+    const items = pool
+      .filter(v => v._id !== id) // never recommend the video you're currently watching
+      .map(v => ({
+        _id: v._id,
+        title: v.title,
+        description: v.description,
+        thumbnail: v.thumbnail,
+        author: v.author,
+        uploadDate: v.uploadDate,
+        durationLabel: v.durationLabel,
+      }));
 
     // Compute click counts specifically for "clicked from this video" (fromVideoId),
     // not global click counts across the whole site.

@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import VideoPlayer from "../components/VideoPage/VideoPlayer";
 import VideoInfo from "../components/VideoPage/VideoInfo";
 import RelatedVideos from "../components/VideoPage/RelatedVideos";
@@ -19,7 +19,7 @@ const VideoPage = () => {
       setError(null);
       try {
         const res = await fetch(`${API_BASE}/videos/${id}`);
-        if (!res.ok) throw new Error("Video not found");
+        if (!res.ok) throw new Error("Video stream unavailable");
         const data = await res.json();
         setVideoData(data);
       } catch (err) {
@@ -35,45 +35,66 @@ const VideoPage = () => {
     const fetchRelated = async () => {
       try {
         const res = await fetch(`${API_BASE}/videos/${id}/related`);
-        if (!res.ok) throw new Error('Failed to load related');
+        if (!res.ok) throw new Error('Related stream failed');
         const data = await res.json();
         setRelatedVideos(data || []);
       } catch {
-        // ignore
+        // silently fail for related
       }
     };
     if (id) fetchRelated();
   }, [id]);
 
-  if (error) {
-    return <div className="text-center py-20 text-red-500">Error loading video: {error}</div>;
-  }
   if (loading) {
-    return <div className="text-center py-20 text-muted">Loading video…</div>;
+    return (
+      <div className="bg-bg-main min-h-screen flex items-center justify-center pt-20">
+        <div className="animate-pulse text-text-dim text-[10px] font-bold uppercase tracking-[0.4em]">Initializing Player...</div>
+      </div>
+    );
   }
-  if (!videoData) {
-    return <div className="text-center py-20 text-red-500">Video not found.</div>;
+
+  if (error || !videoData) {
+    return (
+      <div className="bg-bg-main min-h-screen flex flex-col items-center justify-center pt-20">
+        <div className="text-red-500 font-bold text-sm uppercase tracking-widest mb-4">Error</div>
+        <p className="text-text-secondary">{error || "Video not found"}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-paper min-h-screen">
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-8">
-        <Link to="/videos" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-signal mb-5 transition-colors">
-          <ArrowLeft size={15} /> Back to videos
-        </Link>
-
-        <VideoPlayer videoId={videoData._id} duration={videoData.duration} />
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 mt-2">
-          <div className="min-w-0">
-            <VideoInfo videoData={videoData} />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-bg-main min-h-screen pt-32 pb-24 transition-colors duration-500"
+    >
+      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="grid lg:grid-cols-3 gap-12">
+          {/* Main Player Column */}
+          <div className="lg:col-span-2 space-y-10">
+            <div className="rounded-[2.5rem] overflow-hidden bg-bg-surface border border-border-main shadow-elevated transition-transform duration-500 hover:shadow-2xl">
+              <VideoPlayer
+                key={videoData._id}
+                videoId={videoData._id}
+                title={videoData.title}
+                thumbnail={videoData.thumbnail}
+                durationIso={videoData.duration}
+              />
+            </div>
+            <div className="bg-bg-surface border border-border-subtle rounded-[2rem] p-10 shadow-soft">
+              <VideoInfo videoData={videoData} />
+            </div>
           </div>
-          <div className="min-w-0 border-t lg:border-t-0 lg:border-l border-black/8 pt-6 lg:pt-0 lg:pl-6">
-            <RelatedVideos videos={relatedVideos} />
-          </div>
+
+          {/* Sidebar */}
+          <aside className="lg:col-span-1 space-y-10">
+            <div className="bg-bg-surface border border-border-subtle rounded-[2rem] p-8 shadow-soft lg:sticky lg:top-32">
+              <RelatedVideos videos={relatedVideos} />
+            </div>
+          </aside>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

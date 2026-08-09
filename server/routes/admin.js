@@ -44,4 +44,10 @@ router.post('/videos', adminAuth, adminController.video.create);
 router.put('/videos/:id', adminAuth, adminController.video.update);
 router.delete('/videos/:id', adminAuth, adminController.video.delete);
 
+// Content blocks (CMS) - JWT protected
+router.get('/content', adminAuth, adminController.content.list);
+router.post('/content', adminAuth, adminController.content.create);
+router.put('/content/:id', adminAuth, adminController.content.update);
+router.delete('/content/:id', adminAuth, adminController.content.delete);
+
 module.exports = router;

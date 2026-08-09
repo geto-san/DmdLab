@@ -1,89 +1,192 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
 @import "tailwindcss";
 
+/* 1. Define custom dark mode strategy for Tailwind V4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  /* Ink / dark surfaces */
-  --color-ink: #0A0E1A;
-  --color-surface: #10162A;
-  --color-surface-2: #161D34;
-  --color-surface-line: #232B45;
+  /* Fonts */
+  --font-display: "Geist", "Inter", "system-ui", "sans-serif";
+  --font-body: "Geist", "Inter", "system-ui", "sans-serif";
+  --font-mono: "Geist Mono", "monospace";
 
-  /* Accents */
-  --color-signal: #5B6EF5;
-  --color-signal-soft: #8C97F7;
-  --color-amber: #F2B84B;
-  --color-amber-soft: #FBDFA4;
-  --color-canopy: #34B37A;
+  /* Brand Colors */
+  --color-brand-primary: #3b82f6;
+  --color-brand-dark: #2563eb;
+  --color-brand-amber: #f59e0b;
 
-  /* Paper / light surfaces */
-  --color-paper: #F6F5F1;
-  --color-paper-2: #EDEBE3;
-  --color-ink-text: #151922;
-  --color-muted: #676D7E;
-  --color-muted-2: #9AA0B4;
+  /* Semantic Theme Mapping (Level 0: Base) */
+  --color-bg-main: light-dark(#ffffff, #0b0f19);
+  --color-text-main: light-dark(#0b0f19, #f0f6fc);
 
-  --font-display: "Space Grotesk", "Inter", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* Semantic Theme Mapping (Level 1: Surfaces/Cards) */
+  --color-bg-surface: light-dark(#f8f9fa, #161b22);
+  --color-text-secondary: light-dark(rgba(11, 15, 25, 0.65), rgba(240, 246, 252, 0.65));
+  --color-border-subtle: light-dark(#f1f5f9, rgba(255, 255, 255, 0.06));
+
+  /* Semantic Theme Mapping (Level 2: Elevated/Modals) */
+  --color-bg-elevated: light-dark(#ffffff, #1c2128);
+  --color-text-dim: light-dark(rgba(11, 15, 25, 0.45), rgba(240, 246, 252, 0.45));
+  --color-border-strong: light-dark(#e2e8f0, rgba(255, 255, 255, 0.12));
+
+  /* Interactive Variables */
+  --link-underline-color: var(--color-brand-primary);
+  --link-underline-width: 2px;
+  --link-underline-white: #ffffff;
+
+  /* Legacy/component tokens referenced across components but missing from
+     the theme (fixed in place so utilities like bg-ink, text-primary,
+     border-border-main actually emit CSS). */
+  --color-ink: #0b0f19;
+  --color-ink-dim: rgba(11, 15, 25, 0.5);
+  --color-primary: #3b82f6;
+  --color-primary-soft: light-dark(rgba(59, 130, 246, 0.12), rgba(96, 165, 250, 0.18));
+  --color-border-main: light-dark(#e2e8f0, rgba(255, 255, 255, 0.12));
+  --color-bg-surface-hover: light-dark(#eef2f6, rgba(255, 255, 255, 0.08));
+  --color-signal-soft: #7aa2ff;
+  --color-amber: #f59e0b;
+
+  /* Shadows */
+  --shadow-soft: light-dark(0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 12px rgba(0, 0, 0, 0.2));
+  --shadow-elevated: light-dark(0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.3));
+
+  /* Radius */
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
+  :root { color-scheme: light; }
+  :root.dark { color-scheme: dark; }
+
   body {
-    font-family: var(--font-body);
-    background-color: var(--color-paper);
-    color: var(--color-ink-text);
+    background-color: var(--color-bg-main);
+    color: var(--color-text-main);
+    @apply font-body antialiased tracking-[-0.01em] transition-colors duration-300;
   }
+
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    color: var(--color-text-main);
+    @apply font-display tracking-[-0.03em] leading-tight font-bold;
   }
-  :focus-visible {
-    outline: 2px solid var(--color-signal);
-    outline-offset: 2px;
-  }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
+  p {
+    color: var(--color-text-secondary);
   }
 }
 
-@keyframes node-pulse {
-  0%, 100% { opacity: 0.35; r: 2.4; }
-  50% { opacity: 1; r: 3.4; }
+@layer utilities {
+  .link-significa {
+    background-image: linear-gradient(to right, var(--link-underline-color), var(--link-underline-color));
+    background-size: 0 var(--link-underline-width);
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    outline: none;
+    transition: background-size 0.3s;
+    &:hover {
+      background-size: 100% var(--link-underline-width);
+      background-position: 0 100%;
+    }
+  }
+
+  .link-significa-white {
+    background-image: linear-gradient(to right, var(--link-underline-white), var(--link-underline-white));
+    background-size: 0 var(--link-underline-width);
+    background-position: 100% 100%;
+    background-repeat: no-repeat;
+    outline: none;
+    transition: background-size 0.3s;
+    &:hover {
+      background-size: 100% var(--link-underline-width);
+      background-position: 0 100%;
+    }
+  }
+
+  .accent-soften {
+    transition: all 0.3s;
+    @variant dark {
+      filter: brightness(1.15) saturate(0.85);
+    }
+  }
 }
 
-@keyframes edge-flow {
-  to { stroke-dashoffset: -24; }
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-white transition-all duration-200 active:scale-95 shadow-soft hover:shadow-elevated border-none;
+    background-color: var(--color-brand-primary);
+    &:hover { background-color: var(--color-brand-dark); }
+    @variant dark {
+       filter: brightness(1.15) saturate(0.85);
+    }
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-bold transition-all duration-200 active:scale-95;
+    border-color: var(--color-border-strong);
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-main);
+    &:hover { background-color: light-dark(#f1f5f9, #1c2128); }
+  }
+
+  .card-standard {
+    @apply rounded-3xl p-6 transition-all duration-300 border;
+    background-color: var(--color-bg-surface);
+    border-color: var(--color-border-subtle);
+    &:hover {
+       @apply shadow-elevated -translate-y-1;
+    }
+  }
+
+  .eyebrow {
+    @apply text-[10px] font-bold uppercase tracking-[0.2em] mb-2 block opacity-80;
+    color: var(--color-brand-primary);
+    @variant dark {
+       filter: brightness(1.15) saturate(0.85);
+    }
+  }
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(14px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.eyebrow {
-  font-family: var(--font-mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 0.72rem;
+/* VideoPlayer: the YouTube iframe injected by the IFrame API fills its shell,
+   and fullscreen keeps the player edge-to-edge instead of letterboxed. */
+.video-shell iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.video-shell:fullscreen,
+.video-shell:-webkit-full-screen {
+  aspect-ratio: auto;
+  background: #000;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* NodeGraph ambient animation (see components/NodeGraph.jsx) */
+@keyframes edge-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -32; }
 }
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+
+@keyframes node-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-graph * {
+    animation: none !important;
+  }
 }

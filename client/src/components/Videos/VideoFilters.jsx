@@ -1,21 +1,28 @@
-const categories = ['All', 'Research', 'Tutorial', 'Discussion', 'Lab Work'];
+import React from 'react';
 
-const VideoFilters = ({ selectedCategory, setSelectedCategory }) => (
-  <div className="flex gap-2 flex-wrap">
-    {categories.map((category) => (
-      <button
-        key={category}
-        onClick={() => setSelectedCategory(category)}
-        className={`px-3.5 py-1.5 rounded-full border text-[13px] whitespace-nowrap transition-colors ${
-          selectedCategory === category
-            ? 'bg-ink text-white border-ink font-semibold'
-            : 'bg-white text-muted border-black/10 hover:border-signal/40 hover:text-ink-text'
-        }`}
-      >
-        {category}
-      </button>
-    ))}
-  </div>
-);
+const VideoFilters = ({ selectedCategory, setSelectedCategory }) => {
+  const categories = ['All', 'Research', 'Lecture', 'Meeting', 'Tutorial'];
+
+  return (
+    <div className="space-y-4">
+      <h4 className="text-[10px] font-bold text-text-main uppercase tracking-[0.25em] opacity-40">Filter by Type</h4>
+      <div className="flex flex-wrap gap-2">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
+              selectedCategory === cat
+                ? "bg-brand-primary text-white shadow-soft"
+                : "bg-bg-surface border border-border-main text-text-secondary hover:bg-bg-surface-hover"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default VideoFilters;

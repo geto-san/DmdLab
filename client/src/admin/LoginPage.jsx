@@ -1,96 +1,103 @@
-import { useState } from 'react';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lock, User, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import API_BASE from '../utils/api';
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!username) {
-      newErrors.username = 'Username is required';
-    }
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e && e.preventDefault();
-    if (!validateForm()) return;
+  const handleLogin = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
+    setErrors({});
+
     try {
-      const res = await fetch(`${API_BASE}/admin/login`, {
+      const response = await fetch(`${API_BASE}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
-      const data = await res.json().catch(()=>null);
-      if (!res.ok) throw new Error((data && data.error) || res.statusText || 'Login failed');
-      if (data && data.token) {
-        onLogin && onLogin(data.token);
+      const data = await response.json();
+      if (response.ok) {
+        onLogin(data.token);
       } else {
-        throw new Error('No token returned');
+        setErrors({ form: data.message || 'Authentication failed' });
       }
     } catch (err) {
-      setErrors({ form: err.message || String(err) });
+      setErrors({ form: 'Network error. Please try again later.' });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-8">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-              <Lock className="w-8 h-8 text-white" />
+    <div className="min-h-screen flex items-center justify-center bg-bg-main px-6 py-12 transition-colors duration-500">
+      <div className="w-full max-w-md animate-fade-up">
+        <div className="bg-bg-surface rounded-[2.5rem] shadow-elevated border border-border-main p-10 lg:p-12 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+          <div className="text-center mb-10 relative z-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-brand-primary/10 rounded-2xl mb-6 accent-soften">
+              <ShieldCheck className="w-8 h-8 text-brand-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Admin Sign In</h1>
-            <p className="text-slate-600">Sign in to access the admin dashboard</p>
+            <h1 className="text-3xl font-extrabold text-text-main mb-2 tracking-tight">Admin Portal</h1>
+            <p className="text-sm font-bold text-text-dim uppercase tracking-widest">DeepMinds Research Lab</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.form && <div className="text-red-600">{errors.form}</div>}
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-slate-700 mb-2">Username</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-slate-400" />
-                </div>
-                <input id="username" type="text" value={username} onChange={(e)=>{ setUsername(e.target.value); if (errors.username) setErrors({ ...errors, username: '' }); }} className={`block w-full pl-10 pr-3 py-3 border ${errors.username ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors`} placeholder="admin" />
+          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+            {errors.form && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-500 text-xs font-bold uppercase tracking-widest text-center">
+                {errors.form}
               </div>
-              {errors.username && <p className="mt-2 text-sm text-red-600">{errors.username}</p>}
+            )}
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] ml-1">Identity</label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-dim" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-bg-main border border-border-main rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
+                  placeholder="Username"
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-text-main uppercase tracking-[0.2em] ml-1">Access Key</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
-                </div>
-                <input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e)=>{ setPassword(e.target.value); if (errors.password) setErrors({ ...errors, password: '' }); }} className={`block w-full pl-10 pr-12 py-3 border ${errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-slate-300 focus:ring-blue-500 focus:border-blue-500'} rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-colors`} placeholder="Enter your password" />
-                <button type="button" onClick={()=>setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-slate-600 focus:outline-none">
-                  {showPassword ? <EyeOff className="h-5 w-5 text-slate-400" /> : <Eye className="h-5 w-5 text-slate-400" />}
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-dim" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-bg-main border border-border-main rounded-2xl py-4 pl-12 pr-12 text-sm font-bold text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
+                  placeholder="Password"
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-dim hover:text-text-main transition-colors">
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
             </div>
 
-            <button type="submit" disabled={isLoading} className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-              {isLoading ? 'Signing in...' : 'Sign In'}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn-primary w-full justify-center py-4 text-xs uppercase tracking-widest"
+            >
+              {isLoading ? 'Verifying...' : 'Sign In to Dashboard'}
             </button>
           </form>
         </div>
+
+        <p className="text-center mt-8 text-[10px] font-bold text-text-dim uppercase tracking-[0.2em]">
+          Authorized Access Only · © 2026 MUST
+        </p>
       </div>
     </div>
   );

@@ -1,48 +1,42 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
-import API_BASE from '../../utils/api';
+import { Play } from 'lucide-react';
 
-const formatViews = (n) => {
-  const num = Number(n) || 0;
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-  return num.toString();
-};
-
-const RelatedVideos = ({ videos = [] }) => {
-  const handleClick = async (toVideoId) => {
-    try {
-      await fetch(`${API_BASE}/videos/${window.location.pathname.split('/').pop()}/click`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toVideoId }),
-      });
-    } catch {
-      // ignore telemetry failures
-    }
-  };
-
-  if (videos.length === 0) return null;
-
+const RelatedVideos = ({ videos }) => {
   return (
-    <div>
-      <h3 className="font-display font-semibold text-ink-text mb-4">Related videos</h3>
-      <ul className="space-y-2">
+    <div className="space-y-8">
+      <h3 className="text-sm font-bold text-text-main uppercase tracking-[0.25em] opacity-40">Related Recordings</h3>
+      <div className="space-y-6">
         {videos.map((video) => (
-          <li key={video._id}>
-            <Link
-              to={`/videos/${video._id}`}
-              onClick={() => handleClick(video._id)}
-              className="flex gap-3 p-2 rounded-xl hover:bg-white transition-colors"
-            >
-              <img src={video.thumbnail} alt={video.title} className="w-24 h-16 object-cover rounded-lg shrink-0" />
-              <div className="min-w-0">
-                <div className="text-[13px] font-semibold text-ink-text leading-snug line-clamp-2">{video.title}</div>
-                <div className="text-[12px] text-muted mt-1">{formatViews(video.views)} views</div>
+          <Link
+            key={video._id}
+            to={`/videos/${video._id}`}
+            className="group flex gap-4 items-start"
+          >
+            <div className="relative w-32 aspect-video rounded-xl overflow-hidden shrink-0 border border-border-subtle bg-bg-main shadow-sm">
+              <img
+                src={video.thumbnail}
+                alt={video.title}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-ink/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                 <Play size={12} className="text-white fill-current" />
               </div>
-            </Link>
-          </li>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-text-main leading-snug group-hover:text-brand-primary transition-colors line-clamp-2 tracking-tight">
+                {video.title}
+              </h4>
+              <div className="text-[10px] font-bold text-text-dim uppercase tracking-widest mt-2">
+                {video.author}
+              </div>
+            </div>
+          </Link>
         ))}
-      </ul>
+        {videos.length === 0 && (
+          <p className="text-xs font-bold text-text-dim uppercase tracking-widest text-center py-4">No related content found</p>
+        )}
+      </div>
     </div>
   );
 };

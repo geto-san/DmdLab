@@ -5,6 +5,7 @@ const Member = require('../models/Member');
 const Post = require('../models/Post');
 const About = require('../models/About');
 const Video = require('../models/Video');
+const Content = require('../models/Content');
 
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
@@ -119,3 +120,62 @@ exports.member = makeCrud(Member, 'member');
 exports.post = makeCrud(Post, 'post');
 exports.about = makeCrud(About, 'about');
 exports.video = makeCrud(Video, 'video');
+
+// Content blocks (CMS). Dedicated handlers instead of makeCrud so we can
+// normalize the JSON payload, enforce a unique key, and emit socket events.
+exports.content = {
+  list: async (req, res) => {
+    try {
+      const docs = await Content.find({}).sort({ section: 1, key: 1 });
+      res.json(docs);
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  },
+  create: async (req, res) => {
+    try {
+      const { key, section, title, enabled, payload } = req.body;
+      if (!key || !/^[a-z0-9-]+$/.test(String(key))) {
+        return res.status(400).json({ error: 'key must be lowercase alphanumeric with dashes (e.g. hero)' });
+      }
+      const doc = new Content({
+        key: String(key).trim().toLowerCase(),
+        section: String(section || 'general').trim(),
+        title: String(title || ''),
+        enabled: enabled !== false,
+        payload: payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {},
+      });
+      const saved = await doc.save();
+      try { getIo().emit('content:created', saved); } catch { /* socket not ready */ }
+      res.status(201).json(saved);
+    } catch (err) {
+      if (err.code === 11000) return res.status(400).json({ error: `Content key "${req.body.key}" already exists` });
+      res.status(400).json({ error: err.message });
+    }
+  },
+  update: async (req, res) => {
+    try {
+      const data = { ...req.body };
+      delete data._id;
+      if (data.key !== undefined && !/^[a-z0-9-]+$/.test(String(data.key))) {
+        return res.status(400).json({ error: 'key must be lowercase alphanumeric with dashes (e.g. hero)' });
+      }
+      if (data.payload !== undefined && (typeof data.payload !== 'object' || Array.isArray(data.payload))) {
+        data.payload = {};
+      }
+      const updated = await Content.findByIdAndUpdate(req.params.id, data, { new: true });
+      if (!updated) return res.status(404).json({ error: 'Not found' });
+      try { getIo().emit('content:updated', updated); } catch { /* socket not ready */ }
+      res.json(updated);
+    } catch (err) {
+      if (err.code === 11000) return res.status(400).json({ error: `Content key "${req.body.key}" already exists` });
+      res.status(400).json({ error: err.message });
+    }
+  },
+  delete: async (req, res) => {
+    try {
+      const removed = await Content.findByIdAndDelete(req.params.id);
+      if (!removed) return res.status(404).json({ error: 'Not found' });
+      try { getIo().emit('content:deleted', { id: req.params.id }); } catch { /* socket not ready */ }
+      res.json({ success: true });
+    } catch (err) { res.status(400).json({ error: err.message }); }
+  }
+};

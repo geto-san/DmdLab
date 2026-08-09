@@ -15,7 +15,7 @@ const EDGES = [
 const NodeGraph = ({ className = '' }) => (
   <svg
     viewBox="0 0 440 340"
-    className={className}
+    className={`node-graph ${className}`}
     aria-hidden="true"
     focusable="false"
   >
