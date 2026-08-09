@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus, Save, Trash2, Pencil, X } from 'lucide-react';
 import API_BASE from '../utils/api';
 
@@ -15,7 +15,11 @@ export default function AdminContent({ token }) {
 
   const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-  async function load() {
+  // useCallback (rather than a plain function + an eslint-disable comment)
+  // so the effect below can list `load` as a real dependency — if this
+  // function's own deps ever change, exhaustive-deps will catch a stale
+  // closure instead of silently missing it.
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -28,10 +32,9 @@ export default function AdminContent({ token }) {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => { load(); // eslint-disable-next-line react-hooks/exhaustive-deps -- load uses token + reloads on demand
   }, [token]);
+
+  useEffect(() => { load(); }, [load]);
 
   function openNew() {
     setEditing('new');
@@ -122,13 +125,13 @@ export default function AdminContent({ token }) {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">Content Sections</h2>
+        <h2 className="text-2xl font-display font-semibold text-text-main">Content Sections</h2>
         <button onClick={openNew} className="px-3 py-2 bg-brand-primary text-white rounded inline-flex items-center gap-2">
           <Plus size={16} /> New Block
         </button>
       </div>
 
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-text-secondary mb-6">
         Each block is a JSON payload the frontend merges over its hardcoded defaults.
         Keys currently read by the UI: <code>hero</code>, <code>stats</code>,{' '}
         <code>featured-projects</code>, <code>publications</code>, <code>research</code>,{' '}
@@ -139,28 +142,28 @@ export default function AdminContent({ token }) {
       {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded whitespace-pre-wrap">{error}</div>}
 
       {editing && (
-        <div className="mb-6 p-4 border rounded bg-bg-surface">
+        <div className="mb-6 p-4 border border-border-main rounded-xl bg-bg-surface">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold">{editing === 'new' ? 'New Content Block' : `Edit "${draft.key}"`}</h3>
             <button onClick={cancel} aria-label="Cancel"><X size={16} /></button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-            <input className="p-2 border rounded" placeholder="key (hero, stats...)" value={draft.key} onChange={e => setDraft({ ...draft, key: e.target.value })} />
-            <input className="p-2 border rounded" placeholder="section (home, global...)" value={draft.section} onChange={e => setDraft({ ...draft, section: e.target.value })} />
-            <input className="p-2 border rounded" placeholder="title (admin label)" value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} />
+            <input className="p-2 border border-border-main rounded-xl" placeholder="key (hero, stats...)" value={draft.key} onChange={e => setDraft({ ...draft, key: e.target.value })} />
+            <input className="p-2 border border-border-main rounded-xl" placeholder="section (home, global...)" value={draft.section} onChange={e => setDraft({ ...draft, section: e.target.value })} />
+            <input className="p-2 border border-border-main rounded-xl" placeholder="title (admin label)" value={draft.title} onChange={e => setDraft({ ...draft, title: e.target.value })} />
           </div>
           <label className="flex items-center gap-2 mb-3 text-sm">
             <input type="checkbox" checked={draft.enabled} onChange={e => setDraft({ ...draft, enabled: e.target.checked })} />
             Enabled (served to the public frontend)
           </label>
           <textarea
-            className="w-full p-2 border rounded font-mono text-xs h-64"
+            className="w-full p-2 border border-border-main rounded-xl font-mono text-xs h-64"
             value={draft.payload}
             onChange={e => setDraft({ ...draft, payload: e.target.value })}
             spellCheck={false}
           />
           <div className="flex gap-2 justify-end mt-3">
-            <button onClick={cancel} className="px-3 py-2 bg-gray-300 rounded">Cancel</button>
+            <button onClick={cancel} className="px-3 py-2 bg-border-main rounded">Cancel</button>
             <button onClick={save} className="px-3 py-2 bg-green-600 text-white rounded inline-flex items-center gap-2">
               <Save size={16} /> Save
             </button>
@@ -169,10 +172,10 @@ export default function AdminContent({ token }) {
       )}
 
       {loading && <div>Loading...</div>}
-      {!loading && blocks.length === 0 && <div className="text-gray-500">No content blocks yet. Create one to start dictating what the frontend shows.</div>}
+      {!loading && blocks.length === 0 && <div className="text-text-secondary">No content blocks yet. Create one to start dictating what the frontend shows.</div>}
       <ul className="space-y-3 mt-4">
         {blocks.map(block => (
-          <li key={block._id} className="p-4 border rounded bg-bg-surface">
+          <li key={block._id} className="p-4 border border-border-main rounded-xl bg-bg-surface">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -180,13 +183,13 @@ export default function AdminContent({ token }) {
                   <span className="text-xs px-2 py-0.5 rounded bg-bg-surface-hover text-text-secondary">{block.section}</span>
                   {!block.enabled && <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-700">disabled</span>}
                 </div>
-                <div className="text-sm text-gray-500 mt-1">{block.title}</div>
+                <div className="text-sm text-text-secondary mt-1">{block.title}</div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button onClick={() => toggleEnabled(block)} className="px-2 py-1 text-xs border rounded">
+                <button onClick={() => toggleEnabled(block)} className="px-2 py-1 text-xs border border-border-main rounded-xl">
                   {block.enabled ? 'Disable' : 'Enable'}
                 </button>
-                <button onClick={() => openEdit(block)} className="px-2 py-1 bg-yellow-400 text-black rounded inline-flex items-center gap-1"><Pencil size={12} /> Edit</button>
+                <button onClick={() => openEdit(block)} className="px-2 py-1 bg-brand-amber text-black rounded inline-flex items-center gap-1"><Pencil size={12} /> Edit</button>
                 <button onClick={() => remove(block)} className="px-2 py-1 bg-red-600 text-white rounded inline-flex items-center gap-1"><Trash2 size={12} /> Delete</button>
               </div>
             </div>

@@ -71,8 +71,8 @@ export default function AdminVideos({ token }) {
             <div className="flex justify-between">
               <div>
                 <div className="font-semibold">{v.title}</div>
-                <div className="text-sm text-gray-600">{v.youtubeUrl}</div>
-                <div className="text-xs text-gray-500">{v.description}</div>
+                <div className="text-sm text-text-secondary">{v.youtubeUrl}</div>
+                <div className="text-xs text-text-secondary">{v.description}</div>
               </div>
               <button className="px-2 py-1 bg-red-600 text-white rounded" onClick={() => deleteVideo(v._id)}>Delete</button>
             </div>

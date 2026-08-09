@@ -15,7 +15,11 @@ const DETAIL_TTL = 10 * 60 * 1000; // 10 min
 
 // Tiny in-memory TTL cache so repeated page loads / related lookups reuse the
 // same YouTube API responses instead of burning quota on every request.
+// Bounded (FIFO eviction) so it can't grow without limit if the channel's
+// catalog — or request variety via query params like maxResults — grows;
+// each instance has its own cache, so this is a per-process cap, not global.
 const CACHE = new Map();
+const CACHE_MAX_ENTRIES = 500;
 function cacheGet(key) {
   const entry = CACHE.get(key);
   if (!entry) return null;
@@ -26,6 +30,11 @@ function cacheGet(key) {
   return entry.value;
 }
 function cacheSet(key, value, ttlMs) {
+  if (CACHE.size >= CACHE_MAX_ENTRIES && !CACHE.has(key)) {
+    // Map preserves insertion order, so the first key is the oldest entry.
+    const oldestKey = CACHE.keys().next().value;
+    CACHE.delete(oldestKey);
+  }
   CACHE.set(key, { value, expires: Date.now() + ttlMs });
 }
 
@@ -75,6 +84,15 @@ async function getChannelId() {
   return resolvingPromise;
 }
 
+// Parses a YouTube ISO 8601 duration ("PT1H2M3S") into H:MM:SS / M:SS.
+//
+// NOTE: this regex and the same H ? long-form : short-form logic are
+// duplicated in client/src/components/VideoPage/VideoPlayer.jsx
+// (parseIsoDuration + formatTime) — client (Vite/ESM) and server
+// (CommonJS) are separate npm packages with no shared workspace today, so
+// there's no clean import path between them without introducing monorepo
+// tooling. If you fix a duration-parsing edge case here (e.g. "PT0S",
+// "PT45S", "PT1H2M3S"), fix it there too.
 function formatDuration(iso) {
   if (!iso) return null;
   const m = iso.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);

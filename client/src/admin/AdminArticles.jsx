@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { connectSocket } from '../utils/socket';
 import CreateArticle from './CreateArticle.jsx';
 import API_BASE from '../utils/api';
@@ -8,7 +8,7 @@ export default function AdminArticles({ token }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -20,9 +20,9 @@ export default function AdminArticles({ token }) {
     } catch (err) {
       setError(err.message || String(err));
     } finally { setLoading(false); }
-  }
+  }, []);
 
-  useEffect(()=>{ load(); }, []);
+  useEffect(()=>{ load(); }, [load]);
 
   useEffect(()=>{
     const socket = connectSocket();
@@ -46,7 +46,7 @@ export default function AdminArticles({ token }) {
       socket.off('article:deleted', onDeleted);
       socket.off('connect', onConnect);
     };
-  }, []);
+  }, [load]);
 
 
   async function onDelete(id) {
@@ -165,17 +165,17 @@ function ArticleRow({ article, onDelete, onUpdate }) {
             ) : article.image ? (
               <img src={article.image} alt={`thumb ${article.title}`} className="w-28 h-20 object-cover rounded-md border" loading="lazy" />
             ) : (
-              <div className="w-28 h-20 bg-gray-100 rounded-md border flex items-center justify-center text-gray-400">No image</div>
+              <div className="w-28 h-20 bg-bg-surface rounded-md border flex items-center justify-center text-text-dim">No image</div>
             )}
           </div>
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <div>
                 <div className="font-semibold">{article.title}</div>
-                <div className="text-sm text-gray-600">{article.description || ''}</div>
+                <div className="text-sm text-text-secondary">{article.description || ''}</div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="text-sm text-gray-500">{new Date(article.createdAt || Date.now()).toLocaleString()}</div>
+                <div className="text-sm text-text-secondary">{new Date(article.createdAt || Date.now()).toLocaleString()}</div>
                 <button className="px-2 py-1 bg-yellow-400 text-black rounded" onClick={()=>setEditing(true)}>Edit</button>
                 <button className="px-2 py-1 bg-red-600 text-white rounded" onClick={()=>onDelete(article._id)}>Delete</button>
               </div>
@@ -196,7 +196,7 @@ function ArticleRow({ article, onDelete, onUpdate }) {
           {preview && <img src={preview} className="w-48 mt-2" alt="preview" />}
           {progress > 0 && <div className="text-sm">Upload: {progress}%</div>}
           <div className="flex gap-2 justify-end">
-            <button className="px-2 py-1 bg-gray-300 rounded" onClick={()=>setEditing(false)}>Cancel</button>
+            <button className="px-2 py-1 bg-border-main rounded" onClick={()=>setEditing(false)}>Cancel</button>
             <button className="px-2 py-1 bg-green-600 text-white rounded" onClick={save} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
           </div>
         </div>

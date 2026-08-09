@@ -38,6 +38,14 @@ function loadYouTubeApi() {
   return apiPromise;
 }
 
+// Parses a YouTube ISO 8601 duration ("PT1H2M3S") into total seconds.
+//
+// NOTE: this regex is duplicated in server/routes/videos.js
+// (formatDuration), which parses + formats in one step instead of
+// splitting parse (here) from format (formatTime below). Client and
+// server are separate npm packages with no shared workspace today, so
+// there's no clean import path between them. If you fix an edge case
+// here (e.g. "PT0S", "PT45S", "PT1H2M3S"), fix it there too.
 function parseIsoDuration(iso) {
   if (!iso) return 0;
   const m = iso.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);

@@ -81,7 +81,19 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
-app.use(express.json());
+// 512kb covers the largest expected payload (CMS Content.payload blocks)
+// with headroom, while still bounding request size explicitly rather than
+// relying on express's default (which could change between versions).
+app.use(express.json({ limit: '512kb' }));
+// A malformed JSON body throws a SyntaxError from the parser above with no
+// route match yet — without this it falls through to Express's default
+// HTML error page instead of a JSON response the SPA can handle.
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && 'body' in err) {
+    return res.status(400).json({ error: 'Malformed JSON body' });
+  }
+  next(err);
+});
 
 // Routes
 const articleRoutes = require('./routes/articles');

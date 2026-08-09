@@ -71,29 +71,29 @@ export default function CreateArticle({ token }) {
   }
 
   return (
-    <form onSubmit={submit} className="p-4 border rounded bg-white">
+    <form onSubmit={submit} className="p-4 border border-border-main rounded-xl bg-bg-elevated">
       <div className="grid grid-cols-1 gap-3">
-        {error && <div className="text-sm text-red-600">{error}</div>}
-        <input placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} className="p-2 border" />
-        <input placeholder="Short description" value={description} onChange={e=>setDescription(e.target.value)} className="p-2 border" />
-        <textarea placeholder="Content" value={content} onChange={e=>setContent(e.target.value)} className="p-2 border h-28" />
+        {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</div>}
+        <input placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary" />
+        <input placeholder="Short description" value={description} onChange={e=>setDescription(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary" />
+        <textarea placeholder="Content" value={content} onChange={e=>setContent(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main h-28 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary" />
         <div className="grid grid-cols-2 gap-3">
-          <input placeholder="Author" value={author} onChange={e=>setAuthor(e.target.value)} className="p-2 border" />
-          <select value={category} onChange={e=>setCategory(e.target.value)} className="p-2 border">
+          <input placeholder="Author" value={author} onChange={e=>setAuthor(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary" />
+          <select value={category} onChange={e=>setCategory(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary">
             {ARTICLE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <input placeholder="Tags (comma separated)" value={tags} onChange={e=>setTags(e.target.value)} className="p-2 border" />
-        <input type="file" accept="image/*" onChange={e=>{
+        <input placeholder="Tags (comma separated)" value={tags} onChange={e=>setTags(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary" />
+        <input type="file" accept="image/*" className="text-sm text-text-secondary" onChange={e=>{
           const f = e.target.files[0] || null;
           if (f && f.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); e.target.value = ''; setFile(null); setPreviewFile(null); return; }
           setFile(f);
           setPreviewFile(f);
         }} />
-        {preview && <img src={preview} className="w-48 mt-2" alt="preview" />}
-        {progress > 0 && <div className="text-sm">Upload: {progress}%</div>}
+        {preview && <img src={preview} className="w-48 mt-2 rounded-lg border border-border-main" alt="preview" />}
+        {progress > 0 && <div className="text-sm text-text-secondary">Upload: {progress}%</div>}
         <div className="text-right">
-          <button className="px-3 py-2 bg-green-600 text-white rounded" disabled={loading}>{loading ? '...' : 'Create'}</button>
+          <button className="px-4 py-2 bg-brand-primary hover:bg-brand-dark text-white rounded-full text-sm font-semibold transition-colors disabled:opacity-50" disabled={loading}>{loading ? 'Uploading…' : 'Create'}</button>
         </div>
       </div>
     </form>
