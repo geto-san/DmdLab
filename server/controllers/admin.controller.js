@@ -1,4 +1,6 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const Article = require('../models/Article');
 const Announcement = require('../models/Announcement');
 const Member = require('../models/Member');
@@ -6,16 +8,36 @@ const Post = require('../models/Post');
 const About = require('../models/About');
 const Video = require('../models/Video');
 const Content = require('../models/Content');
+const { ADMIN_USER, ADMIN_PASS, ADMIN_PASS_HASH, JWT_SECRET, JWT_EXPIRES } = require('../config/auth');
 
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'password';
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'deepminds-secret';
-const JWT_EXPIRES = process.env.ADMIN_JWT_EXPIRES || '8h';
+// Constant-time string comparison. Buffers of different lengths can't be
+// compared by crypto.timingSafeEqual directly, so we still run a dummy
+// comparison in that branch to avoid leaking the expected length via timing.
+function timingSafeStringEqual(a, b) {
+  const bufA = Buffer.from(String(a ?? ''));
+  const bufB = Buffer.from(String(b ?? ''));
+  if (bufA.length !== bufB.length) {
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Missing credentials' });
-  if (username !== ADMIN_USER || password !== ADMIN_PASS) return res.status(401).json({ error: 'Invalid credentials' });
+
+  const usernameOk = timingSafeStringEqual(username, ADMIN_USER);
+
+  let passwordOk = false;
+  if (ADMIN_PASS_HASH) {
+    passwordOk = await bcrypt.compare(password, ADMIN_PASS_HASH).catch(() => false);
+  } else if (ADMIN_PASS) {
+    passwordOk = timingSafeStringEqual(password, ADMIN_PASS);
+  }
+
+  if (!usernameOk || !passwordOk) return res.status(401).json({ error: 'Invalid credentials' });
+
   const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
   res.json({ token });
 };

@@ -5,6 +5,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 
+// Refuses to boot in production if admin auth is still using the
+// documented insecure defaults (see config/auth.js).
+require('./config/auth').checkProductionSafety();
+
 const app = express();
 const PORT = process.env.PORT || 8500;
 
@@ -32,11 +36,31 @@ function isOriginAllowed(origin) {
 }
 
 // Security
+//
+// NOTE: these directives only take effect if this server ever serves the
+// built client (the `hasClientBuild` branch below) — in a split deploy
+// (client on Vercel, server on Render) the browser never sees these
+// headers at all. Kept correct anyway so the monolith path isn't a trap:
+// imgSrc has to include Cloudinary (article images) and YouTube's thumbnail
+// CDN, and scriptSrc/frameSrc have to allow YouTube's iframe API, or the
+// custom video player silently breaks under CSP.
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      imgSrc: ["'self'", "https://dmd-lab.vercel.app", "https://dmdlab.onrender.com", "https://dmdlab-504h.onrender.com", "data:"],
+      imgSrc: [
+        "'self'",
+        "https://dmd-lab.vercel.app",
+        "https://dmdlab.onrender.com",
+        "https://dmdlab-504h.onrender.com",
+        "https://res.cloudinary.com",
+        "https://i.ytimg.com",
+        "https://yt3.ggpht.com",
+        "data:",
+      ],
+      scriptSrc: ["'self'", "https://www.youtube.com", "https://s.ytimg.com"],
+      frameSrc: ["'self'", "https://www.youtube.com"],
+      connectSrc: ["'self'", "https://www.youtube.com"],
     },
   })
 );

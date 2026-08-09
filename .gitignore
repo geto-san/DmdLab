@@ -16,10 +16,13 @@ dist/
 package-lock.json
 client/package-lock.json
 server/package-lock.json
-scripts/
+
 # Node modules
 client/node_modules/
 server/node_modules/
+
+# One-off local scripts (not server/scripts/, which is committed tooling)
+/scripts/
 
 # Cloudinary or other config files (if saved locally)
 cloudinary_config.js

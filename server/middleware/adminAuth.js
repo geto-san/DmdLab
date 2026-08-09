@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'deepminds-secret';
+const { JWT_SECRET } = require('../config/auth');
 
 module.exports = (req, res, next) => {
   const auth = req.headers.authorization;
