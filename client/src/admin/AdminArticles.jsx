@@ -12,7 +12,9 @@ export default function AdminArticles({ token }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/articles`);
+      // Admin needs to see/manage every article, not just the first page —
+      // GET /articles defaults to limit=10 for the public site's pagination.
+      const res = await fetch(`${API_BASE}/articles?limit=1000`);
       const data = await res.json();
       setArticles(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -27,13 +29,22 @@ export default function AdminArticles({ token }) {
     const onCreated = (article) => setArticles(prev => [article, ...prev]);
     const onUpdated = (article) => setArticles(prev => prev.map(a => a._id === article._id ? article : a));
     const onDeleted = ({ id }) => setArticles(prev => prev.filter(a => a._id !== id));
+    // Live create/update/delete events keep `articles` in sync while
+    // connected, but any events missed during a drop (e.g. a network blip,
+    // or another admin's edit landing between the initial fetch and the
+    // socket finishing its handshake) would otherwise leave the list stale
+    // forever. Reconciling with a fresh fetch on every (re)connect closes
+    // that gap without needing per-event sequence tracking.
+    const onConnect = () => load();
     socket.on('article:created', onCreated);
     socket.on('article:updated', onUpdated);
     socket.on('article:deleted', onDeleted);
+    socket.on('connect', onConnect);
     return () => {
       socket.off('article:created', onCreated);
       socket.off('article:updated', onUpdated);
       socket.off('article:deleted', onDeleted);
+      socket.off('connect', onConnect);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import API_BASE from '../utils/api';
 import { ARTICLE_CATEGORIES } from '../utils/articleCategories';
 
@@ -14,6 +14,23 @@ export default function CreateArticle({ token }) {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
+  const previewUrlRef = useRef(null);
+
+  // Revoke the object URL for whichever preview is no longer in use — on
+  // every replacement and on unmount — so selecting several images in a
+  // row (or navigating away) doesn't leak blob memory for the tab's life.
+  function setPreviewFile(f) {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    const nextUrl = f ? URL.createObjectURL(f) : null;
+    previewUrlRef.current = nextUrl;
+    setPreview(nextUrl);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
@@ -47,7 +64,7 @@ export default function CreateArticle({ token }) {
       });
       setTitle(''); setDescription(''); setContent('');
       setAuthor(''); setCategory(ARTICLE_CATEGORIES[0]); setTags('');
-      setFile(null); setProgress(0);
+      setFile(null); setPreviewFile(null); setProgress(0);
     } catch (err) {
       setError(err.message || String(err));
     } finally { setLoading(false); }
@@ -69,9 +86,9 @@ export default function CreateArticle({ token }) {
         <input placeholder="Tags (comma separated)" value={tags} onChange={e=>setTags(e.target.value)} className="p-2 border" />
         <input type="file" accept="image/*" onChange={e=>{
           const f = e.target.files[0] || null;
-          if (f && f.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); e.target.value = ''; setFile(null); setPreview(null); return; }
+          if (f && f.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); e.target.value = ''; setFile(null); setPreviewFile(null); return; }
           setFile(f);
-          setPreview(f ? URL.createObjectURL(f) : null);
+          setPreviewFile(f);
         }} />
         {preview && <img src={preview} className="w-48 mt-2" alt="preview" />}
         {progress > 0 && <div className="text-sm">Upload: {progress}%</div>}
