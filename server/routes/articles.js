@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../models/Article');
+const { sendServerError } = require('../utils/errors');
 
 
 // GET all or filtered articles
@@ -20,8 +21,8 @@ router.get('/', async (req, res) => {
       .limit(parseInt(limit))
       .lean();
     res.json(articles);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch articles' });
+  } catch (err) {
+    sendServerError(res, err, 'GET /articles', 'Failed to fetch articles');
   }
 });
 
@@ -38,8 +39,8 @@ router.get('/:id', async (req, res) => {
     ).lean();
     if (!article) return res.status(404).json({ error: 'Article not found' });
     res.json(article);
-  } catch {
-    res.status(500).json({ message: 'Error fetching article' });
+  } catch (err) {
+    sendServerError(res, err, 'GET /articles/:id', 'Failed to fetch article');
   }
 });
 

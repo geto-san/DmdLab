@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const logger = require('./utils/logger');
 let io;
 
 function setupSocket(httpServer, allowedOrigins) {
@@ -7,8 +8,10 @@ function setupSocket(httpServer, allowedOrigins) {
   });
 
   io.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id);
-    socket.on('disconnect', () => console.log('Socket disconnected:', socket.id));
+    // debug-level: connect/disconnect on every page load is routine noise,
+    // not something worth surfacing in production logs by default.
+    logger.debug('Socket connected:', socket.id);
+    socket.on('disconnect', () => logger.debug('Socket disconnected:', socket.id));
   });
 
   return io;

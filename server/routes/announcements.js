@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Announcement = require('../models/Announcement');
+const { sendServerError } = require('../utils/errors');
 
 // GET /announcements - list latest announcements (most recent first)
 router.get('/', async (req, res) => {
@@ -8,8 +9,8 @@ router.get('/', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const announcements = await Announcement.find({}).sort({ date: -1 }).limit(limit);
     res.json(announcements);
-  } catch {
-    res.status(500).json({ error: 'Failed to fetch announcements' });
+  } catch (err) {
+    sendServerError(res, err, 'GET /announcements', 'Failed to fetch announcements');
   }
 });
 
@@ -20,7 +21,7 @@ router.get('/:id', async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    sendServerError(res, err, 'GET /announcements/:id', 'Failed to fetch announcement');
   }
 });
 

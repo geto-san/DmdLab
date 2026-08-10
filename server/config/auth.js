@@ -24,6 +24,8 @@ const ADMIN_PASS_HASH = process.env.ADMIN_PASS_HASH || null; // preferred: bcryp
 const JWT_SECRET = process.env.ADMIN_JWT_SECRET || INSECURE_DEFAULTS.secret;
 const JWT_EXPIRES = process.env.ADMIN_JWT_EXPIRES || '8h';
 
+const logger = require('../utils/logger');
+
 function checkProductionSafety() {
   if (process.env.NODE_ENV !== 'production') return;
 
@@ -37,12 +39,12 @@ function checkProductionSafety() {
   if (ADMIN_USER === INSECURE_DEFAULTS.user) {
     // Not fatal on its own, but worth a loud warning — a known username
     // halves the brute-force search space.
-    console.warn('⚠️  ADMIN_USER is still the default "admin" — consider changing it in production.');
+    logger.warn('⚠️  ADMIN_USER is still the default "admin" — consider changing it in production.');
   }
 
   if (problems.length) {
-    console.error('❌ Refusing to start in production with insecure admin auth configuration:');
-    problems.forEach((p) => console.error(`   - ${p}`));
+    logger.error('❌ Refusing to start in production with insecure admin auth configuration:');
+    problems.forEach((p) => logger.error(`   - ${p}`));
     process.exit(1);
   }
 }

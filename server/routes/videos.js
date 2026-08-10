@@ -7,6 +7,8 @@ const router = express.Router();
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID_RAW = process.env.YOUTUBE_CHANNEL_ID;
 const VideoClick = require('../models/VideoClick');
+const { sendServerError } = require('../utils/errors');
+const logger = require('../utils/logger');
 
 const SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search';
 const DETAILS_URL = 'https://www.googleapis.com/youtube/v3/videos';
@@ -72,11 +74,11 @@ async function getChannelId() {
     }).then(res => {
       resolvedChannelId = res.data.items?.[0]?.id || CHANNEL_ID_RAW;
       if (!res.data.items?.[0]?.id) {
-        console.error(`Could not resolve YouTube handle "${handle}" to a channel ID`);
+        logger.error(`Could not resolve YouTube handle "${handle}" to a channel ID`);
       }
       return resolvedChannelId;
     }).catch(err => {
-      console.error('Failed to resolve YouTube handle to channel ID:', err.message);
+      logger.error('Failed to resolve YouTube handle to channel ID:', err.message);
       resolvedChannelId = CHANNEL_ID_RAW;
       return resolvedChannelId;
     });
@@ -182,8 +184,7 @@ router.get('/', async (req, res) => {
     const videos = await fetchChannelVideos(maxResults);
     res.json(videos);
   } catch (error) {
-    console.error('Failed to fetch YouTube videos:', error.message);
-    res.status(500).json({ error: 'Failed to fetch videos' });
+    sendServerError(res, error, 'GET /videos', 'Failed to fetch videos');
   }
 });
 
@@ -224,8 +225,7 @@ router.get('/:id', async (req, res) => {
     cacheSet(cacheKey, formattedVideo, DETAIL_TTL);
     res.json(formattedVideo);
   } catch (error) {
-    console.error('Failed to fetch video by ID:', error.message);
-    res.status(500).json({ error: 'Failed to fetch video' });
+    sendServerError(res, error, 'GET /videos/:id', 'Failed to fetch video');
   }
 });
 
@@ -270,8 +270,7 @@ router.get('/:id/related', async (req, res) => {
     const top = scored.slice(0, 6).map(s => s.item);
     res.json(top);
   } catch (err) {
-    console.error('Error in related endpoint', err.message);
-    res.status(500).json({ error: 'Failed to compute related videos' });
+    sendServerError(res, err, 'GET /videos/:id/related', 'Failed to compute related videos');
   }
 });
 
@@ -284,8 +283,7 @@ router.post('/:id/click', async (req, res) => {
     await VideoClick.create({ fromVideoId: fromId, toVideoId, userAgent: req.headers['user-agent'] || '', ip: req.ip });
     res.json({ success: true });
   } catch (err) {
-    console.error('Failed to log click', err.message);
-    res.status(500).json({ error: 'Failed to log click' });
+    sendServerError(res, err, 'POST /videos/:id/click', 'Failed to log click');
   }
 });
 

@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
+const logger = require('./utils/logger');
 
 // Refuses to boot in production if admin auth is still using the
 // documented insecure defaults (see config/auth.js).
@@ -130,7 +131,7 @@ if (hasClientBuild) {
 
 // Connect to Mongo and start server
 if (process.env.DB_NAME && /^cluster\d*$/i.test(process.env.DB_NAME.trim())) {
-  console.warn(
+  logger.warn(
     `⚠️  DB_NAME="${process.env.DB_NAME}" looks like an Atlas *cluster* name, not a database name. ` +
     `Mongo will happily create/use a database literally called "${process.env.DB_NAME}", which is ` +
     `probably not the database your collections actually live in. Double-check this value.`
@@ -140,16 +141,16 @@ if (process.env.DB_NAME && /^cluster\d*$/i.test(process.env.DB_NAME.trim())) {
 mongoose
   .connect(process.env.MONGO_URI, { dbName: process.env.DB_NAME || undefined })
   .then(() => {
-    console.log('✅ MongoDB connected');
+    logger.info('✅ MongoDB connected');
     // use native http server so socket.io can attach
     const http = require('http');
     const server = http.createServer(app);
     const { setupSocket } = require('./socket');
     setupSocket(server, allowedOrigins);
-    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    server.listen(PORT, () => logger.info(`🚀 Server running on port ${PORT}`));
   })
   .catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
+    logger.error('❌ MongoDB connection error:', err.message);
     // exit with failure code so orchestrators can detect
     process.exit(1);
   });

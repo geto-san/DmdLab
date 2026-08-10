@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { connectSocket } from '../utils/socket';
 import CreateArticle from './CreateArticle.jsx';
 import API_BASE from '../utils/api';
@@ -130,8 +130,26 @@ function ArticleRow({ article, onDelete, onUpdate }) {
   const [content, setContent] = useState(article.content || '');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [fileError, setFileError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
+  const previewUrlRef = useRef(null);
+
+  // Same leak this component had before: revoke the previous object URL
+  // before creating the next one, and on unmount, so re-editing several
+  // articles in a row doesn't pin blob memory for the tab's life.
+  function setPreviewFile(f) {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    const nextUrl = f ? URL.createObjectURL(f) : null;
+    previewUrlRef.current = nextUrl;
+    setPreview(nextUrl);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
 
   async function save() {
     setSaving(true);
@@ -149,6 +167,7 @@ function ArticleRow({ article, onDelete, onUpdate }) {
       }
       setEditing(false);
       setFile(null);
+      setPreviewFile(null);
       setProgress(0);
     } catch {
       // parent will set error state
@@ -187,11 +206,19 @@ function ArticleRow({ article, onDelete, onUpdate }) {
           <input className="p-2 border" value={title} onChange={e=>setTitle(e.target.value)} />
           <input className="p-2 border" value={description} onChange={e=>setDescription(e.target.value)} />
           <textarea className="p-2 border h-24" value={content} onChange={e=>setContent(e.target.value)} />
+          {fileError && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{fileError}</div>}
           <input type="file" accept="image/*" onChange={e=>{
             const f = e.target.files[0] || null;
-            if (f && f.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); e.target.value = ''; setFile(null); setPreview(null); return; }
+            if (f && f.size > 10 * 1024 * 1024) {
+              setFileError('File too large (max 10MB)');
+              e.target.value = '';
+              setFile(null);
+              setPreviewFile(null);
+              return;
+            }
+            setFileError(null);
             setFile(f);
-            setPreview(f ? URL.createObjectURL(f) : null);
+            setPreviewFile(f);
           }} />
           {preview && <img src={preview} className="w-48 mt-2" alt="preview" />}
           {progress > 0 && <div className="text-sm">Upload: {progress}%</div>}

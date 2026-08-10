@@ -17,6 +17,14 @@ export default function AdminDashboard({ token, onLogout }) {
   const [currentEntity, setCurrentEntity] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({ title: '', body: '', date: '' });
+  // Lightweight inline status banner replacing alert() calls — auto-clears
+  // after a few seconds so it doesn't linger indefinitely on screen.
+  const [statusMessage, setStatusMessage] = useState(null); // { type: 'success' | 'error', text: string }
+
+  function showStatus(type, text) {
+    setStatusMessage({ type, text });
+    setTimeout(() => setStatusMessage((current) => (current && current.text === text ? null : current)), 4000);
+  }
 
   const [announcements, setAnnouncements] = useState([]);
   const [members, setMembers] = useState([]);
@@ -110,10 +118,17 @@ export default function AdminDashboard({ token, onLogout }) {
       const response = await fetch(url, { method, headers, body: JSON.stringify(formData) });
       if (response.ok) {
         setShowModal(false);
-        alert('Saved successfully');
+        showStatus('success', 'Saved successfully');
+      } else {
+        // Previously this branch did nothing at all on a non-2xx response
+        // (e.g. a validation 400) — the modal stayed open with no
+        // indication anything had gone wrong. Now it surfaces the server's
+        // actual error message when available.
+        const data = await response.json().catch(() => null);
+        showStatus('error', (data && data.error) || `Save failed (${response.status})`);
       }
-    } catch (err) {
-      alert('Error saving');
+    } catch {
+      showStatus('error', 'Error saving — check your connection and try again');
     }
   };
 
@@ -197,6 +212,18 @@ export default function AdminDashboard({ token, onLogout }) {
           </div>
         </div>
       </div>
+
+      {statusMessage && (
+        <div
+          className={`fixed top-20 right-6 z-50 max-w-sm rounded-xl border px-4 py-3 text-sm shadow-elevated ${
+            statusMessage.type === 'success'
+              ? 'bg-green-50 border-green-100 text-green-700'
+              : 'bg-red-50 border-red-100 text-red-700'
+          }`}
+        >
+          {statusMessage.text}
+        </div>
+      )}
 
       <div className="max-w-[1920px] mx-auto flex">
         <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-72 bg-bg-surface border-r border-border-main transition-transform duration-500 h-[calc(100vh-80px)] overflow-y-auto`}>

@@ -86,7 +86,14 @@ export default function CreateArticle({ token }) {
         <input placeholder="Tags (comma separated)" value={tags} onChange={e=>setTags(e.target.value)} className="p-2 border border-border-main rounded-lg bg-bg-main text-text-main focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary" />
         <input type="file" accept="image/*" className="text-sm text-text-secondary" onChange={e=>{
           const f = e.target.files[0] || null;
-          if (f && f.size > 10 * 1024 * 1024) { alert('File too large (max 10MB)'); e.target.value = ''; setFile(null); setPreviewFile(null); return; }
+          if (f && f.size > 10 * 1024 * 1024) {
+            setError('File too large (max 10MB)');
+            e.target.value = '';
+            setFile(null);
+            setPreviewFile(null);
+            return;
+          }
+          setError(null);
           setFile(f);
           setPreviewFile(f);
         }} />
