@@ -9,6 +9,8 @@ const About = require('../models/About');
 const Video = require('../models/Video');
 const Content = require('../models/Content');
 const { ADMIN_USER, ADMIN_PASS, ADMIN_PASS_HASH, JWT_SECRET, JWT_EXPIRES } = require('../config/auth');
+const { uploadStream, cloudinary } = require('../utils/cloudinary');
+const { safeEmit } = require('../socket');
 
 // Constant-time string comparison. Buffers of different lengths can't be
 // compared by crypto.timingSafeEqual directly, so we still run a dummy
@@ -47,8 +49,6 @@ exports.getProfile = async (req, res) => {
 };
 
 // Articles CRUD (admin)
-const { uploadStream, cloudinary } = require('../utils/cloudinary');
-const { getIo } = require('../socket');
 
 exports.createArticle = async (req, res) => {
   try {
@@ -60,7 +60,7 @@ exports.createArticle = async (req, res) => {
     }
     const newArticle = new Article(data);
     const saved = await newArticle.save();
-    try { getIo().emit('article:created', saved); } catch { /* socket not ready */ }
+    safeEmit('article:created', saved);
     res.status(201).json(saved);
   } catch (err) {
     res.status(400).json({ error: 'Failed to add article', details: err.message });
@@ -82,7 +82,7 @@ exports.updateArticle = async (req, res) => {
     }
     const updated = await Article.findByIdAndUpdate(req.params.id, data, { new: true });
     if (!updated) return res.status(404).json({ error: 'Article not found' });
-  try { getIo().emit('article:updated', updated); } catch { /* socket not ready */ }
+  safeEmit('article:updated', updated);
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: 'Failed to update article', details: err.message });
@@ -96,7 +96,7 @@ exports.deleteArticle = async (req, res) => {
     if (removed.image_public_id) {
       try { await cloudinary.uploader.destroy(removed.image_public_id); } catch { /* ignore */ }
     }
-    try { getIo().emit('article:deleted', { id: req.params.id }); } catch { /* socket not ready */ }
+    safeEmit('article:deleted', { id: req.params.id });
     res.json({ success: true });
   } catch (err) {
     res.status(400).json({ error: 'Failed to delete article', details: err.message });
@@ -115,7 +115,7 @@ const makeCrud = (Model, eventPrefix) => ({
     try {
       const doc = new Model(req.body);
       const saved = await doc.save();
-      try { getIo().emit(`${eventPrefix}:created`, saved); } catch { /* socket not ready */ }
+      safeEmit(`${eventPrefix}:created`, saved);
       res.status(201).json(saved);
     } catch (err) { res.status(400).json({ error: err.message }); }
   },
@@ -123,7 +123,7 @@ const makeCrud = (Model, eventPrefix) => ({
     try {
       const updated = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
       if (!updated) return res.status(404).json({ error: 'Not found' });
-      try { getIo().emit(`${eventPrefix}:updated`, updated); } catch { /* socket not ready */ }
+      safeEmit(`${eventPrefix}:updated`, updated);
       res.json(updated);
     } catch (err) { res.status(400).json({ error: err.message }); }
   },
@@ -131,7 +131,7 @@ const makeCrud = (Model, eventPrefix) => ({
     try {
       const removed = await Model.findByIdAndDelete(req.params.id);
       if (!removed) return res.status(404).json({ error: 'Not found' });
-      try { getIo().emit(`${eventPrefix}:deleted`, { id: req.params.id }); } catch { /* socket not ready */ }
+      safeEmit(`${eventPrefix}:deleted`, { id: req.params.id });
       res.json({ success: true });
     } catch (err) { res.status(400).json({ error: err.message }); }
   }
@@ -169,7 +169,7 @@ exports.content = {
         payload: payload || {},
       });
       const saved = await doc.save();
-      try { getIo().emit('content:created', saved); } catch { /* socket not ready */ }
+      safeEmit('content:created', saved);
       res.status(201).json(saved);
     } catch (err) {
       if (err.code === 11000) return res.status(400).json({ error: `Content key "${req.body.key}" already exists` });
@@ -191,7 +191,7 @@ exports.content = {
       }
       const updated = await Content.findByIdAndUpdate(req.params.id, data, { new: true });
       if (!updated) return res.status(404).json({ error: 'Not found' });
-      try { getIo().emit('content:updated', updated); } catch { /* socket not ready */ }
+      safeEmit('content:updated', updated);
       res.json(updated);
     } catch (err) {
       if (err.code === 11000) return res.status(400).json({ error: `Content key "${req.body.key}" already exists` });
@@ -202,7 +202,7 @@ exports.content = {
     try {
       const removed = await Content.findByIdAndDelete(req.params.id);
       if (!removed) return res.status(404).json({ error: 'Not found' });
-      try { getIo().emit('content:deleted', { id: req.params.id }); } catch { /* socket not ready */ }
+      safeEmit('content:deleted', { id: req.params.id });
       res.json({ success: true });
     } catch (err) { res.status(400).json({ error: err.message }); }
   }

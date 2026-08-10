@@ -69,6 +69,19 @@ This platform simplifies and automates monotonous tasks for the lab, providing a
    npm run dev
    ```
 
+## 🧰 Helper scripts
+
+`server/scripts/` has a couple of small, standalone scripts useful during setup/debugging:
+
+- `check-mongo-connection.js` — tests `MONGO_URI` in isolation, without booting the full server.
+  ```bash
+  node server/scripts/check-mongo-connection.js
+  ```
+- `hash-admin-password.js` — generates a bcrypt hash for `ADMIN_PASS_HASH` (see `server/server.env.example`).
+  ```bash
+  node server/scripts/hash-admin-password.js "your-new-password"
+  ```
+
 ## 📄 License
 
 This project is led by the DeepMinds Research Lab at MUST. All rights reserved.

@@ -333,7 +333,10 @@ const VideoPlayer = ({ videoId, title = '', thumbnail = '', durationIso = null }
       }
     })();
 
-    const poll = setInterval(() => {
+    // Extracted so it can be called both on the interval tick and (once,
+    // immediately) when the tab becomes visible again, so the scrubber
+    // doesn't sit stale for up to 250ms after switching back.
+    function pollTick() {
       const p = playerRef.current;
       if (!p) return;
       try {
@@ -347,10 +350,26 @@ const VideoPlayer = ({ videoId, title = '', thumbnail = '', durationIso = null }
           if (timeRef.current) timeRef.current.textContent = `${formatTime(t)} / ${formatTime(dur)}`;
         }
       } catch { /* player may be mid-teardown */ }
-    }, 250);
+    }
+
+    // The scrubber/buffered-bar UI is invisible on a backgrounded tab, so
+    // there's no point polling the player every 250ms while hidden — pause
+    // the interval entirely on visibilitychange instead of just skipping
+    // the work inside it, and catch up immediately on return.
+    let poll = setInterval(pollTick, 250);
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        clearInterval(poll);
+      } else {
+        pollTick();
+        poll = setInterval(pollTick, 250);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       disposed = true;
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       clearInterval(poll);
       playingRef.current = false;
       if (playerRef.current && typeof playerRef.current.destroy === 'function') {
