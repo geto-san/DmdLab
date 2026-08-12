@@ -7,7 +7,7 @@ import { ThemeProvider } from "./context/ThemeContext.jsx";
 import Lobby from "./Pages/Lobby.jsx";
 import ArticleLayout from "./Pages/ArticleLayout.jsx";
 import VideoPage from "./Pages/VideoPage.jsx";
-import VideoListPage from "./Pages/VideoListePage.jsx";
+import VideoListPage from "./Pages/VideoListPage.jsx";
 import ArticlePage from "./Pages/ArticlePage.jsx";
 import AdminPanel from "./admin/AdminPanel.jsx";
 import ResearchPage from "./Pages/ResearchPage.jsx";

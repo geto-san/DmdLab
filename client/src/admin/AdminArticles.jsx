@@ -180,7 +180,7 @@ function ArticleRow({ article, onDelete, onUpdate }) {
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             {article.image_public_id ? (
-              <img src={`https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || import.meta.env.CLOUDINARY_CLOUD_NAME}/image/upload/w_280,h_160,c_fill,q_auto,f_auto/${article.image_public_id}`} alt={`thumb ${article.title}`} className="w-28 h-20 object-cover rounded-md border" loading="lazy" />
+              <img src={`https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/w_280,h_160,c_fill,q_auto,f_auto/${article.image_public_id}`} alt={`thumb ${article.title}`} className="w-28 h-20 object-cover rounded-md border" loading="lazy" />
             ) : article.image ? (
               <img src={article.image} alt={`thumb ${article.title}`} className="w-28 h-20 object-cover rounded-md border" loading="lazy" />
             ) : (

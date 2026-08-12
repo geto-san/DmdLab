@@ -21,13 +21,14 @@
     "express-rate-limit": "^8.6.2",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.0",
-    "mongodb": "^6.20.0",
     "mongoose": "^8.16.4",
     "multer": "^2.2.0",
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "eslint": "^9.18.0",
+    "globals": "^17.10.0",
     "jest": "^30.4.2",
     "nodemon": "^3.0.0",
     "supertest": "^7.2.2"

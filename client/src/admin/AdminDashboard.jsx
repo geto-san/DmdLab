@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LayoutDashboard, FileText, Bell, Users, Info,
-  Settings, LogOut, Plus, Edit, Trash2, Search,
-  Menu, X, ChevronDown, Save, ShieldCheck, Check, Layers
+  Search, Menu, ShieldCheck, Check, Layers
 } from 'lucide-react';
 import AdminArticles from './AdminArticles.jsx';
 import AdminContent from './AdminContent.jsx';
@@ -12,58 +11,35 @@ import API_BASE from '../utils/api';
 export default function AdminDashboard({ token, onLogout }) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('create');
-  const [currentEntity, setCurrentEntity] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({ title: '', body: '', date: '' });
-  // Lightweight inline status banner replacing alert() calls — auto-clears
-  // after a few seconds so it doesn't linger indefinitely on screen.
-  const [statusMessage, setStatusMessage] = useState(null); // { type: 'success' | 'error', text: string }
-
-  function showStatus(type, text) {
-    setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage((current) => (current && current.text === text ? null : current)), 4000);
-  }
 
   const [announcements, setAnnouncements] = useState([]);
   const [members, setMembers] = useState([]);
-  const [footerElements, setFooterElements] = useState([]);
-  const [aboutContent, setAboutContent] = useState({});
   const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const navigation = [
     { name: 'Dashboard', icon: LayoutDashboard, section: 'dashboard' },
     { name: 'Articles', icon: FileText, section: 'articles' },
     { name: 'Announcements', icon: Bell, section: 'announcements' },
     { name: 'Members', icon: Users, section: 'members' },
-    { name: 'Footer Elements', icon: Settings, section: 'footer' },
     { name: 'About Us', icon: Info, section: 'about' },
     { name: 'Content', icon: Layers, section: 'content' }
   ];
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
         const headers = { 'Authorization': `Bearer ${token}` };
-        const [annRes, memRes, aboutRes, artRes] = await Promise.all([
+        const [annRes, memRes, artRes] = await Promise.all([
           fetch(`${API_BASE}/admin/announcements`, { headers }),
           fetch(`${API_BASE}/admin/members`, { headers }),
-          fetch(`${API_BASE}/admin/about`, { headers }),
           fetch(`${API_BASE}/articles`)
         ]);
         setAnnouncements(await annRes.json());
         setMembers(await memRes.json());
-        const aboutData = await aboutRes.json();
-        setFooterElements(Array.isArray(aboutData) ? aboutData : []);
-        setAboutContent(Array.isArray(aboutData) ? aboutData[0] || {} : aboutData);
         setArticles(await artRes.json());
       } catch (err) {
         console.error('Fetch error:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
@@ -84,54 +60,6 @@ export default function AdminDashboard({ token, onLogout }) {
     };
   }, []);
 
-  const handleCreate = (section) => {
-    setModalMode('create');
-    if (section === 'announcements') {
-      setFormData({ title: '', body: '', date: new Date().toISOString().split('T')[0] });
-    } else if (section === 'members') {
-      setFormData({ name: '', role: '', bio: '' });
-    } else if (section === 'footer') {
-      setFormData({ title: '', content: '' });
-    }
-    setShowModal(true);
-    setActiveSection(section);
-  };
-
-  const handleEdit = (item) => {
-    setModalMode('edit');
-    setCurrentEntity(item);
-    if (activeSection === 'announcements') {
-      setFormData({ title: item.title || '', body: item.body || '', date: item.date ? new Date(item.date).toISOString().split('T')[0] : '' });
-    } else if (activeSection === 'members') {
-      setFormData({ name: item.name || '', role: item.role || '', bio: item.bio || '' });
-    } else if (activeSection === 'footer') {
-      setFormData({ title: item.title || '', content: item.content || '' });
-    }
-    setShowModal(true);
-  };
-
-  const handleSaveModal = async () => {
-    try {
-      const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
-      const url = modalMode === 'create' ? `${API_BASE}/admin/${activeSection}` : `${API_BASE}/admin/${activeSection}/${currentEntity._id}`;
-      const method = modalMode === 'create' ? 'POST' : 'PUT';
-      const response = await fetch(url, { method, headers, body: JSON.stringify(formData) });
-      if (response.ok) {
-        setShowModal(false);
-        showStatus('success', 'Saved successfully');
-      } else {
-        // Previously this branch did nothing at all on a non-2xx response
-        // (e.g. a validation 400) — the modal stayed open with no
-        // indication anything had gone wrong. Now it surfaces the server's
-        // actual error message when available.
-        const data = await response.json().catch(() => null);
-        showStatus('error', (data && data.error) || `Save failed (${response.status})`);
-      }
-    } catch {
-      showStatus('error', 'Error saving — check your connection and try again');
-    }
-  };
-
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) onLogout();
   };
@@ -140,12 +68,11 @@ export default function AdminDashboard({ token, onLogout }) {
     <div className="space-y-12 animate-fade-up">
       <div>
         <h2 className="text-3xl font-extrabold text-text-main tracking-tight mb-8">Executive Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             { label: 'Publications', count: articles.length, icon: FileText },
             { label: 'Announcements', count: announcements.length, icon: Bell },
-            { label: 'Team Members', count: members.length, icon: Users },
-            { label: 'Network Nodes', count: footerElements.length, icon: Settings }
+            { label: 'Team Members', count: members.length, icon: Users }
           ].map((stat, idx) => (
             <div key={idx} className="bg-bg-surface border border-border-main rounded-3xl p-8 shadow-soft group hover:border-brand-primary/20 transition-all">
               <div className="flex justify-between items-start mb-4">
@@ -213,18 +140,6 @@ export default function AdminDashboard({ token, onLogout }) {
         </div>
       </div>
 
-      {statusMessage && (
-        <div
-          className={`fixed top-20 right-6 z-50 max-w-sm rounded-xl border px-4 py-3 text-sm shadow-elevated ${
-            statusMessage.type === 'success'
-              ? 'bg-green-50 border-green-100 text-green-700'
-              : 'bg-red-50 border-red-100 text-red-700'
-          }`}
-        >
-          {statusMessage.text}
-        </div>
-      )}
-
       <div className="max-w-[1920px] mx-auto flex">
         <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-72 bg-bg-surface border-r border-border-main transition-transform duration-500 h-[calc(100vh-80px)] overflow-y-auto`}>
           <nav className="p-6 space-y-2">
@@ -239,25 +154,6 @@ export default function AdminDashboard({ token, onLogout }) {
 
         <main className="flex-1 p-8 lg:p-12 overflow-hidden">{activeSection === 'articles' ? <AdminArticles token={token} /> : activeSection === 'content' ? <AdminContent token={token} /> : <DashboardOverview />}</main>
       </div>
-
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-bg-elevated rounded-[2.5rem] p-10 w-full max-w-lg relative z-10 border border-border-strong shadow-elevated">
-              <h3 className="text-2xl font-bold text-text-main mb-8 tracking-tight">{modalMode === 'create' ? 'Deploy New' : 'Update'} {activeSection.slice(0, -1)}</h3>
-              <div className="space-y-6">
-                 {/* Simplified for conciseness in refactor */}
-                 <p className="text-sm text-text-secondary">System ready for deployment payload.</p>
-              </div>
-              <div className="flex gap-4 mt-10">
-                <button onClick={() => setShowModal(false)} className="btn-secondary flex-1 justify-center">Abort</button>
-                <button onClick={handleSaveModal} className="btn-primary flex-1 justify-center">Commit Changes</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

@@ -27,6 +27,7 @@ export default function LoginPage({ onLogin }) {
         setErrors({ form: data.message || 'Authentication failed' });
       }
     } catch (err) {
+      console.error('Login request failed:', err);
       setErrors({ form: 'Network error. Please try again later.' });
     } finally {
       setIsLoading(false);

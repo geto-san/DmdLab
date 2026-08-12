@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from "framer-motion";
-import { Mail, GraduationCap, Github, Linkedin } from "lucide-react";
+import { Mail, Github, Linkedin } from "lucide-react";
 import { teamCategories, alumni } from "../data/labData";
 import { useContent } from "../hooks/useContent";
 

@@ -507,7 +507,7 @@ const VideoPlayer = ({ videoId, title = '', thumbnail = '', durationIso = null }
       {error && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-bg-main p-6 text-center">
           <AlertTriangle className="h-10 w-10 text-brand-amber" />
-          <p className="text-sm font-bold text-text-main">This recording can't be played right now.</p>
+          <p className="text-sm font-bold text-text-main">This recording can&apos;t be played right now.</p>
           <p className="text-xs text-text-secondary">{error}</p>
           <button
             type="button"

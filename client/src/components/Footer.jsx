@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Mail, MapPin, Github, Phone, Youtube, Globe, ChevronDown, Check, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/useTheme';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -21,7 +21,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20 text-left">
           <div className="lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-8">
-              <img src="/logo-7402580_1920.png" alt="DMRLab Logo" className="w-9 h-9 dark:brightness-200" />
+              <img src="/logo.png" alt="DMRLab Logo" className="w-9 h-9 dark:brightness-200" />
               <span className="text-2xl font-extrabold text-text-main tracking-tighter">DMRLab</span>
             </Link>
             <p className="text-base text-text-secondary leading-relaxed mb-8 max-w-xs">

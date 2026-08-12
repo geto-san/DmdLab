@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import ArticleSearch from '../components/Articles/ArticleSearch';
 import ArticleFilter from '../components/Articles/ArticleFilter';
 import ArticleGrid from '../components/Articles/ArticleGrid';

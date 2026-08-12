@@ -105,7 +105,7 @@ const Header = () => {
             >
               <div className="flex items-center justify-between px-6 lg:px-12 h-16 sm:h-20 shrink-0 border-b border-border-subtle">
                  <div className="w-8 h-8">
-                   <img src="/logo-7402580_1920.png" alt="Icon" className="w-full h-full object-contain dark:brightness-200" />
+                   <img src="/logo.png" alt="Icon" className="w-full h-full object-contain dark:brightness-200" />
                  </div>
                  <div className="flex items-center gap-4">
                     <Link

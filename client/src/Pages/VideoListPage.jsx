@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import VideoSearch from '../components/Videos/VideoSearch';
 import VideoFilters from '../components/Videos/VideoFilters';
 import VideoCard from '../components/Videos/VideoCard';

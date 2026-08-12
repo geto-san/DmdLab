@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, User, Tag } from 'lucide-react';
-import API_BASE_URL from '../utils/api';
+import { ArrowLeft, Clock, Tag } from 'lucide-react';
+import API_BASE from '../utils/api';
 
 const ArticlePage = () => {
   const { id } = useParams();
@@ -15,7 +15,7 @@ const ArticlePage = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE_URL}/articles/${id}`);
+        const res = await fetch(`${API_BASE}/articles/${id}`);
         if (!res.ok) throw new Error('Research article not found');
         const data = await res.json();
         setArticle(data);
