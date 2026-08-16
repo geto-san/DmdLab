@@ -1,38 +1,46 @@
 # AGENTS.md
 
-Two independent npm packages; no root manifest, no CI. Verification is `npm run lint` in each package plus `npm test` in `server/` (server lint is clean; client lint currently reports ~4 pre-existing `no-unused-vars` errors in `AdminDashboard.jsx`, unrelated to normal edits).
+Single Next.js app; the old Express/Mongo `server/` package was deleted in the Postgres migration. No root manifest, no tests, no CI. Verification is `npm run typecheck`, `npm run lint`, and `npm run build` in `client/` (all currently clean).
 
 ## Layout & stack
 
-- `server/` — Express + Mongoose + Socket.io. **CommonJS** (`require`); the eslint config sets `sourceType: 'commonjs'` — do not convert to ESM.
-- `client/` — React 19 + Vite + Tailwind v4. ESM. Tailwind v4 uses `@tailwindcss/vite`; there is **no `tailwind.config.js`** — theme tokens and the `.dark` custom variant live in `client/src/index.css` (`@theme`, `@custom-variant dark`).
-- Client routes are declared in `client/src/main.jsx`.
+- `client/` — Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4. **ESM**; CommonJS (`require`) is only used inside the `server`-adjacent legacy scripts — do not convert.
+- Tailwind v4 uses `@tailwindcss/postcss`; there is **no `tailwind.config.js`** — theme tokens and the `.dark` custom variant live in `client/app/globals.css` (`@theme`, `@custom-variant dark`).
+- DB is Neon Postgres + Drizzle ORM (`drizzle-orm/neon-http`). Schema: `client/db/schema.ts`, client `client/db/index.ts`, config `client/drizzle.config.ts` (`schemaFilter: ["public"]`).
+- Auth is **Managed Neon Auth** (`@neondatabase/auth`), not a hand-rolled JWT. Session/account tables live in the `neon_auth` schema (managed by Neon — excluded from Drizzle). Admin role is `neon_auth.user.role = 'admin'`, gated by `app/api/admin/guard.ts` (`auth.getSession()` → role check → 401) and `proxy.ts` (redirects unauthenticated `/admin/*` → `/admin/login`).
+- Email is Resend via `app/api/contact` (validated + per-IP rate-limited) → `CONTACT_EMAIL`, with `CONTACT_FROM` defaulting to the Resend sandbox (`onboarding@resend.dev`).
+- YouTube data is a live proxy to the YouTube Data API (`lib/youtube.ts`), not the DB. `GET /videos*` needs `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID`; a channel URL/`@handle` auto-resolves to a raw `UC...` id. Related-video clicks are stored in the `video_clicks` table.
 
 ## Setup
 
 ```bash
-# server (port 8500)
-cd server && cp server.env.example .env   # file is server.env.example, not .env.example
-npm run dev                                # nodemon; npm start for prod
-npm test                                   # jest — mocked-model unit/integration tests, no DB needed
-
-# client (port 5173)
-cd client && npm run dev
+cd client && cp .env.example .env   # fill in real values
+npm install
+npm run dev                          # http://localhost:3000
 ```
 
-- Server reads `server/.env` via dotenv. Client env vars must be `VITE_`-prefixed or Vite won't expose them (see `client/.env.example`); `VITE_API_BASE` overrides the `http://localhost:8500` default.
-- Seed sample data: `cd server && node seed.js` (adds docs) or `node seed.js --reset` (wipes Article + Announcement first). Requires `MONGO_URI`/`DB_NAME` in `server/.env`.
-- `DB_NAME` must be a database name, not an Atlas cluster name — the server warns (`/^cluster\d*$/i`) and would otherwise create a bogus DB.
+`client/.env` (gitignored) must contain: `DATABASE_URL` (Neon pooled URL), `DATABASE_URL_UNPOOLED` (same host minus `-pooler`, used by drizzle-kit migrations and scripts), `NEON_AUTH_BASE_URL` (the `*.neonauth.<region>.aws.neon.tech/<db>/auth` URL), `NEON_AUTH_COOKIE_SECRET`, `ADMIN_EMAIL`, `RESEND_API_KEY`, `CONTACT_EMAIL` (defaults to `ADMIN_EMAIL`), `CONTACT_FROM`, plus `CLOUDINARY_*` and `YOUTUBE_*`.
 
-## Deploy model
+## Scripts (in `client/`)
 
-- `npm run build` inside `server/` actually builds the **client** (`cd ../client && npm run build`); `npm run build-and-start` does both. This enables a monolith deploy: if `client/dist/index.html` exists, the server serves the built SPA (with catch-all routing); otherwise it runs API-only (health check at `/`, JSON 404s elsewhere). Client also deploys standalone to Vercel (`vercel.json` rewrite → `/index.html`).
-- CORS is a hard allowlist plus optional suffix matching (`CORS_ORIGIN_SUFFIXES`) because Vercel preview URLs are hash-unique. Match this pattern when adding origins.
+- `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` — Drizzle kit. Migrations output to `drizzle/`. `drizzle/*.sql.ignore` is gitignored.
+- `npm run seed` (add) / `npm run seed:reset` (wipe Articles + Announcements + Content first) — Drizzle inserts; needs `DATABASE_URL` in `.env`.
+- `npm run create-admin` — POSTs `${NEON_AUTH_BASE_URL}/sign-up/email` (password via `ADMIN_PASSWORD` env or first CLI arg; idempotent on "already exists") then sets `neon_auth.user.role='admin'`. Needs `NEON_AUTH_BASE_URL`, `ADMIN_EMAIL`, and `DATABASE_URL`. `APP_URL` (default `http://localhost:3000`) is sent as the Origin header + `callbackURL`.
+- Scripts use `scripts/load-env.ts` to load `client/.env`; they dynamically import `db/index.ts` **after** loading env (the db client reads `DATABASE_URL` at import time).
 
 ## API facts
 
-- Admin API is mounted at `/admin/*` and protected by a Bearer JWT (`middleware/adminAuth.js`). Defaults when unset: `admin`/`password`, secret `deepminds-secret` — change before deploying.
-- Article create/update/delete exist **only** under `/admin/articles` (Multer + Cloudinary upload via field `image`). Public `GET /articles` is read-only by design; do not re-add a public POST (removed previously as a security fix).
-- `GET /videos*` is a live proxy to the YouTube Data API, not the DB. Needs `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID`; a channel URL/`@handle` is auto-resolved to a raw `UC...` id.
-- Socket.io attaches to the native HTTP server only after Mongo connects; the process `exit(1)`s if Mongo fails.
-- `server/DmdLab.postman_collection.json` documents the API endpoints.
+- Public: `GET /api/articles`, `/api/articles/[id]`, `/api/announcements`, `/api/content`, `/api/content/[key]`, `/api/videos`, `/api/videos/[id]`, `/api/videos/[id]/click` (POST), `/api/videos/[id]/related`, `POST /api/contact`. Read-only by design; no public write endpoints.
+- Admin: `/api/admin/articles` + `/[id]` (multipart, Cloudinary `image` upload/destroy via `imagePublicId`, tags via `form.getAll("tags")`), `/api/admin/[collection]` + `/[id]` for announcements/members/posts/about/videos/content (JSON). All protected by `requireAdmin()`.
+- Auth endpoints are mounted at `/api/auth/[...path]` (better-auth/Neon handler). The browser auth client (`lib/auth/client.ts`) defaults to same-origin `/api/auth`; admin SPA (`components/admin/*`) uses `authClient.useSession()` + session cookies — do not reintroduce token headers.
+- Content blocks have a `key` that must match `^[a-z0-9-]+$` and a jsonb `payload`; `lib/content.ts` merges DB blocks over static fallbacks from `lib/data.ts`.
+
+## Deploy
+
+Vercel-only, standalone Next app. No dual server/client deploy. Set all `client/.env` vars (with `DATABASE_URL`, `NEON_AUTH_BASE_URL`, etc.) as Vercel env vars. Production build is a monolith; there is no `vercel.json` rewrite needed since Next handles routing.
+
+## Gotchas
+
+- Do not convert to ESM `import` in any legacy CommonJS script that runs under `tsx` with the default CJS output (no top-level await in scripts).
+- `eslint-config-next` v16 ships native flat configs — do **not** reintroduce `FlatCompat` (it crashes eslint with a circular-structure error). `react-hooks/set-state-in-effect` is disabled for the intentional mount/hydration patterns.
+- Never add a public `POST /api/articles` (removed previously as a security fix).

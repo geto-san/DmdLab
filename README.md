@@ -1,87 +1,44 @@
 # DeepMinds Research Lab (DmdLab)
 
-A professional, centralized hub for the AI/ML PhD Professor-led Research Lab at MUST (Mbarara University of Science and Technology). 
+A centralized hub for the AI/ML research lab at MUST (Mbarara University of Science and Technology): research articles, lab discussion videos, applied ML projects, and a CMS-backed admin panel.
 
-This platform simplifies and automates monotonous tasks for the lab, providing a centralized repository for research articles and lab discussion videos, while serving as a bridge to external platforms like YouTube.
+## Tech stack
 
-## 🚀 Key Features
+- **Next.js 16** (App Router) + React 19 + TypeScript + Tailwind CSS v4 — single app, deployed to Vercel.
+- **Neon Postgres + Drizzle ORM** — articles, announcements, members, posts, about, videos, video clicks, CMS content blocks (`client/db/schema.ts`).
+- **Managed Neon Auth** (`@neondatabase/auth`) — admin sessions; admin role = `neon_auth.user.role = 'admin'`.
+- **Resend** — contact form email (`/api/contact`).
+- **YouTube Data API** — live video proxy (`lib/youtube.ts`).
+- **Cloudinary** — article image uploads from the admin panel.
 
-- **Centralized Activity Hub**: Access lab discussion videos and recorded research sessions without leaving the platform.
-- **Applied ML Research**: A dedicated showcase for lab projects, including human-wildlife conflict reporting and Uganda Sign Language translation.
-- **Automated Workflow**: Future integration for direct-to-YouTube content management and CMS capabilities.
-- **Professional SaaS UI**: Modern, responsive interface optimized for desktop and mobile, built with React and Tailwind CSS.
+## Getting started
 
-## 🛠 Tech Stack
-
-### Frontend
-- **React 19** & **Vite**: Modern UI library and build tool.
-- **Tailwind CSS**: Utility-first styling with a custom SaaS theme.
-- **Framer Motion**: Smooth, high-fidelity UI transitions and animations.
-- **Lucide React**: Clean, consistent iconography.
-- **Socket.io-client**: Real-time communication for lab updates.
-
-### Backend
-- **Node.js** & **Express**: Robust server-side framework.
-- **MongoDB**: Scalable NoSQL database for research articles and video metadata.
-- **Socket.io**: Real-time event orchestration.
-- **Cloudinary**: Optimized media and image management.
-
-## 📦 Project Structure
-
-```text
-├── client/          # React + Vite frontend
-│   ├── src/
-│   │   ├── components/  # Modular UI components (Hero, Header, Cards)
-│   │   ├── Pages/       # Main entry pages (Lobby, Articles, Videos)
-│   │   └── admin/       # Internal lab management panel
-├── server/          # Express backend
-│   ├── models/      # MongoDB schemas (Article, Video, Announcement)
-│   ├── routes/      # API endpoints
-│   └── utils/       # Third-party integrations (Cloudinary, Sockets)
+```bash
+cd client
+cp .env.example .env   # fill in Neon, Neon Auth, Resend, Cloudinary, YouTube values
+npm install
+npm run dev            # http://localhost:3000
 ```
 
-## 🛠 Getting Started
+### Seed data & admin
 
-### Prerequisites
-- Node.js (v18+)
-- MongoDB instance (local or Atlas)
+```bash
+npm run seed           # sample articles / announcements / content blocks
+npm run create-admin   # create the admin account (password via ADMIN_PASSWORD or first arg)
+```
 
-### Installation
+### Database migrations
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/DmdLab/DmdLab.git
-   cd DmdLab
-   ```
+```bash
+npm run db:generate    # new migration from schema changes
+npm run db:migrate     # apply migrations
+npm run db:studio      # Drizzle Studio
+```
 
-2. **Setup the Server**:
-   ```bash
-   cd server
-   npm install
-   cp server.env.example .env  # Configure your MongoDB and Cloudinary credentials
-   npm start
-   ```
+## Scripts
 
-3. **Setup the Client**:
-   ```bash
-   cd ../client
-   npm install
-   npm run dev
-   ```
+`npm run dev` · `npm run build` · `npm run start` · `npm run lint` (eslint) · `npm run typecheck` (tsc --noEmit)
 
-## 🧰 Helper scripts
+## License
 
-`server/scripts/` has a couple of small, standalone scripts useful during setup/debugging:
-
-- `check-mongo-connection.js` — tests `MONGO_URI` in isolation, without booting the full server.
-  ```bash
-  node server/scripts/check-mongo-connection.js
-  ```
-- `hash-admin-password.js` — generates a bcrypt hash for `ADMIN_PASS_HASH` (see `server/server.env.example`).
-  ```bash
-  node server/scripts/hash-admin-password.js "your-new-password"
-  ```
-
-## 📄 License
-
-This project is led by the DeepMinds Research Lab at MUST. All rights reserved.
+Led by the DeepMinds Research Lab at MUST. All rights reserved.

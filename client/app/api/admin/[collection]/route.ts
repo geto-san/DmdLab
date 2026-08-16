@@ -1,0 +1,97 @@
+import { NextResponse } from "next/server";
+import { asc } from "drizzle-orm";
+import { db } from "@/db";
+import { announcements, members, posts, about, videos, contentBlocks } from "@/db/schema";
+import { requireAdmin } from "../guard";
+
+export const dynamic = "force-dynamic";
+
+const TABLES = {
+  announcements,
+  members,
+  posts,
+  about,
+  videos,
+  content: contentBlocks,
+} as const;
+
+type TableKey = keyof typeof TABLES;
+
+function resolveTable(collection: string) {
+  return (TABLES as Record<string, unknown>)[collection] as
+    | (typeof TABLES)[TableKey]
+    | undefined;
+}
+
+function normalizeContentInput(body: Record<string, unknown>) {
+  const { key, section, title, enabled, payload } = body;
+  if (!key || !/^[a-z0-9-]+$/.test(String(key))) {
+    return {
+      error: "key must be lowercase alphanumeric with dashes (e.g. hero)" as string | null,
+      data: null,
+    };
+  }
+  return {
+    error: null,
+    data: {
+      key: String(key).trim().toLowerCase(),
+      section: String(section || "general").trim(),
+      title: String(title || ""),
+      enabled: enabled !== false,
+      payload:
+        payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {},
+    },
+  };
+}
+
+function duplicateKeyError() {
+  return NextResponse.json({ error: "Content key already exists" }, { status: 400 });
+}
+
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ collection: string }> }
+) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { collection } = await params;
+  const table = resolveTable(collection);
+  if (!table) return NextResponse.json({ error: "Unknown collection" }, { status: 404 });
+
+  try {
+    const rows = await db.select().from(table).orderBy(asc(table.id));
+    return NextResponse.json(rows);
+  } catch (err) {
+    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+  }
+}
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ collection: string }> }
+) {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
+
+  const { collection } = await params;
+  const table = resolveTable(collection);
+  if (!table) return NextResponse.json({ error: "Unknown collection" }, { status: 404 });
+
+  try {
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+    if (collection === "content") {
+      const { error, data } = normalizeContentInput(body);
+      if (error) return NextResponse.json({ error }, { status: 400 });
+      const [saved] = await db.insert(contentBlocks).values(data as never).returning();
+      return NextResponse.json(saved, { status: 201 });
+    }
+    const [saved] = await db.insert(table).values(body as never).returning();
+    return NextResponse.json(saved, { status: 201 });
+  } catch (err) {
+    if (collection === "content" && (err as { code?: string })?.code === "23505") {
+      return duplicateKeyError();
+    }
+    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+  }
+}
