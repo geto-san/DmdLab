@@ -6,8 +6,9 @@ import { RESEARCH_PROJECTS } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui";
+import { EditItem } from "@/components/cms/edit-item";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 type Project = {
   title: string;
@@ -41,7 +42,8 @@ export default async function ResearchPage() {
         lead="Ongoing investigations across computational chemistry, drug discovery, and applied machine learning."
       />
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <EditItem collection="content" blockKey="research" item={{ title: "Research projects" }}>
+        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         <div className="grid gap-x-10 gap-y-16 md:grid-cols-2">
           {projects.map((p, i) => (
             <Reveal key={p.slug} delay={(i % 2) * 100}>
@@ -87,6 +89,7 @@ export default async function ResearchPage() {
           </Button>
         </div>
       </section>
+      </EditItem>
     </div>
   );
 }

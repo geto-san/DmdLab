@@ -1,12 +1,20 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { cache } from "react";
+import type { Metadata } from "next";
 import { ArrowLeft, Calendar, DollarSign, Users } from "lucide-react";
 import { getContentMap, mergeBlock } from "@/lib/content";
 import { RESEARCH_PROJECTS } from "@/lib/data";
 import { Badge } from "@/components/ui";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+// Required (even empty) for ISR to apply to a dynamic segment at runtime —
+// otherwise Next renders it fully dynamic despite `revalidate` being set.
+export async function generateStaticParams() {
+  return [];
+}
 
 type Project = {
   title: string;
@@ -19,19 +27,42 @@ type Project = {
   image: string;
 };
 
-export default async function ProjectDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+const getProject = cache(async (slug: string) => {
   const content = await getContentMap();
   const block = mergeBlock(
     { projects: RESEARCH_PROJECTS } as unknown as Record<string, unknown>,
     content.research as Record<string, unknown> | undefined
   );
   const projects = (block.projects as Project[]) || RESEARCH_PROJECTS;
-  const project = projects.find((p) => p.slug === slug);
+  return projects.find((p) => p.slug === slug) ?? null;
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const project = await getProject(slug);
+  if (!project) return {};
+  return {
+    title: project.title,
+    description: project.description,
+    openGraph: {
+      title: project.title,
+      description: project.description,
+      images: project.image ? [project.image] : undefined,
+    },
+  };
+}
+
+export default async function ProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const project = await getProject(slug);
 
   if (!project) notFound();
 

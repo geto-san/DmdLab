@@ -11,8 +11,9 @@ import { Marquee } from "@/components/marquee";
 import { Reveal } from "@/components/reveal";
 import { StatCounter } from "@/components/stat-counter";
 import { ArticleCard } from "@/components/article-card";
+import { EditItem, AddButton } from "@/components/cms/edit-item";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 type HeroTitle = { before: string; highlight: string; after: string };
 type HeroBlock = {
@@ -43,7 +44,8 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="noise-overlay relative flex min-h-screen flex-col justify-end overflow-hidden">
+      <EditItem collection="content" blockKey="hero" item={{ title: "Hero section" }}>
+        <section className="noise-overlay relative flex min-h-screen flex-col justify-end overflow-hidden">
         <div className="absolute inset-x-0 top-0 -z-10 h-[120vh] bg-[radial-gradient(60%_50%_at_50%_0%,color-mix(in_srgb,var(--accent2)_14%,transparent),transparent)]" />
         <div className="mx-auto w-full max-w-7xl px-5 pb-10 pt-32 sm:px-8">
           <Reveal>
@@ -97,31 +99,39 @@ export default async function HomePage() {
           <ArrowDown className="size-5 animate-bounce" />
         </a>
       </section>
+      </EditItem>
 
       {/* Stats band */}
-      <section className="hairline-b border-b border-line bg-surface">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px px-5 py-16 sm:px-8 md:grid-cols-4">
-          {stats.map((s, i) => (
-            <div key={s.label} className={i > 0 ? "md:border-l md:border-line md:pl-10" : ""}>
-              <p className="font-display text-5xl tracking-tight sm:text-6xl">
-                <StatCounter value={s.value} suffix={s.suffix} />
-              </p>
-              <p className="mt-2 font-mono-x text-xs text-muted">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <EditItem collection="content" blockKey="stats" item={{ title: "Stats band" }}>
+        <section className="hairline-b border-b border-line bg-surface">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px px-5 py-16 sm:px-8 md:grid-cols-4">
+            {stats.map((s, i) => (
+              <div key={s.label} className={i > 0 ? "md:border-l md:border-line md:pl-10" : ""}>
+                <p className="font-display text-5xl tracking-tight sm:text-6xl">
+                  <StatCounter value={s.value} suffix={s.suffix} />
+                </p>
+                <p className="mt-2 font-mono-x text-xs text-muted">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </EditItem>
 
       {/* Announcements */}
       {announcementRows.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
           <Reveal>
-            <p className="mb-6 flex items-center gap-2 font-mono-x text-muted">
-              <Radio className="size-3.5 text-accent2" /> Latest
-            </p>
-            <ul className="divide-y divide-line">
-              {announcementRows.map((a) => (
-                <li key={a.id} className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <p className="flex items-center gap-2 font-mono-x text-muted">
+                <Radio className="size-3.5 text-accent2" /> Latest
+              </p>
+              <AddButton collection="announcements" label="Add announcement" />
+            </div>
+          </Reveal>
+          <ul className="divide-y divide-line">
+            {announcementRows.map((a) => (
+              <EditItem key={a.id} collection="announcements" item={a}>
+                <li className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
                   <span className="font-mono-x text-xs text-muted">
                     {new Date(a.date).toLocaleDateString("en-US", {
                       month: "short",
@@ -132,14 +142,15 @@ export default async function HomePage() {
                   <span className="font-display text-xl sm:text-2xl">{a.title}</span>
                   {a.body && <span className="w-full text-sm text-muted sm:w-auto">{a.body}</span>}
                 </li>
-              ))}
-            </ul>
-          </Reveal>
+              </EditItem>
+            ))}
+          </ul>
         </section>
       )}
 
       {/* Featured projects */}
-      <section className="hairline-t border-t border-line bg-surface">
+      <EditItem collection="content" blockKey="featured-projects" item={{ title: "Featured projects" }}>
+        <section className="hairline-t border-t border-line bg-surface">
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
             <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
@@ -181,6 +192,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </EditItem>
 
       {/* Latest articles */}
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
@@ -193,24 +205,28 @@ export default async function HomePage() {
               From the Journal
             </h2>
           </div>
-          <Button href="/articles" variant="outline" icon>
-            All articles
-          </Button>
+          <div className="flex flex-wrap items-center gap-4">
+            <AddButton collection="article" label="Add article" />
+            <Button href="/articles" variant="outline" icon>
+              All articles
+            </Button>
+          </div>
         </div>
         {articleRows.length ? (
           <div className="grid gap-10 md:grid-cols-3">
             {articleRows.map((a, i) => (
-              <ArticleCard
-                key={a.id}
-                id={String(a.id)}
-                title={a.title}
-                description={a.description}
-                category={a.category}
-                date={a.date}
-                author={a.author}
-                image={a.image}
-                index={i}
-              />
+              <EditItem key={a.id} collection="article" item={a}>
+                <ArticleCard
+                  id={String(a.id)}
+                  title={a.title}
+                  description={a.description}
+                  category={a.category}
+                  date={a.date}
+                  author={a.author}
+                  image={a.image}
+                  index={i}
+                />
+              </EditItem>
             ))}
           </div>
         ) : (

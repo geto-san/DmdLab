@@ -1,31 +1,15 @@
 import { NextResponse } from "next/server";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
-import { announcements, members, posts, about, videos, contentBlocks } from "@/db/schema";
+import { contentBlocks } from "@/db/schema";
+import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
 import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 
-const TABLES = {
-  announcements,
-  members,
-  posts,
-  about,
-  videos,
-  content: contentBlocks,
-} as const;
-
-type TableKey = keyof typeof TABLES;
-
-function resolveTable(collection: string) {
-  return (TABLES as Record<string, unknown>)[collection] as
-    | (typeof TABLES)[TableKey]
-    | undefined;
-}
-
 function normalizeContentInput(body: Record<string, unknown>) {
   const { key, section, title, enabled, payload } = body;
-  if (!key || !/^[a-z0-9-]+$/.test(String(key))) {
+  if (!key || !CONTENT_KEY_PATTERN.test(String(key))) {
     return {
       error: "key must be lowercase alphanumeric with dashes (e.g. hero)" as string | null,
       data: null,
@@ -84,9 +68,11 @@ export async function POST(
       const { error, data } = normalizeContentInput(body);
       if (error) return NextResponse.json({ error }, { status: 400 });
       const [saved] = await db.insert(contentBlocks).values(data as never).returning();
+      revalidateForCollection(collection);
       return NextResponse.json(saved, { status: 201 });
     }
     const [saved] = await db.insert(table).values(body as never).returning();
+    revalidateForCollection(collection);
     return NextResponse.json(saved, { status: 201 });
   } catch (err) {
     if (collection === "content" && (err as { code?: string })?.code === "23505") {

@@ -1,25 +1,10 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { announcements, members, posts, about, videos, contentBlocks } from "@/db/schema";
+import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
 import { requireAdmin } from "../../guard";
 
 export const dynamic = "force-dynamic";
-
-const TABLES = {
-  announcements,
-  members,
-  posts,
-  about,
-  videos,
-  content: contentBlocks,
-} as const;
-
-function resolveTable(collection: string) {
-  return (TABLES as Record<string, unknown>)[collection] as
-    | (typeof TABLES)[keyof typeof TABLES]
-    | undefined;
-}
 
 function parseId(id: string) {
   const num = Number(id);
@@ -45,7 +30,7 @@ export async function PUT(
     const data: Record<string, unknown> = { ...body };
     delete data.id;
     if (collection === "content") {
-      if (data.key !== undefined && !/^[a-z0-9-]+$/.test(String(data.key))) {
+      if (data.key !== undefined && !CONTENT_KEY_PATTERN.test(String(data.key))) {
         return NextResponse.json(
           { error: "key must be lowercase alphanumeric with dashes (e.g. hero)" },
           { status: 400 }
@@ -64,6 +49,7 @@ export async function PUT(
       .where(eq(table.id, recordId))
       .returning();
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    revalidateForCollection(collection);
     return NextResponse.json(updated);
   } catch (err) {
     if (collection === "content" && (err as { code?: string })?.code === "23505") {
@@ -93,6 +79,7 @@ export async function DELETE(
       .where(eq(table.id, recordId))
       .returning({ id: table.id });
     if (!removed) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    revalidateForCollection(collection);
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 400 });

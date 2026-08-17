@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { sql } from "drizzle-orm";
+import { db } from "@/db";
+import { contactRateLimits } from "@/db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +13,28 @@ const CONTACT_FROM = process.env.CONTACT_FROM || "onboarding@resend.dev";
 const MAX_NAME = 120;
 const MAX_MESSAGE = 4000;
 
-const rateLimit = new Map<string, { count: number; windowStart: number }>();
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const RATE_MAX = 5;
+
+// Atomic upsert: within the window, increments; once the window has
+// elapsed, resets to 1. Single statement, so concurrent requests from the
+// same IP can't race past the limit the way a read-then-write check could.
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - RATE_WINDOW_MS);
+  const [row] = await db
+    .insert(contactRateLimits)
+    .values({ ip, windowStart: now, count: 1 })
+    .onConflictDoUpdate({
+      target: contactRateLimits.ip,
+      set: {
+        count: sql`case when ${contactRateLimits.windowStart} > ${cutoff.toISOString()}::timestamptz then ${contactRateLimits.count} + 1 else 1 end`,
+        windowStart: sql`case when ${contactRateLimits.windowStart} > ${cutoff.toISOString()}::timestamptz then ${contactRateLimits.windowStart} else ${now.toISOString()}::timestamptz end`,
+      },
+    })
+    .returning({ count: contactRateLimits.count });
+  return row.count <= RATE_MAX;
+}
 
 type ContactBody = { name?: unknown; email?: unknown; message?: unknown };
 
@@ -25,18 +47,12 @@ export async function POST(req: Request) {
   }
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const now = Date.now();
-  const bucket = rateLimit.get(ip);
-  if (bucket && bucket.windowStart + RATE_WINDOW_MS > now) {
-    if (bucket.count >= RATE_MAX) {
-      return NextResponse.json(
-        { error: "Too many messages. Try again later." },
-        { status: 429 }
-      );
-    }
-    bucket.count += 1;
-  } else {
-    rateLimit.set(ip, { count: 1, windowStart: now });
+  const withinLimit = await checkRateLimit(ip).catch(() => true);
+  if (!withinLimit) {
+    return NextResponse.json(
+      { error: "Too many messages. Try again later." },
+      { status: 429 }
+    );
   }
 
   let body: ContactBody;

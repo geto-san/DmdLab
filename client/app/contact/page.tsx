@@ -3,8 +3,6 @@ import { PageHeader } from "@/components/page-header";
 import { ContactForm } from "@/components/contact-form";
 import { Reveal } from "@/components/reveal";
 
-export const dynamic = "force-dynamic";
-
 const INFO = [
   {
     icon: Mail,

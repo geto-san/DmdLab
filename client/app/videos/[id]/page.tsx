@@ -1,13 +1,40 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, Calendar, Eye, ThumbsUp } from "lucide-react";
 import { fetchVideoById, fetchRelatedVideos, type RelatedVideo, type YouTubeVideo } from "@/lib/youtube";
 import { VideoPlayer } from "@/components/video-player";
 import { RelatedVideos } from "@/components/related-videos";
+import { VideoDetailEdit } from "@/components/cms/video-detail-edit";
 import { Badge } from "@/components/ui";
 import { formatDate, formatViews } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
+
+// Required (even empty) for ISR to apply to a dynamic segment at runtime —
+// otherwise Next renders it fully dynamic despite `revalidate` being set.
+export async function generateStaticParams() {
+  return [];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const video = await fetchVideoById(id).catch(() => null);
+  if (!video) return {};
+  return {
+    title: video.title,
+    description: video.description?.slice(0, 300) || undefined,
+    openGraph: {
+      title: video.title,
+      description: video.description?.slice(0, 300) || undefined,
+      images: video.thumbnail ? [video.thumbnail] : undefined,
+    },
+  };
+}
 
 export default async function VideoDetailPage({
   params,
@@ -28,7 +55,7 @@ export default async function VideoDetailPage({
   if (!video && !error) notFound();
   if (video) {
     try {
-      related = await fetchRelatedVideos(id, 12);
+      related = await fetchRelatedVideos(id);
     } catch {
       related = [];
     }
@@ -56,7 +83,8 @@ export default async function VideoDetailPage({
         <div className="grid gap-12 lg:grid-cols-[1fr_360px]">
           <div>
             <VideoPlayer videoId={video._id} title={video.title} />
-            <div className="mt-8">
+            <VideoDetailEdit video={{ _id: video._id, title: video.title }}>
+              <div className="mt-8">
               <div className="mb-4 flex flex-wrap items-center gap-3 font-mono-x text-xs text-muted">
                 <Badge>{video.category}</Badge>
                 <span className="inline-flex items-center gap-1.5">
@@ -84,7 +112,8 @@ export default async function VideoDetailPage({
                   ))}
                 </div>
               )}
-            </div>
+              </div>
+            </VideoDetailEdit>
           </div>
 
           <aside>

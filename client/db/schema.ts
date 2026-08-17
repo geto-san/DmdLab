@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, jsonb, boolean, index } from "drizzle-orm/pg-core";
 
 export const articles = pgTable("articles", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -27,6 +27,7 @@ export const members = pgTable("members", {
   role: text("role"),
   bio: text("bio"),
   photo: text("photo"),
+  category: text("category").notNull().default("Researchers"),
 });
 
 export const about = pgTable("about", {
@@ -53,13 +54,36 @@ export const videos = pgTable("videos", {
   publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const videoClicks = pgTable("video_clicks", {
+export const videoClicks = pgTable(
+  "video_clicks",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    fromVideoId: text("from_video_id").notNull(),
+    toVideoId: text("to_video_id").notNull(),
+    userAgent: text("user_agent"),
+    ip: text("ip"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("video_clicks_from_to_idx").on(table.fromVideoId, table.toVideoId)]
+);
+
+export const youtubeOauth = pgTable("youtube_oauth", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  fromVideoId: text("from_video_id").notNull(),
-  toVideoId: text("to_video_id").notNull(),
-  userAgent: text("user_agent"),
-  ip: text("ip"),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token").notNull(),
+  tokenExpiry: timestamp("token_expiry", { withTimezone: true }).notNull(),
+  channelId: text("channel_id"),
+  channelTitle: text("channel_title"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// One row per IP; window_start/count implement a fixed-window rate limit
+// that survives serverless cold starts (unlike an in-memory Map).
+export const contactRateLimits = pgTable("contact_rate_limits", {
+  ip: text("ip").primaryKey(),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+  count: integer("count").notNull().default(1),
 });
 
 export const contentBlocks = pgTable("content_blocks", {

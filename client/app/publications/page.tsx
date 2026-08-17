@@ -1,14 +1,33 @@
 import Link from "next/link";
 import { ArrowUpRight, BookOpen, Quote } from "lucide-react";
 import { PUBLICATIONS } from "@/lib/data";
+import { getContentMap, mergeBlock } from "@/lib/content";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
+import { EditItem } from "@/components/cms/edit-item";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
-export default function PublicationsPage() {
-  const featured = PUBLICATIONS.filter((p) => p.featured);
-  const rest = PUBLICATIONS.filter((p) => !p.featured);
+type Publication = {
+  year: number;
+  title: string;
+  slug: string;
+  authors: string;
+  journal: string;
+  doi: string;
+  citations: number;
+  featured: boolean;
+};
+
+export default async function PublicationsPage() {
+  const content = await getContentMap();
+  const block = mergeBlock(
+    { publications: PUBLICATIONS } as unknown as Record<string, unknown>,
+    content.publications as Record<string, unknown> | undefined
+  );
+  const all = (block.publications as Publication[]) || PUBLICATIONS;
+  const featured = all.filter((p) => p.featured);
+  const rest = all.filter((p) => !p.featured);
 
   return (
     <div>
@@ -23,7 +42,8 @@ export default function PublicationsPage() {
         lead="Selected papers from the lab, with full-text links where available."
       />
 
-      <section className="mx-auto max-w-4xl px-5 py-16 sm:px-0">
+      <EditItem collection="content" blockKey="publications" item={{ title: "Publications" }}>
+        <section className="mx-auto max-w-4xl px-5 py-16 sm:px-0">
         {featured.length > 0 && (
           <div className="mb-16">
             <h2 className="mb-8 font-mono-x text-muted">Featured</h2>
@@ -97,6 +117,7 @@ export default function PublicationsPage() {
           </p>
         </div>
       </section>
+      </EditItem>
     </div>
   );
 }

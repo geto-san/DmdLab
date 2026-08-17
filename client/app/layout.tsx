@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { EditModeProvider } from "@/components/cms/edit-mode";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
@@ -40,7 +41,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className="scroll-smooth">
+    <html lang="en" suppressHydrationWarning className="scroll-smooth" data-scroll-behavior="smooth">
       <body
         className={`${instrument.variable} ${inter.variable} ${jetbrains.variable} font-sans antialiased`}
       >
@@ -50,9 +51,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          <main className="min-h-[60vh]">{children}</main>
-          <Footer />
+          <EditModeProvider>
+            <Header />
+            <main className="min-h-[60vh]">{children}</main>
+            <Footer />
+          </EditModeProvider>
         </ThemeProvider>
       </body>
     </html>

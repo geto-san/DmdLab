@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { count, desc, ilike } from "drizzle-orm";
-import { db } from "@/db";
-import { articles } from "@/db/schema";
+import { getArticlesPage } from "@/lib/articles";
 import { PageHeader } from "@/components/page-header";
 import { ArticleFilter } from "@/components/article-filter";
 import { ArticleCard } from "@/components/article-card";
+import { EditItem, AddButton } from "@/components/cms/edit-item";
 
 export const dynamic = "force-dynamic";
 
@@ -18,17 +17,7 @@ export default async function ArticlesPage({
   const { category, page: pageParam } = await searchParams;
   const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
 
-  const where = category && category !== "all" ? ilike(articles.category, category) : undefined;
-  const [rows, [{ value: total }]] = await Promise.all([
-    db
-      .select()
-      .from(articles)
-      .where(where)
-      .orderBy(desc(articles.date))
-      .limit(PER_PAGE)
-      .offset((page - 1) * PER_PAGE),
-    db.select({ value: count() }).from(articles).where(where),
-  ]);
+  const { rows, total } = await getArticlesPage({ category, page, limit: PER_PAGE });
 
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
 
@@ -48,20 +37,22 @@ export default async function ArticlesPage({
       </PageHeader>
 
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <AddButton collection="article" label="Add article" className="mb-10 flex justify-end" />
         {rows.length ? (
           <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
             {rows.map((a, i) => (
-              <ArticleCard
-                key={a.id}
-                id={String(a.id)}
-                title={a.title}
-                description={a.description}
-                category={a.category}
-                date={a.date}
-                author={a.author}
-                image={a.image}
-                index={i}
-              />
+              <EditItem key={a.id} collection="article" item={a}>
+                <ArticleCard
+                  id={String(a.id)}
+                  title={a.title}
+                  description={a.description}
+                  category={a.category}
+                  date={a.date}
+                  author={a.author}
+                  image={a.image}
+                  index={i}
+                />
+              </EditItem>
             ))}
           </div>
         ) : (

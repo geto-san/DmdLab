@@ -8,6 +8,34 @@
       "when": 1786847211109,
       "tag": "0000_wise_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786855780535,
+      "tag": "0001_stiff_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786864891399,
+      "tag": "0002_good_skrulls",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786961218585,
+      "tag": "0003_shocking_doctor_octopus",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786963027989,
+      "tag": "0004_careful_victor_mancha",
+      "breakpoints": true
     }
   ]
 }

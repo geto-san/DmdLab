@@ -1,11 +1,12 @@
-// Seeds sample Articles, Announcements, and CMS Content blocks so the public
-// site and its endpoints have something real to render during local testing.
-// Reads DATABASE_URL from client/.env.
+// Seeds sample Articles, Announcements, CMS Content blocks, and Team Members
+// so the public site and its endpoints have something real to render during
+// local testing. Reads DATABASE_URL from client/.env.
 //
 // Usage:
 //   npm run seed          # adds sample docs (keeps existing data)
-//   npm run seed:reset    # wipes Article + Announcement + Content first
-import { articles, announcements, contentBlocks } from "../db/schema";
+//   npm run seed:reset    # wipes Article + Announcement + Content + Members first
+import { articles, announcements, contentBlocks, members } from "../db/schema";
+import { TEAM_CATEGORIES } from "../lib/data";
 import { loadEnv } from "./load-env";
 
 loadEnv();
@@ -81,6 +82,16 @@ const sampleContent = [
   },
 ];
 
+const sampleMembers = TEAM_CATEGORIES.flatMap((category) =>
+  category.members.map((m) => ({
+    name: m.name,
+    role: m.role,
+    bio: m.bio || m.research || m.education || null,
+    photo: m.image || null,
+    category: category.name,
+  }))
+);
+
 async function main() {
   if (!process.env.DATABASE_URL) {
     console.error("DATABASE_URL not set — copy client/.env.example to client/.env first.");
@@ -94,15 +105,17 @@ async function main() {
     await db.delete(articles);
     await db.delete(announcements);
     await db.delete(contentBlocks);
-    console.log("Cleared existing Articles + Announcements + Content");
+    await db.delete(members);
+    console.log("Cleared existing Articles + Announcements + Content + Members");
   }
 
   const articleRows = await db.insert(articles).values(sampleArticles).returning();
   const announcementRows = await db.insert(announcements).values(sampleAnnouncements).returning();
   const contentRows = await db.insert(contentBlocks).values(sampleContent).returning();
+  const memberRows = await db.insert(members).values(sampleMembers).returning();
 
   console.log(
-    `Inserted ${articleRows.length} articles, ${announcementRows.length} announcements, ${contentRows.length} content blocks`
+    `Inserted ${articleRows.length} articles, ${announcementRows.length} announcements, ${contentRows.length} content blocks, ${memberRows.length} members`
   );
 }
 

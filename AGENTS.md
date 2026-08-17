@@ -7,9 +7,11 @@ Single Next.js app; the old Express/Mongo `server/` package was deleted in the P
 - `client/` — Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4. **ESM**; CommonJS (`require`) is only used inside the `server`-adjacent legacy scripts — do not convert.
 - Tailwind v4 uses `@tailwindcss/postcss`; there is **no `tailwind.config.js`** — theme tokens and the `.dark` custom variant live in `client/app/globals.css` (`@theme`, `@custom-variant dark`).
 - DB is Neon Postgres + Drizzle ORM (`drizzle-orm/neon-http`). Schema: `client/db/schema.ts`, client `client/db/index.ts`, config `client/drizzle.config.ts` (`schemaFilter: ["public"]`).
-- Auth is **Managed Neon Auth** (`@neondatabase/auth`), not a hand-rolled JWT. Session/account tables live in the `neon_auth` schema (managed by Neon — excluded from Drizzle). Admin role is `neon_auth.user.role = 'admin'`, gated by `app/api/admin/guard.ts` (`auth.getSession()` → role check → 401) and `proxy.ts` (redirects unauthenticated `/admin/*` → `/admin/login`).
+- Auth is **Managed Neon Auth** (`@neondatabase/auth`), not a hand-rolled JWT. Session/account tables live in the `neon_auth` schema (managed by Neon — excluded from Drizzle). Admin role is `neon_auth.user.role = 'admin'`, gated by `app/api/admin/guard.ts` (`auth.getSession()` → role check → 401). There is no proxy/middleware; `/manage` redirects to the public `/manage/login` page.
+- The CMS is **Drupal-style in-place editing** (`components/cms/*`): admins get an "Edit" toggle in the header (`components/cms/toolbar.tsx`); when on, pencil buttons appear directly on content regions of the public pages (articles, announcements, team, content blocks) and open modal editors that write through the admin APIs, then `router.refresh()`. `/manage` has no dashboard — login happens at `/manage/login` (`components/cms/login.tsx`).
 - Email is Resend via `app/api/contact` (validated + per-IP rate-limited) → `CONTACT_EMAIL`, with `CONTACT_FROM` defaulting to the Resend sandbox (`onboarding@resend.dev`).
 - YouTube data is a live proxy to the YouTube Data API (`lib/youtube.ts`), not the DB. `GET /videos*` needs `YOUTUBE_API_KEY` + `YOUTUBE_CHANNEL_ID`; a channel URL/`@handle` auto-resolves to a raw `UC...` id. Related-video clicks are stored in the `video_clicks` table.
+- Video **writes** (upload, metadata edit, delete, thumbnails, playlists) use a separate Google OAuth flow, not the API key: `lib/youtube-oauth.ts` (config, single-row token store in the `youtube_oauth` table, refresh/revoke) + `lib/youtube-manage.ts` (all write calls). OAuth starts at `GET /api/videos/oauth` (admin-gated, `yt_oauth_state` cookie), callbacks at `/api/videos/oauth/callback`, status at `/oauth/status`, disconnect via `POST /api/videos/oauth`. Video library pages render `components/cms/video-admin-bar.tsx` (upload + connect + playlists) in edit mode and wrap cards/detail in `EditItem`/`VideoDetailEdit` with `collection="video"` → `components/cms/video-editor.tsx`. Needs `GOOGLE_OAUTH_CLIENT_ID`/`GOOGLE_OAUTH_CLIENT_SECRET` + `YOUTUBE_REDIRECT_URI`.
 
 ## Setup
 
@@ -24,7 +26,7 @@ npm run dev                          # http://localhost:3000
 ## Scripts (in `client/`)
 
 - `npm run db:generate` / `db:migrate` / `db:push` / `db:studio` — Drizzle kit. Migrations output to `drizzle/`. `drizzle/*.sql.ignore` is gitignored.
-- `npm run seed` (add) / `npm run seed:reset` (wipe Articles + Announcements + Content first) — Drizzle inserts; needs `DATABASE_URL` in `.env`.
+- `npm run seed` (add) / `npm run seed:reset` (wipe Articles + Announcements + Content + Members first) — Drizzle inserts; needs `DATABASE_URL` in `.env`.
 - `npm run create-admin` — POSTs `${NEON_AUTH_BASE_URL}/sign-up/email` (password via `ADMIN_PASSWORD` env or first CLI arg; idempotent on "already exists") then sets `neon_auth.user.role='admin'`. Needs `NEON_AUTH_BASE_URL`, `ADMIN_EMAIL`, and `DATABASE_URL`. `APP_URL` (default `http://localhost:3000`) is sent as the Origin header + `callbackURL`.
 - Scripts use `scripts/load-env.ts` to load `client/.env`; they dynamically import `db/index.ts` **after** loading env (the db client reads `DATABASE_URL` at import time).
 
@@ -32,8 +34,9 @@ npm run dev                          # http://localhost:3000
 
 - Public: `GET /api/articles`, `/api/articles/[id]`, `/api/announcements`, `/api/content`, `/api/content/[key]`, `/api/videos`, `/api/videos/[id]`, `/api/videos/[id]/click` (POST), `/api/videos/[id]/related`, `POST /api/contact`. Read-only by design; no public write endpoints.
 - Admin: `/api/admin/articles` + `/[id]` (multipart, Cloudinary `image` upload/destroy via `imagePublicId`, tags via `form.getAll("tags")`), `/api/admin/[collection]` + `/[id]` for announcements/members/posts/about/videos/content (JSON). All protected by `requireAdmin()`.
-- Auth endpoints are mounted at `/api/auth/[...path]` (better-auth/Neon handler). The browser auth client (`lib/auth/client.ts`) defaults to same-origin `/api/auth`; admin SPA (`components/admin/*`) uses `authClient.useSession()` + session cookies — do not reintroduce token headers.
-- Content blocks have a `key` that must match `^[a-z0-9-]+$` and a jsonb `payload`; `lib/content.ts` merges DB blocks over static fallbacks from `lib/data.ts`.
+- Video admin (OAuth, all `requireAdmin()`-gated): `POST /api/videos/upload` (multipart), `GET /api/videos/[id]/manage` (owner snippet+status), `PUT`/`DELETE /api/videos/[id]`, `POST /api/videos/[id]/thumbnail` (multipart), `GET /api/videos/categories`, `GET`/`POST /api/videos/playlists`, `DELETE /api/videos/playlists/[id]`, `POST /api/videos/playlists/[id]/items`, `DELETE /api/videos/playlists/[id]/items/[itemId]`.
+- Auth endpoints are mounted at `/api/auth/[...path]` (better-auth/Neon handler). The browser auth client (`lib/auth/client.ts`) defaults to same-origin `/api/auth`; the CMS components use `authClient.useSession()` (edit toggle) + session cookies — do not reintroduce token headers.
+- Content blocks have a `key` that must match `^[a-z0-9-]+$` and a jsonb `payload`; `lib/content.ts` merges DB blocks over static fallbacks from `lib/data.ts`. The Team page is **strictly DB-driven** — it reads `members` from the DB (grouped by the `category` column) and shows an empty state when none exist (no hardcoded fallback); Publications merges a `publications` content block over the static `PUBLICATIONS`.
 
 ## Deploy
 

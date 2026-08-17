@@ -1,4 +1,4 @@
-// Creates (or re-syncs) the admin user used to sign in at /admin.
+// Creates (or re-syncs) the admin user used to sign in at /manage.
 //
 // The account is created through the Neon Auth service (so the password is
 // hashed with the same scheme Better Auth expects), then its role is set to

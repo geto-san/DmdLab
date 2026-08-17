@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Menu, Moon, Sun, X } from "lucide-react";
+import { EditModeToggle } from "@/components/cms/toolbar";
 
 const NAV_LINKS = [
   { label: "Articles", to: "/articles" },
@@ -39,9 +40,7 @@ export function Header() {
     };
   }, [menuOpen]);
 
-  const isAdmin = pathname.startsWith("/admin");
   const isDark = mounted && resolvedTheme === "dark";
-
   return (
     <>
       <header
@@ -70,6 +69,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <EditModeToggle />
             <button
               type="button"
               onClick={() => setTheme(isDark ? "light" : "dark")}
@@ -125,8 +125,8 @@ export function Header() {
           ))}
         </nav>
         <div className="px-8 pb-10">
-          <Link href="/admin" className="font-mono-x text-muted hover:text-accent2">
-            Admin → {isAdmin ? "you are here" : "sign in"}
+          <Link href="/manage/login" className="font-mono-x text-muted hover:text-accent2">
+            Sign in →
           </Link>
         </div>
       </div>

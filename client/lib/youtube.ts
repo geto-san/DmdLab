@@ -27,6 +27,16 @@ function cacheSet(key: string, value: unknown, ttlMs: number) {
   CACHE.set(key, { value, expires: Date.now() + ttlMs });
 }
 
+// Call after any OAuth-based write (upload, metadata edit, delete, thumbnail)
+// so the next read doesn't serve a stale entry for up to LIST_TTL/DETAIL_TTL.
+export function invalidateVideoCaches(id?: string) {
+  for (const key of CACHE.keys()) {
+    if (key.startsWith("list:") || (id && key === `detail:${id}`)) {
+      CACHE.delete(key);
+    }
+  }
+}
+
 let resolvedChannelId: string | null = null;
 let resolvingPromise: Promise<string | null> | null = null;
 
@@ -109,8 +119,8 @@ export type YouTubeVideo = {
   durationLabel?: string | null;
 };
 
-export async function fetchChannelVideos(maxResults = 10): Promise<YouTubeVideo[]> {
-  const cacheKey = `list:${maxResults}`;
+export async function fetchChannelVideos(maxResults?: number): Promise<YouTubeVideo[]> {
+  const cacheKey = `list:${maxResults ?? "all"}`;
   const cached = cacheGet<YouTubeVideo[]>(cacheKey);
   if (cached) return cached;
 
@@ -118,41 +128,53 @@ export async function fetchChannelVideos(maxResults = 10): Promise<YouTubeVideo[
     throw new Error("YOUTUBE_API_KEY not set");
   }
 
-  const search = await axios.get(SEARCH_URL, {
-    params: {
-      key: YOUTUBE_API_KEY,
-      channelId: await getChannelId(),
-      part: "snippet",
-      order: "date",
-      maxResults,
-    },
-  });
+  const channelId = await getChannelId();
+  const collected: YouTubeVideo[] = [];
+  let pageToken = "";
 
-  const base: YouTubeVideo[] = search.data.items
-    .filter((item: { id: { kind: string } }) => item.id.kind === "youtube#video")
-    .map((item: { id: { videoId: string }; snippet: { title: string; description: string; thumbnails: Record<string, { url?: string }>; channelTitle: string; publishedAt: string } }) => ({
-      _id: item.id.videoId,
-      title: item.snippet.title,
-      description: item.snippet.description,
-      thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
-      author: item.snippet.channelTitle,
-      uploadDate: item.snippet.publishedAt,
-      category: inferCategory(item.snippet.title, item.snippet.description),
-    }));
+  do {
+    const search = await axios.get(SEARCH_URL, {
+      params: {
+        key: YOUTUBE_API_KEY,
+        channelId,
+        part: "snippet",
+        order: "date",
+        maxResults: 50,
+        pageToken: pageToken || undefined,
+      },
+    });
+
+    for (const item of search.data.items) {
+      if (item.id.kind !== "youtube#video") continue;
+      collected.push({
+        _id: item.id.videoId,
+        title: item.snippet.title,
+        description: item.snippet.description,
+        thumbnail: item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
+        author: item.snippet.channelTitle,
+        uploadDate: item.snippet.publishedAt,
+        category: inferCategory(item.snippet.title, item.snippet.description),
+      });
+    }
+    pageToken = search.data.nextPageToken || "";
+  } while (pageToken && (!maxResults || collected.length < maxResults));
+
+  const base = maxResults ? collected.slice(0, maxResults) : collected;
 
   const ids = base.map((v) => v._id);
   if (ids.length) {
-    const details = await axios.get(DETAILS_URL, {
-      params: { key: YOUTUBE_API_KEY, id: ids.join(","), part: "contentDetails,statistics" },
-    });
     type DetailItem = {
       id: string;
       contentDetails?: { duration?: string };
       statistics?: { viewCount?: string; likeCount?: string };
     };
-    const byId = new Map<string, DetailItem>(
-      (details.data.items as DetailItem[]).map((it) => [it.id, it])
-    );
+    const byId = new Map<string, DetailItem>();
+    for (let i = 0; i < ids.length; i += 50) {
+      const details = await axios.get(DETAILS_URL, {
+        params: { key: YOUTUBE_API_KEY, id: ids.slice(i, i + 50).join(","), part: "contentDetails,statistics" },
+      });
+      for (const it of details.data.items as DetailItem[]) byId.set(it.id, it);
+    }
     for (const v of base) {
       const d = byId.get(v._id);
       if (!d) continue;
@@ -211,7 +233,9 @@ export type RelatedVideo = {
   durationLabel?: string | null;
 };
 
-export async function fetchRelatedVideos(id: string, maxResults = 12): Promise<RelatedVideo[]> {
+const RELATED_POOL_SIZE = 50;
+
+export async function fetchRelatedVideos(id: string, maxResults = RELATED_POOL_SIZE): Promise<RelatedVideo[]> {
   const pool = await fetchChannelVideos(maxResults);
 
   const items = pool

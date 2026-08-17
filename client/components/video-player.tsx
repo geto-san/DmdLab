@@ -29,7 +29,7 @@ export function VideoPlayer({ videoId, title }: { videoId: string; title: string
             src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
             alt=""
             fill
-            sizes="100vw"
+            sizes="(min-width: 1024px) 616px, 100vw"
             className="object-cover opacity-60"
           />
           <span className="relative flex size-20 items-center justify-center rounded-full bg-accent text-accent-ink transition-transform duration-300 group-hover:scale-110">

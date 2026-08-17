@@ -1,0 +1,1 @@
+CREATE INDEX "video_clicks_from_to_idx" ON "video_clicks" USING btree ("from_video_id","to_video_id");

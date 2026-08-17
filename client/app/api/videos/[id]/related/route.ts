@@ -7,8 +7,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   try {
     const { id } = await params;
     const { searchParams } = new URL(req.url);
-    const maxResults = parseInt(searchParams.get("maxResults") || "12", 10) || 12;
-    const related = await fetchRelatedVideos(id, maxResults);
+    const raw = searchParams.get("maxResults");
+    const parsed = raw ? parseInt(raw, 10) : NaN;
+    const related = await fetchRelatedVideos(id, Number.isFinite(parsed) ? parsed : undefined);
     return NextResponse.json(related);
   } catch (err) {
     console.error("Error in related endpoint:", (err as Error).message);

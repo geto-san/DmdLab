@@ -1,15 +1,17 @@
 import { fetchChannelVideos } from "@/lib/youtube";
 import { PageHeader } from "@/components/page-header";
 import { VideoCard } from "@/components/video-card";
+import { VideoAdminBar } from "@/components/cms/video-admin-bar";
+import { EditItem } from "@/components/cms/edit-item";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function VideosPage() {
   let videos: Awaited<ReturnType<typeof fetchChannelVideos>> = [];
   let error: string | null = null;
 
   try {
-    videos = await fetchChannelVideos(12);
+    videos = await fetchChannelVideos();
   } catch (err) {
     error = (err as Error).message;
   }
@@ -28,6 +30,7 @@ export default async function VideosPage() {
       />
 
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <VideoAdminBar />
         {error ? (
           <div className="rounded-blob border border-line bg-surface py-24 text-center">
             <p className="font-display text-3xl">Videos unavailable</p>
@@ -40,16 +43,21 @@ export default async function VideosPage() {
         ) : videos.length ? (
           <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
             {videos.map((v) => (
-              <VideoCard
+              <EditItem
                 key={v._id}
-                id={v._id}
-                title={v.title}
-                thumbnail={v.thumbnail}
-                durationLabel={v.durationLabel}
-                views={v.views}
-                uploadDate={v.uploadDate}
-                category={v.category}
-              />
+                collection="video"
+                item={{ _id: v._id, title: v.title, description: v.description }}
+              >
+                <VideoCard
+                  id={v._id}
+                  title={v.title}
+                  thumbnail={v.thumbnail}
+                  durationLabel={v.durationLabel}
+                  views={v.views}
+                  uploadDate={v.uploadDate}
+                  category={v.category}
+                />
+              </EditItem>
             ))}
           </div>
         ) : (
