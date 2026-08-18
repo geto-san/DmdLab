@@ -1,11 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowDown, ArrowRight, Radio } from "lucide-react";
-import { desc } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { articles, announcements } from "@/db/schema";
+import { articles, announcements, members } from "@/db/schema";
 import { getContentMap, mergeBlock } from "@/lib/content";
-import { HERO, FEATURED_PROJECTS, STATS } from "@/lib/data";
+import { getTotalRecordedHours } from "@/lib/youtube";
+import { HERO, FEATURED_PROJECTS, STATS_ACTIVE_TOPICS_DEFAULT } from "@/lib/data";
 import { Button } from "@/components/ui";
 import { Marquee } from "@/components/marquee";
 import { Reveal } from "@/components/reveal";
@@ -22,14 +23,19 @@ type HeroBlock = {
   description: string;
   primaryCta: { label: string; to: string };
   secondaryCta: { label: string; to: string };
-  stats: { value: string; label: string }[];
 };
 
 export default async function HomePage() {
-  const [content, articleRows, announcementRows] = await Promise.all([
+  const [content, articleRows, announcementRows, teamCount, recordedHours] = await Promise.all([
     getContentMap(),
     db.select().from(articles).orderBy(desc(articles.date)).limit(3),
     db.select().from(announcements).orderBy(desc(announcements.date)).limit(3),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(members)
+      .then((rows) => rows[0]?.count ?? 0)
+      .catch(() => 0),
+    getTotalRecordedHours().catch(() => 0),
   ]);
 
   const hero = mergeBlock(HERO as unknown as Record<string, unknown>, content.hero) as unknown as HeroBlock;
@@ -38,8 +44,17 @@ export default async function HomePage() {
     cta: { label: string; to: string };
     projects: { title: string; slug: string; description: string; image: string; status: string }[];
   };
-  const statsBlock = content.stats as { stats: { label: string; value: number; suffix: string }[] } | undefined;
-  const stats = statsBlock?.stats?.length ? statsBlock.stats : STATS;
+
+  // "Researchers" (live member count) and "Recorded Hours" (live YouTube
+  // total) are always computed — the CMS "stats" block can only override
+  // "Active Topics", which has no underlying table to count from.
+  const statsBlock = content.stats as { activeTopics?: { value: number; suffix: string } } | undefined;
+  const activeTopics = statsBlock?.activeTopics ?? STATS_ACTIVE_TOPICS_DEFAULT;
+  const stats = [
+    { label: "Researchers", value: teamCount, suffix: "" },
+    { label: "Active Topics", value: activeTopics.value, suffix: activeTopics.suffix },
+    { label: "Recorded Hours", value: recordedHours, suffix: "" },
+  ];
 
   return (
     <div>
@@ -72,14 +87,6 @@ export default async function HomePage() {
           </Reveal>
         </div>
 
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-px px-5 pb-10 sm:px-8 md:grid-cols-4">
-          {hero.stats.map((s, i) => (
-            <Reveal key={s.label} delay={i * 80} className="border-t border-line pt-4">
-              <p className="font-display text-3xl sm:text-4xl">{s.value}</p>
-              <p className="mt-1 font-mono-x text-xs text-muted">{s.label}</p>
-            </Reveal>
-          ))}
-        </div>
         <Marquee
           className="hairline-t border-t border-line py-4"
           items={[
@@ -104,9 +111,9 @@ export default async function HomePage() {
       {/* Stats band */}
       <EditItem collection="content" blockKey="stats" item={{ title: "Stats band" }}>
         <section className="hairline-b border-b border-line bg-surface">
-          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px px-5 py-16 sm:px-8 md:grid-cols-4">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px px-5 py-16 sm:px-8 sm:grid-cols-3">
             {stats.map((s, i) => (
-              <div key={s.label} className={i > 0 ? "md:border-l md:border-line md:pl-10" : ""}>
+              <div key={s.label} className={i > 0 ? "sm:border-l sm:border-line sm:pl-10" : ""}>
                 <p className="font-display text-5xl tracking-tight sm:text-6xl">
                   <StatCounter value={s.value} suffix={s.suffix} />
                 </p>

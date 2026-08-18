@@ -221,12 +221,12 @@ export const ARTICLE_CATEGORIES = [
   "General",
 ];
 
-export const STATS = [
-  { label: "Researchers", value: 12, suffix: "" },
-  { label: "Publications", value: 47, suffix: "" },
-  { label: "Projects", value: 5, suffix: "" },
-  { label: "Funding", value: 2.3, suffix: "M" },
-];
+// Stats band on the homepage. "Researchers" and "Recorded Hours" are always
+// computed live (member count from the DB, video hours from the YouTube API)
+// and are never read from here or from the CMS payload. "Active Topics" has
+// no source-of-truth table, so it stays an editable fallback that the
+// "stats" content block can override via its `activeTopics` field.
+export const STATS_ACTIVE_TOPICS_DEFAULT = { value: 15, suffix: "+" };
 
 export const HERO = {
   eyebrow: "Deepminds Research Lab · MUST",
@@ -235,10 +235,6 @@ export const HERO = {
     "We are a multidisciplinary lab at MUST building applied ML solutions — from real-time wildlife conflict reporting to automated Sign Language translation.",
   primaryCta: { label: "Explore Research", to: "/articles" },
   secondaryCta: { label: "Watch Lab Activities", to: "/videos" },
-  stats: [
-    { value: "15+", label: "Active Projects" },
-    { value: "500+", label: "Recorded Hours" },
-  ],
 };
 
 export const FEATURED_PROJECTS = {

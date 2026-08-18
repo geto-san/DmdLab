@@ -60,10 +60,6 @@ const sampleContent = [
         "We are a multidisciplinary lab at MUST building applied ML solutions — from real-time wildlife conflict reporting to automated Sign Language translation.",
       primaryCta: { label: "Explore Research", to: "/articles" },
       secondaryCta: { label: "Watch Lab Activities", to: "/videos" },
-      stats: [
-        { value: "15+", label: "Active Projects" },
-        { value: "500+", label: "Recorded Hours" },
-      ],
     },
   },
   {
@@ -71,13 +67,12 @@ const sampleContent = [
     section: "home",
     title: "Lab stats band",
     enabled: true,
+    // "Researchers" and "Recorded Hours" are computed live on every request
+    // (member count from the DB, video hours from the YouTube API) and are
+    // never read from this payload. "Active Topics" has no source-of-truth
+    // table, so it's the only field this block can override.
     payload: {
-      stats: [
-        { label: "Researchers", value: 12, suffix: "" },
-        { label: "Publications", value: 47, suffix: "" },
-        { label: "Projects", value: 5, suffix: "" },
-        { label: "Funding", value: 2.3, suffix: "M" },
-      ],
+      activeTopics: { value: 15, suffix: "+" },
     },
   },
 ];

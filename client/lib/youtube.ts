@@ -93,6 +93,25 @@ export function formatDuration(iso: string | null | undefined): string | null {
   return h ? `${h}:${pad(min)}:${pad(s)}` : `${min}:${pad(s)}`;
 }
 
+function parseDurationSeconds(iso: string | null | undefined): number {
+  if (!iso) return 0;
+  const m = iso.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  if (!m) return 0;
+  const h = +(m[1] || 0);
+  const min = +(m[2] || 0);
+  const s = +(m[3] || 0);
+  return h * 3600 + min * 60 + s;
+}
+
+// Sums the actual duration of every video on the channel and returns the
+// total in whole hours. Used to drive the "Recorded Hours" homepage stat —
+// no hardcoded/estimated figure.
+export async function getTotalRecordedHours(): Promise<number> {
+  const videos = await fetchChannelVideos();
+  const totalSeconds = videos.reduce((sum, v) => sum + parseDurationSeconds(v.duration), 0);
+  return Math.round(totalSeconds / 3600);
+}
+
 export function inferCategory(title = "", description = "") {
   const text = `${title} ${description}`.toLowerCase();
   if (/\b(lecture|talk|seminar|guest|presentation|speaker|discussion)\b/.test(text)) return "Lecture";
