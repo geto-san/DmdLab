@@ -8,7 +8,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const { searchParams } = new URL(req.url);
     const raw = searchParams.get("maxResults");
-    const parsed = raw ? parseInt(raw, 10) : NaN;
+    const parsed = raw ? Number.parseInt(raw, 10) : Number.NaN;
     const related = await fetchRelatedVideos(id, Number.isFinite(parsed) ? parsed : undefined);
     return NextResponse.json(related);
   } catch (err) {

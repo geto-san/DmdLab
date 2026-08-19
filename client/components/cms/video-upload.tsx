@@ -67,7 +67,7 @@ export function VideoUploadButton() {
   );
 }
 
-function VideoUploadModal({ onClose }: { onClose: () => void }) {
+function VideoUploadModal({ onClose }: Readonly<{ onClose: () => void }>) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<{ uid: string; abort: () => void } | null>(null);
@@ -178,19 +178,17 @@ function VideoUploadModal({ onClose }: { onClose: () => void }) {
 
   const uploadableCount = items.filter((it) => it.status === "queued").length;
   const doneCount = items.filter((it) => it.status === "done").length;
+  const uploadButtonSuffix =
+    uploadableCount > 0 ? `${uploadableCount} video${uploadableCount === 1 ? "" : "s"}` : "";
 
   return (
     <Modal title="Upload videos to YouTube" onClose={onClose} wide>
       <div className="space-y-6">
         {/* Dropzone */}
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           aria-label="Add videos"
           onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
-          }}
           onDragOver={(e) => {
             e.preventDefault();
             setDragActive(true);
@@ -201,7 +199,7 @@ function VideoUploadModal({ onClose }: { onClose: () => void }) {
             setDragActive(false);
             addFiles(e.dataTransfer.files);
           }}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
+          className={`flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
             dragActive ? "border-accent2 bg-accent2/5" : "border-line bg-bg/40 hover:border-accent2/60"
           }`}
         >
@@ -210,7 +208,7 @@ function VideoUploadModal({ onClose }: { onClose: () => void }) {
             Drag &amp; drop videos <span className="text-accent2">here</span>
           </p>
           <p className="font-mono-x text-xs text-muted">or click to browse — select multiple files</p>
-        </div>
+        </button>
         <input
           ref={inputRef}
           type="file"
@@ -446,9 +444,7 @@ function VideoUploadModal({ onClose }: { onClose: () => void }) {
             ) : (
               <>
                 <UploadCloud className="size-3.5" /> Upload{" "}
-                {uploadableCount > 0
-                  ? `${uploadableCount} video${uploadableCount === 1 ? "" : "s"}`
-                  : ""}
+                {uploadButtonSuffix}
               </>
             )}
           </button>

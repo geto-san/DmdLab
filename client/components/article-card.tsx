@@ -21,7 +21,7 @@ export function ArticleCard({
   author,
   image,
   index,
-}: ArticleCardProps) {
+}: Readonly<ArticleCardProps>) {
   return (
     <MediaCard
       href={`/articles/${id}`}

@@ -6,6 +6,7 @@ import { api } from "./api";
 import { FieldInput, type FieldDef } from "./fields";
 import { Modal } from "./modal";
 import { ErrorBanner, EditorActions } from "./editor-ui";
+import { toSafeString } from "@/lib/to-string";
 
 const FIELDS: FieldDef[] = [
   { name: "title", label: "Title", type: "text", required: true },
@@ -20,12 +21,12 @@ export function ArticleEditorModal({
   article,
   redirectTo,
   onClose,
-}: {
+}: Readonly<{
   article: Record<string, unknown> | null;
   redirectTo?: string;
   onClose: () => void;
-}) {
-  const isEditing = article != null && article.id != null;
+}>) {
+  const isEditing = article?.id != null;
   const router = useRouter();
 
   const [form, setForm] = useState<Record<string, string | boolean>>(() => {
@@ -40,7 +41,7 @@ export function ArticleEditorModal({
   });
   const [file, setFile] = useState<File | null>(null);
   const [preview] = useState<string | null>(
-    isEditing ? String(article?.image || "") || null : null
+    isEditing ? toSafeString(article?.image) || null : null
   );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

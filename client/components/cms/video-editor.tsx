@@ -24,15 +24,73 @@ type Playlist = {
 const inputCls =
   "w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2";
 
+function thumbButtonLabel(busy: string | null, progress: number | null): string {
+  if (busy !== "thumb") return "Set thumbnail";
+  if (progress !== null && progress < 100) return `Uploading ${progress}%…`;
+  return "Uploading…";
+}
+
+function PlaylistsSection({
+  loading,
+  playlists,
+  videoId,
+  busy,
+  onToggle,
+}: Readonly<{
+  loading: boolean;
+  playlists: Playlist[];
+  videoId: string;
+  busy: string | null;
+  onToggle: (p: Playlist, isMember: boolean) => void;
+}>) {
+  if (loading) {
+    return (
+      <>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={`playlist-skeleton-${i}`} className="h-12 w-full rounded-xl" />
+        ))}
+      </>
+    );
+  }
+  if (playlists.length === 0) {
+    return <p className="text-xs text-muted">No playlists on the channel yet.</p>;
+  }
+  return (
+    <>
+      {playlists.map((p) => {
+        const isMember = p.items.some((i) => i.videoId === videoId);
+        return (
+          <label
+            key={p.id}
+            className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-line bg-bg px-3 py-2.5"
+          >
+            <span className="min-w-0 truncate text-sm">
+              {p.title}{" "}
+              <span className="font-mono-x text-[0.6875rem] text-muted">({p.itemCount})</span>
+            </span>
+            <input
+              type="checkbox"
+              checked={isMember}
+              disabled={busy === `pl:${p.id}`}
+              onChange={() => onToggle(p, isMember)}
+              className="size-4 shrink-0 accent-[var(--accent)]"
+            />
+          </label>
+        );
+      })}
+    </>
+  );
+}
+
 export function VideoEditorModal({
   video,
   onClose,
   onDeleted,
-}: {
+}: Readonly<{
   video: { _id: string; title: string };
   onClose: () => void;
   onDeleted?: () => void;
-}) {
+}>) {
   const router = useRouter();
   const videoId = video._id;
 
@@ -257,11 +315,7 @@ export function VideoEditorModal({
               disabled={!thumbnail || busy !== null}
               className="mt-3 w-full rounded-full border border-accent2/60 px-4 py-2 font-mono-x text-xs text-accent2 transition-colors hover:bg-accent2/10 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {busy === "thumb"
-                ? thumbProgress !== null && thumbProgress < 100
-                  ? `Uploading ${thumbProgress}%…`
-                  : "Uploading…"
-                : "Set thumbnail"}
+              {thumbButtonLabel(busy, thumbProgress)}
             </button>
             {busy === "thumb" && (
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
@@ -280,35 +334,13 @@ export function VideoEditorModal({
           <div>
             <FieldLabel>Playlists</FieldLabel>
             <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
-              {playlistsLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full rounded-xl" />
-                ))
-              ) : playlists.length === 0 ? (
-                <p className="text-xs text-muted">No playlists on the channel yet.</p>
-              ) : (
-                playlists.map((p) => {
-                  const isMember = p.items.some((i) => i.videoId === videoId);
-                  return (
-                    <label
-                      key={p.id}
-                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-line bg-bg px-3 py-2.5"
-                    >
-                      <span className="min-w-0 truncate text-sm">
-                        {p.title}{" "}
-                        <span className="font-mono-x text-[0.6875rem] text-muted">({p.itemCount})</span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={isMember}
-                        disabled={busy === `pl:${p.id}`}
-                        onChange={() => togglePlaylist(p, isMember)}
-                        className="size-4 shrink-0 accent-[var(--accent)]"
-                      />
-                    </label>
-                  );
-                })
-              )}
+              <PlaylistsSection
+                loading={playlistsLoading}
+                playlists={playlists}
+                videoId={videoId}
+                busy={busy}
+                onToggle={togglePlaylist}
+              />
             </div>
           </div>
 

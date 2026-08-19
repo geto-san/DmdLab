@@ -8,10 +8,17 @@ import type { Metadata } from "next";
 import { db } from "@/db";
 import { articles } from "@/db/schema";
 import { formatDate } from "@/lib/format";
+import { keyFor } from "@/lib/react-keys";
 import { Badge } from "@/components/ui";
 import { EditItem } from "@/components/cms/edit-item";
 
 export const revalidate = 3600;
+
+function renderParagraph(para: string, key: string) {
+  if (para.startsWith("## ")) return <h2 key={key}>{para.replace(/^##\s+/, "")}</h2>;
+  if (para.startsWith("### ")) return <h3 key={key}>{para.replace(/^###\s+/, "")}</h3>;
+  return <p key={key}>{para}</p>;
+}
 
 // Required (even empty) for ISR to apply to a dynamic segment at runtime —
 // otherwise Next renders it fully dynamic despite `revalidate` being set.
@@ -47,9 +54,9 @@ export async function generateMetadata({
 
 export default async function ArticleDetailPage({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ id: string }>;
-}) {
+}>) {
   const { id } = await params;
   const article = await getArticle(id);
   if (!article) notFound();
@@ -96,15 +103,12 @@ export default async function ArticleDetailPage({
       )}
 
       <div className="prose-lab">
-        {body.split(/\n\s*\n/).map((para, i) =>
-          para.startsWith("## ") ? (
-            <h2 key={i}>{para.replace(/^##\s+/, "")}</h2>
-          ) : para.startsWith("### ") ? (
-            <h3 key={i}>{para.replace(/^###\s+/, "")}</h3>
-          ) : (
-            <p key={i}>{para}</p>
-          )
-        )}
+        {(() => {
+          const seen = new Map<string, number>();
+          return body
+            .split(/\n\s*\n/)
+            .map((para) => renderParagraph(para, keyFor(para, seen)));
+        })()}
       </div>
     </article>
     </EditItem>

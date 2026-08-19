@@ -11,13 +11,13 @@ export function CollectionEditorModal({
   collection,
   item,
   onClose,
-}: {
+}: Readonly<{
   collection: string;
   item: Record<string, unknown> | null;
   onClose: () => void;
-}) {
+}>) {
   const fields = COLLECTION_FIELDS[collection] || [];
-  const isEditing = item != null && item.id != null;
+  const isEditing = item?.id != null;
 
   const [form, setForm] = useState<Record<string, string | boolean>>(() => {
     const init: Record<string, string | boolean> = {};
@@ -91,7 +91,7 @@ export function CollectionEditorModal({
   };
 
   return (
-    <Modal title={`${isEditing ? "Edit" : "Add"} ${collection.replace(/-/g, " ")}`} onClose={onClose}>
+    <Modal title={`${isEditing ? "Edit" : "Add"} ${collection.replaceAll("-", " ")}`} onClose={onClose}>
       <div className="space-y-5">
         {fields.map((f) => (
           <label key={f.name} className="block">

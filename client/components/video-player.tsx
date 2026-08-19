@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 
-export function VideoPlayer({ videoId, title }: { videoId: string; title: string }) {
+export function VideoPlayer({ videoId, title }: Readonly<{ videoId: string; title: string }>) {
   const [playing, setPlaying] = useState(false);
 
   return (

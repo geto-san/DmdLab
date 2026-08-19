@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function StatCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
+export function StatCounter({ value, suffix = "" }: Readonly<{ value: number; suffix?: string }>) {
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(0);
 

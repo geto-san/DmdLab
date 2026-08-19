@@ -43,7 +43,7 @@ type ButtonProps = {
   icon?: boolean;
 };
 
-export function Button({ href, children, variant = "accent", className = "", icon = false }: ButtonProps) {
+export function Button({ href, children, variant = "accent", className = "", icon = false }: Readonly<ButtonProps>) {
   const base = [
     "group inline-flex items-center gap-2 rounded-full px-6 py-3 font-mono-x transition-all duration-300",
     variant === "accent" && "bg-accent text-accent-ink hover:bg-accent2 hover:text-accent2-ink",
@@ -70,10 +70,14 @@ export function Button({ href, children, variant = "accent", className = "", ico
       </Link>
     );
   }
-  return <button className={base}>{inner}</button>;
+  return (
+    <button type="button" className={base}>
+      {inner}
+    </button>
+  );
 }
 
-export function Badge({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function Badge({ children, className = "" }: Readonly<{ children: ReactNode; className?: string }>) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 font-mono-x text-[0.6875rem] text-muted ${className}`}
@@ -83,7 +87,7 @@ export function Badge({ children, className = "" }: { children: ReactNode; class
   );
 }
 
-export function Eyebrow({ children }: { children: ReactNode }) {
+export function Eyebrow({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <p className="mb-5 flex items-center gap-3 font-mono-x text-muted">
       <span className="inline-block size-1.5 rounded-full bg-accent" />
@@ -97,12 +101,12 @@ export function SectionHeader({
   title,
   lead,
   action,
-}: {
+}: Readonly<{
   index?: string;
   title: ReactNode;
   lead?: ReactNode;
   action?: ReactNode;
-}) {
+}>) {
   return (
     <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
       <div className="max-w-2xl">

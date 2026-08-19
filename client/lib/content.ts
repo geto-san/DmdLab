@@ -10,7 +10,7 @@ export function mergeBlock(
   fallback: Record<string, unknown>,
   payload?: Record<string, unknown>
 ): Record<string, unknown> {
-  const out = { ...(fallback || {}) };
+  const out = { ...fallback };
   for (const [key, value] of Object.entries(payload || {})) {
     if (
       value &&

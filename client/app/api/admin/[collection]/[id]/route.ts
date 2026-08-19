@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
+import { toSafeString } from "@/lib/to-string";
 import { requireAdmin } from "../../guard";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ export async function PUT(
     const data: Record<string, unknown> = { ...body };
     delete data.id;
     if (collection === "content") {
-      if (data.key !== undefined && !CONTENT_KEY_PATTERN.test(String(data.key))) {
+      if (data.key !== undefined && !CONTENT_KEY_PATTERN.test(toSafeString(data.key))) {
         return NextResponse.json(
           { error: "key must be lowercase alphanumeric with dashes (e.g. hero)" },
           { status: 400 }

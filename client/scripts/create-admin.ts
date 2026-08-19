@@ -17,6 +17,13 @@ const BASE_URL = process.env.NEON_AUTH_BASE_URL;
 const EMAIL = process.env.ADMIN_EMAIL;
 const APP_URL = process.env.APP_URL || "http://localhost:3000";
 
+// Strips control/newline characters from a remote-controlled string before
+// it's ever written to the console, so a malicious response body can't
+// forge extra log lines or inject terminal escape sequences.
+function sanitizeForLog(value: unknown): string {
+  return String(value ?? "").replace(/[\r\n\t\p{Cc}]+/gu, " ").slice(0, 500);
+}
+
 async function main() {
   const password = process.argv[2] || process.env.ADMIN_PASSWORD;
   if (!BASE_URL) {
@@ -48,7 +55,7 @@ async function main() {
     data?.code === "USER_ALREADY_EXISTS" ||
     String(data?.message || "").toLowerCase().includes("already exists");
   if (!res.ok && !alreadyExists) {
-    console.error("Sign-up failed:", data?.message || res.statusText);
+    console.error("Sign-up failed:", sanitizeForLog(data?.message || res.statusText));
     process.exit(1);
   }
 

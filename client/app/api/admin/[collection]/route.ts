@@ -3,13 +3,15 @@ import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { contentBlocks } from "@/db/schema";
 import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
+import { toSafeString } from "@/lib/to-string";
 import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
 
 function normalizeContentInput(body: Record<string, unknown>) {
   const { key, section, title, enabled, payload } = body;
-  if (!key || !CONTENT_KEY_PATTERN.test(String(key))) {
+  const keyStr = toSafeString(key);
+  if (!keyStr || !CONTENT_KEY_PATTERN.test(keyStr)) {
     return {
       error: "key must be lowercase alphanumeric with dashes (e.g. hero)" as string | null,
       data: null,
@@ -18,9 +20,9 @@ function normalizeContentInput(body: Record<string, unknown>) {
   return {
     error: null,
     data: {
-      key: String(key).trim().toLowerCase(),
-      section: String(section || "general").trim(),
-      title: String(title || ""),
+      key: keyStr.trim().toLowerCase(),
+      section: toSafeString(section, "general").trim() || "general",
+      title: toSafeString(title),
       enabled: enabled !== false,
       payload:
         payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {},

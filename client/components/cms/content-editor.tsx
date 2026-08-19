@@ -26,10 +26,10 @@ const PAYLOAD_FIELD = { name: "payload", label: "Payload (JSON)", type: "json" a
 export function ContentEditorModal({
   blockKey,
   onClose,
-}: {
+}: Readonly<{
   blockKey: string;
   onClose: () => void;
-}) {
+}>) {
   const [row, setRow] = useState<BlockRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<Record<string, string | boolean>>({
@@ -98,8 +98,10 @@ export function ContentEditorModal({
     }
   };
 
+  const modalTitle = row ? `Edit content block — ${row.key}` : "Edit content block";
+
   return (
-    <Modal title={`Edit content block${row ? ` — ${row.key}` : ""}`} onClose={onClose}>
+    <Modal title={modalTitle} onClose={onClose}>
       {loading ? (
         <div className="space-y-5 py-2">
           <div className="grid gap-5 sm:grid-cols-2">

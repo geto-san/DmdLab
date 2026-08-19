@@ -7,13 +7,13 @@ export function PageHeader({
   title,
   lead,
   children,
-}: {
+}: Readonly<{
   index?: string;
   eyebrow: string;
   title: ReactNode;
   lead?: ReactNode;
   children?: ReactNode;
-}) {
+}>) {
   return (
     <section className="noise-overlay hairline-b bg-surface">
       <div className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">

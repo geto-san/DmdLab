@@ -7,6 +7,7 @@ import { ContentEditorModal } from "./content-editor";
 import { CollectionEditorModal } from "./editor";
 import { VideoEditorModal } from "./video-editor";
 import { useEditMode } from "./edit-mode";
+import { toSafeString } from "@/lib/to-string";
 
 function EditorSwitch({
   collection,
@@ -15,14 +16,14 @@ function EditorSwitch({
   redirectTo,
   onDeleted,
   onClose,
-}: {
+}: Readonly<{
   collection: string;
   blockKey?: string;
   item: Record<string, unknown> | null;
   redirectTo?: string;
   onDeleted?: () => void;
   onClose: () => void;
-}) {
+}>) {
   if (collection === "article") {
     return <ArticleEditorModal article={item} redirectTo={redirectTo} onClose={onClose} />;
   }
@@ -32,7 +33,7 @@ function EditorSwitch({
   if (collection === "video") {
     return (
       <VideoEditorModal
-        video={{ _id: String(item?._id || ""), title: String(item?.title || "") }}
+        video={{ _id: toSafeString(item?._id), title: toSafeString(item?.title) }}
         onDeleted={onDeleted}
         onClose={onClose}
       />
@@ -48,14 +49,14 @@ export function EditItem({
   redirectTo,
   onDeleted,
   children,
-}: {
+}: Readonly<{
   collection: string;
   blockKey?: string;
   item: Record<string, unknown>;
   redirectTo?: string;
   onDeleted?: () => void;
   children: ReactNode;
-}) {
+}>) {
   const { enabled } = useEditMode();
   const [open, setOpen] = useState(false);
 
@@ -67,7 +68,7 @@ export function EditItem({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label={`Edit ${String(item.title || item.name || collection)}`}
+        aria-label={`Edit ${toSafeString(item.title || item.name, collection)}`}
         title="Edit"
         className="absolute right-3 top-3 z-30 flex size-9 items-center justify-center rounded-full border border-line bg-bg/90 text-ink shadow-sm backdrop-blur transition-colors hover:border-accent2 hover:text-accent2"
       >
@@ -92,12 +93,12 @@ export function AddButton({
   blockKey,
   label,
   className = "",
-}: {
+}: Readonly<{
   collection: string;
   blockKey?: string;
   label: string;
   className?: string;
-}) {
+}>) {
   const { enabled } = useEditMode();
   const [open, setOpen] = useState(false);
 

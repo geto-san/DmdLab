@@ -38,7 +38,58 @@ export function PlaylistsManager() {
   );
 }
 
-function PlaylistsModal({ onClose }: { onClose: () => void }) {
+function PlaylistRows({
+  loading,
+  playlists,
+  busy,
+  onRemove,
+}: Readonly<{
+  loading: boolean;
+  playlists: Playlist[];
+  busy: boolean;
+  onRemove: (id: string) => void;
+}>) {
+  if (loading) {
+    return (
+      <>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={`playlist-row-skeleton-${i}`} className="h-16 w-full rounded-xl" />
+        ))}
+      </>
+    );
+  }
+  if (playlists.length === 0) {
+    return <p className="text-sm text-muted">No playlists yet.</p>;
+  }
+  return (
+    <>
+      {playlists.map((p) => (
+        <div
+          key={p.id}
+          className="flex items-center justify-between gap-4 rounded-xl border border-line bg-bg px-4 py-3"
+        >
+          <div className="min-w-0">
+            <p className="truncate text-sm">{p.title}</p>
+            <p className="font-mono-x text-[0.6875rem] text-muted">
+              {p.itemCount} video{p.itemCount === 1 ? "" : "s"} · {p.privacyStatus}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onRemove(p.id)}
+            disabled={busy}
+            aria-label={`Delete ${p.title}`}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-red-500/50 hover:text-red-500 disabled:opacity-40"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function PlaylistsModal({ onClose }: Readonly<{ onClose: () => void }>) {
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [title, setTitle] = useState("");
@@ -141,34 +192,7 @@ function PlaylistsModal({ onClose }: { onClose: () => void }) {
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <div className="space-y-2">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
-          ) : playlists.length === 0 ? (
-            <p className="text-sm text-muted">No playlists yet.</p>
-          ) : (
-            playlists.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between gap-4 rounded-xl border border-line bg-bg px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm">{p.title}</p>
-                  <p className="font-mono-x text-[0.6875rem] text-muted">
-                    {p.itemCount} video{p.itemCount === 1 ? "" : "s"} · {p.privacyStatus}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => remove(p.id)}
-                  disabled={busy}
-                  aria-label={`Delete ${p.title}`}
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-red-500/50 hover:text-red-500 disabled:opacity-40"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
-              </div>
-            ))
-          )}
+          <PlaylistRows loading={loading} playlists={playlists} busy={busy} onRemove={remove} />
         </div>
       </div>
     </Modal>

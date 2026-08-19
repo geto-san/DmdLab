@@ -6,11 +6,11 @@ export function Reveal({
   children,
   className = "",
   delay = 0,
-}: {
+}: Readonly<{
   children: ReactNode;
   className?: string;
   delay?: number;
-}) {
+}>) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 

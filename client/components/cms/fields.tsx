@@ -45,11 +45,11 @@ export function FieldInput({
   def,
   value,
   onChange,
-}: {
+}: Readonly<{
   def: FieldDef;
   value: string | boolean;
   onChange: (value: string | boolean) => void;
-}) {
+}>) {
   if (def.type === "textarea" || def.type === "json") {
     return (
       <textarea
@@ -84,6 +84,6 @@ export function FieldInput({
   );
 }
 
-export function FieldLabel({ children }: { children: ReactNode }) {
+export function FieldLabel({ children }: Readonly<{ children: ReactNode }>) {
   return <span className="mb-2 block font-mono-x text-xs text-muted">{children}</span>;
 }

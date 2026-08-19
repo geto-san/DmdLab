@@ -7,6 +7,7 @@ import { ALUMNI, LAB_MEMBERS } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { EditItem, AddButton } from "@/components/cms/edit-item";
+import { toSafeString } from "@/lib/to-string";
 
 export const revalidate = 3600;
 
@@ -27,7 +28,7 @@ type Category = {
 
 function renderMember(m: Record<string, unknown>): TeamCard {
   return {
-    name: String(m.name || "Unnamed"),
+    name: typeof m.name === "string" && m.name ? m.name : "Unnamed",
     role: (m.role as string | null) || null,
     image: (m.image || m.photo) as string | null,
     bio: (m.bio as string | null) || null,
@@ -127,7 +128,7 @@ export default async function TeamPage() {
                     </div>
                   );
                   return (
-                    <Reveal key={String(item.name ?? item.id ?? mi)} delay={mi * 80}>
+                    <Reveal key={toSafeString(item.name ?? item.id, String(mi))} delay={mi * 80}>
                       <EditItem collection="members" item={item}>
                         {card}
                       </EditItem>

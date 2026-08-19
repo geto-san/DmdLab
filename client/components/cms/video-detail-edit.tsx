@@ -7,10 +7,10 @@ import { EditItem } from "./edit-item";
 export function VideoDetailEdit({
   video,
   children,
-}: {
+}: Readonly<{
   video: { _id: string; title: string };
   children: ReactNode;
-}) {
+}>) {
   const router = useRouter();
   return (
     <EditItem

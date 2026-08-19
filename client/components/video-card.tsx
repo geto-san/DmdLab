@@ -20,7 +20,7 @@ export function VideoCard({
   views,
   uploadDate,
   category,
-}: VideoCardProps) {
+}: Readonly<VideoCardProps>) {
   return (
     <MediaCard
       href={`/videos/${id}`}

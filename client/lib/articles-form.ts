@@ -11,13 +11,20 @@ export function revalidateArticlePaths(id?: number) {
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
+// form.get() returns string | File | null — never stringify it blindly
+// (a File would become the useless "[object File]").
+function formString(form: FormData, key: string, fallback = ""): string {
+  const value = form.get(key);
+  return typeof value === "string" && value ? value : fallback;
+}
+
 export function parseArticleForm(form: FormData): Record<string, unknown> {
   return {
-    title: String(form.get("title") || ""),
-    description: String(form.get("description") || "") || null,
-    content: String(form.get("content") || "") || null,
-    author: String(form.get("author") || "Unknown") || "Unknown",
-    category: String(form.get("category") || "General") || "General",
+    title: formString(form, "title"),
+    description: formString(form, "description") || null,
+    content: formString(form, "content") || null,
+    author: formString(form, "author", "Unknown"),
+    category: formString(form, "category", "General"),
     tags: form.getAll("tags").map(String).filter(Boolean),
   };
 }

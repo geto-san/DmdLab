@@ -13,6 +13,18 @@ const CONTACT_FROM = process.env.CONTACT_FROM || "onboarding@resend.dev";
 const MAX_NAME = 120;
 const MAX_MESSAGE = 4000;
 
+// Linear-time email shape check (no backtracking regex): exactly one "@",
+// something on both sides, and a "." in the domain that isn't the last
+// character.
+function isValidEmail(value: string): boolean {
+  if (/\s/.test(value)) return false;
+  const at = value.indexOf("@");
+  if (at <= 0 || at !== value.lastIndexOf("@")) return false;
+  const domain = value.slice(at + 1);
+  const dot = domain.lastIndexOf(".");
+  return dot > 0 && dot < domain.length - 1;
+}
+
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const RATE_MAX = 5;
 
@@ -69,7 +81,7 @@ export async function POST(req: Request) {
   if (!name || !email || !message) {
     return NextResponse.json({ error: "Name, email, and message are required." }, { status: 400 });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
   }
 

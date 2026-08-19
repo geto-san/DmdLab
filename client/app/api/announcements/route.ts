@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const limit = Math.max(1, parseInt(searchParams.get("limit") || "10", 10) || 10);
+    const limit = Math.max(1, Number.parseInt(searchParams.get("limit") || "10", 10) || 10);
     const rows = await db
       .select()
       .from(announcements)

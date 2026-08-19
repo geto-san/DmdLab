@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { videoClicks } from "@/db/schema";
+import { toSafeString } from "@/lib/to-string";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     await db.insert(videoClicks).values({
       fromVideoId: id,
-      toVideoId: String(toVideoId),
+      toVideoId: toSafeString(toVideoId),
       userAgent: req.headers.get("user-agent") || "",
       ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "",
     });

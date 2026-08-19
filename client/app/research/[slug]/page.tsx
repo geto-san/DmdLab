@@ -58,9 +58,9 @@ export async function generateMetadata({
 
 export default async function ProjectDetailPage({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ slug: string }>;
-}) {
+}>) {
   const { slug } = await params;
   const project = await getProject(slug);
 

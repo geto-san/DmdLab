@@ -11,11 +11,11 @@ const PER_PAGE = 9;
 
 export default async function ArticlesPage({
   searchParams,
-}: {
+}: Readonly<{
   searchParams: Promise<{ category?: string; page?: string }>;
-}) {
+}>) {
   const { category, page: pageParam } = await searchParams;
-  const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+  const page = Math.max(1, Number.parseInt(pageParam || "1", 10) || 1);
 
   const { rows, total } = await getArticlesPage({ category, page, limit: PER_PAGE });
 

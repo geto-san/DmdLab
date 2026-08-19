@@ -34,11 +34,7 @@ export default async function PublicationsPage() {
       <PageHeader
         index="04"
         eyebrow="Peer-reviewed output"
-        title={
-          <>
-            <em className="text-accent2">Publications</em>
-          </>
-        }
+        title={<em className="text-accent2">Publications</em>}
         lead="Selected papers from the lab, with full-text links where available."
       />
 

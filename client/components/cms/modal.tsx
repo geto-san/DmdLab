@@ -1,37 +1,41 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 export function Modal({
   title,
   onClose,
   children,
   wide = false,
-}: {
+}: Readonly<{
   title: string;
   onClose: () => void;
   children: ReactNode;
   wide?: boolean;
-}) {
+}>) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
+    dialogRef.current?.showModal();
     document.body.style.overflow = "hidden";
     return () => {
-      window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, []);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label={title}
-      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-ink/60 p-5 backdrop-blur-sm"
+      onCancel={(e) => {
+        // Escape triggers the browser's native close; intercept it so the
+        // parent's React state (which controls whether this is mounted at
+        // all) stays the single source of truth.
+        e.preventDefault();
+        onClose();
+      }}
+      className="fixed inset-0 z-[100] m-0 flex h-dvh max-h-none w-dvw max-w-none items-start justify-center overflow-y-auto border-0 bg-ink/60 p-5 backdrop-blur-sm backdrop:bg-transparent"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -54,6 +58,6 @@ export function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </dialog>
   );
 }

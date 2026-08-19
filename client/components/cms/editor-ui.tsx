@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
-export function ErrorBanner({ message }: { message: string }) {
+export function ErrorBanner({ message }: Readonly<{ message: string }>) {
   return (
     <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-500">
       {message}
@@ -18,14 +18,14 @@ export function EditorActions({
   busy,
   onDelete,
   deleteLabel = "Delete",
-}: {
+}: Readonly<{
   onSave: () => void;
   saveLabel: string;
   busyLabel?: string;
   busy: boolean;
   onDelete?: () => void;
   deleteLabel?: string;
-}) {
+}>) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (

@@ -29,7 +29,7 @@ export function MediaCard({
   description,
   cta,
   srOnly,
-}: MediaCardProps) {
+}: Readonly<MediaCardProps>) {
   return (
     <Link href={href} className="group flex flex-col gap-4 border-b border-line pb-8">
       <div className="relative aspect-video overflow-hidden rounded-blob bg-surface">

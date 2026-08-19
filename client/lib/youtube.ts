@@ -43,7 +43,7 @@ let resolvingPromise: Promise<string | null> | null = null;
 function extractHandle(raw: string | null | undefined): string | null {
   if (!raw) return null;
   if (/^UC[\w-]{22}$/.test(raw)) return null;
-  const urlMatch = raw.match(/youtube\.com\/@([\w.-]+)/i);
+  const urlMatch = /youtube\.com\/@([\w.-]+)/i.exec(raw);
   if (urlMatch) return urlMatch[1];
   if (raw.startsWith("@")) return raw.slice(1);
   return null;
@@ -61,30 +61,28 @@ async function getChannelId(): Promise<string | null> {
     resolvedChannelId = CHANNEL_ID_RAW;
     return resolvedChannelId;
   }
-  if (!resolvingPromise) {
-    resolvingPromise = axios
-      .get("https://www.googleapis.com/youtube/v3/channels", {
-        params: { key: YOUTUBE_API_KEY, forHandle: handle, part: "id" },
-      })
-      .then((res) => {
-        resolvedChannelId = res.data.items?.[0]?.id || CHANNEL_ID_RAW;
-        if (!res.data.items?.[0]?.id) {
-          console.error(`Could not resolve YouTube handle "${handle}" to a channel ID`);
-        }
-        return resolvedChannelId;
-      })
-      .catch((err: unknown) => {
-        console.error("Failed to resolve YouTube handle to channel ID:", (err as Error).message);
-        resolvedChannelId = CHANNEL_ID_RAW;
-        return resolvedChannelId;
-      });
-  }
+  resolvingPromise ??= axios
+    .get("https://www.googleapis.com/youtube/v3/channels", {
+      params: { key: YOUTUBE_API_KEY, forHandle: handle, part: "id" },
+    })
+    .then((res) => {
+      resolvedChannelId = res.data.items?.[0]?.id || CHANNEL_ID_RAW;
+      if (!res.data.items?.[0]?.id) {
+        console.error(`Could not resolve YouTube handle "${handle}" to a channel ID`);
+      }
+      return resolvedChannelId;
+    })
+    .catch((err: unknown) => {
+      console.error("Failed to resolve YouTube handle to channel ID:", (err as Error).message);
+      resolvedChannelId = CHANNEL_ID_RAW;
+      return resolvedChannelId;
+    });
   return resolvingPromise;
 }
 
 export function formatDuration(iso: string | null | undefined): string | null {
   if (!iso) return null;
-  const m = iso.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
   if (!m) return iso;
   const h = +(m[1] || 0);
   const min = +(m[2] || 0);
@@ -95,7 +93,7 @@ export function formatDuration(iso: string | null | undefined): string | null {
 
 function parseDurationSeconds(iso: string | null | undefined): number {
   if (!iso) return 0;
-  const m = iso.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
   if (!m) return 0;
   const h = +(m[1] || 0);
   const min = +(m[2] || 0);
@@ -138,16 +136,15 @@ export type YouTubeVideo = {
   durationLabel?: string | null;
 };
 
-export async function fetchChannelVideos(maxResults?: number): Promise<YouTubeVideo[]> {
-  const cacheKey = `list:${maxResults ?? "all"}`;
-  const cached = cacheGet<YouTubeVideo[]>(cacheKey);
-  if (cached) return cached;
+type DetailItem = {
+  id: string;
+  contentDetails?: { duration?: string };
+  statistics?: { viewCount?: string; likeCount?: string };
+};
 
-  if (!YOUTUBE_API_KEY) {
-    throw new Error("YOUTUBE_API_KEY not set");
-  }
-
-  const channelId = await getChannelId();
+// Pages through the search endpoint, collecting one entry per video until
+// either the channel is exhausted or maxResults is reached.
+async function collectVideosFromSearch(channelId: string | null, maxResults?: number): Promise<YouTubeVideo[]> {
   const collected: YouTubeVideo[] = [];
   let pageToken = "";
 
@@ -178,31 +175,47 @@ export async function fetchChannelVideos(maxResults?: number): Promise<YouTubeVi
     pageToken = search.data.nextPageToken || "";
   } while (pageToken && (!maxResults || collected.length < maxResults));
 
+  return collected;
+}
+
+// Fetches duration/view/like stats for a batch of videos (50 ids per call,
+// the API's max) and merges them onto the matching video objects in place.
+async function attachVideoDetails(videos: YouTubeVideo[]): Promise<void> {
+  const ids = videos.map((v) => v._id);
+  if (!ids.length) return;
+
+  const byId = new Map<string, DetailItem>();
+  for (let i = 0; i < ids.length; i += 50) {
+    const details = await axios.get(DETAILS_URL, {
+      params: { key: YOUTUBE_API_KEY, id: ids.slice(i, i + 50).join(","), part: "contentDetails,statistics" },
+    });
+    for (const it of details.data.items as DetailItem[]) byId.set(it.id, it);
+  }
+
+  for (const v of videos) {
+    const d = byId.get(v._id);
+    if (!d) continue;
+    v.duration = d.contentDetails?.duration || null;
+    v.durationLabel = formatDuration(v.duration);
+    v.views = d.statistics?.viewCount || "0";
+    v.likes = d.statistics?.likeCount || "0";
+  }
+}
+
+export async function fetchChannelVideos(maxResults?: number): Promise<YouTubeVideo[]> {
+  const cacheKey = `list:${maxResults ?? "all"}`;
+  const cached = cacheGet<YouTubeVideo[]>(cacheKey);
+  if (cached) return cached;
+
+  if (!YOUTUBE_API_KEY) {
+    throw new Error("YOUTUBE_API_KEY not set");
+  }
+
+  const channelId = await getChannelId();
+  const collected = await collectVideosFromSearch(channelId, maxResults);
   const base = maxResults ? collected.slice(0, maxResults) : collected;
 
-  const ids = base.map((v) => v._id);
-  if (ids.length) {
-    type DetailItem = {
-      id: string;
-      contentDetails?: { duration?: string };
-      statistics?: { viewCount?: string; likeCount?: string };
-    };
-    const byId = new Map<string, DetailItem>();
-    for (let i = 0; i < ids.length; i += 50) {
-      const details = await axios.get(DETAILS_URL, {
-        params: { key: YOUTUBE_API_KEY, id: ids.slice(i, i + 50).join(","), part: "contentDetails,statistics" },
-      });
-      for (const it of details.data.items as DetailItem[]) byId.set(it.id, it);
-    }
-    for (const v of base) {
-      const d = byId.get(v._id);
-      if (!d) continue;
-      v.duration = d.contentDetails?.duration || null;
-      v.durationLabel = formatDuration(v.duration);
-      v.views = d.statistics?.viewCount || "0";
-      v.likes = d.statistics?.likeCount || "0";
-    }
-  }
+  await attachVideoDetails(base);
 
   cacheSet(cacheKey, base, LIST_TTL);
   return base;

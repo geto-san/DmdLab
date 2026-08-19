@@ -16,7 +16,7 @@ type RelatedItem = {
   durationLabel?: string | null;
 };
 
-export function RelatedVideos({ fromId, items }: { fromId: string; items: RelatedItem[] }) {
+export function RelatedVideos({ fromId, items }: Readonly<{ fromId: string; items: RelatedItem[] }>) {
   const loggedRef = useRef(new Set<string>());
 
   useEffect(() => {

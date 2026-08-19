@@ -20,8 +20,8 @@ export function formatViews(value: string | number | undefined | null) {
 
 export function extractVideoId(url: string | undefined | null) {
   if (!url) return null;
-  const m = url.match(
-    /(?:youtube\.com\/(?:watch\?.*v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/
+  const m = /(?:youtube\.com\/(?:watch\?.*v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/.exec(
+    url
   );
   return m ? m[1] : null;
 }

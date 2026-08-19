@@ -90,12 +90,11 @@ export function Header() {
         </div>
       </header>
 
-      <div
-        className={`fixed inset-0 z-[60] flex flex-col bg-bg transition-all duration-500 ${
+      <dialog
+        open
+        className={`fixed inset-0 z-[60] m-0 flex h-dvh max-h-none w-dvw max-w-none flex-col border-0 bg-bg p-0 transition-all duration-500 ${
           menuOpen ? "visible opacity-100" : "invisible opacity-0"
         }`}
-        role="dialog"
-        aria-modal="true"
         aria-label="Menu"
       >
         <div className="flex h-16 items-center justify-between px-5 sm:px-8">
@@ -129,7 +128,7 @@ export function Header() {
             Sign in →
           </Link>
         </div>
-      </div>
+      </dialog>
     </>
   );
 }
