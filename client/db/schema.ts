@@ -1,19 +1,5 @@
 import { pgTable, text, timestamp, integer, jsonb, boolean, index } from "drizzle-orm/pg-core";
 
-export const articles = pgTable("articles", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  title: text("title").notNull(),
-  description: text("description"),
-  content: text("content"),
-  author: text("author").notNull().default("Unknown"),
-  date: timestamp("date", { withTimezone: true }).notNull().defaultNow(),
-  category: text("category").notNull().default("General"),
-  views: integer("views").notNull().default(0),
-  tags: text("tags").array().notNull().default([]),
-  image: text("image"),
-  imagePublicId: text("image_public_id"),
-});
-
 export const announcements = pgTable("announcements", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   title: text("title").notNull(),

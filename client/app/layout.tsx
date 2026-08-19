@@ -3,8 +3,7 @@ import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { EditModeProvider } from "@/components/cms/edit-mode";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { SiteChrome } from "@/components/site-chrome";
 
 const instrument = Instrument_Serif({
   subsets: ["latin"],
@@ -52,9 +51,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           disableTransitionOnChange
         >
           <EditModeProvider>
-            <Header />
-            <main className="min-h-[60vh]">{children}</main>
-            <Footer />
+            <SiteChrome>{children}</SiteChrome>
           </EditModeProvider>
         </ThemeProvider>
       </body>

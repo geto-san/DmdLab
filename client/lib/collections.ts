@@ -28,11 +28,6 @@ export function revalidateForCollection(collection: string) {
   } else if (collection === "members") {
     revalidatePath("/team");
   } else if (collection === "content") {
-    // A content block's key isn't known here reliably (id-keyed PUT/DELETE),
-    // so revalidate every page that reads content blocks.
     revalidatePath("/");
-    revalidatePath("/research");
-    revalidatePath("/research/[slug]", "page");
-    revalidatePath("/publications");
   }
 }
