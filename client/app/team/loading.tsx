@@ -8,16 +8,16 @@ export default function TeamLoading() {
           <Skeleton className="h-10 w-72" />
           <Skeleton className="h-12 w-full max-w-sm" />
         </div>
-        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:items-center lg:gap-10">
-          <div className="flex flex-col items-center gap-8">
-            <Skeleton className="aspect-[4/5] w-full max-w-md rounded-3xl" />
+        <div className="lg:flex lg:items-start lg:gap-6">
+          <Skeleton className="h-64 w-full max-w-[17rem] shrink-0 rounded-[28px]" />
+          <div className="mt-8 min-w-0 flex-1 space-y-6 lg:mt-0">
             <div className="flex items-center gap-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="size-14 shrink-0 rounded-full sm:size-16" />
               ))}
             </div>
+            <Skeleton className="h-24 w-full rounded-[28px]" />
           </div>
-          <Skeleton className="h-80 w-full rounded-3xl" />
         </div>
       </section>
     </div>

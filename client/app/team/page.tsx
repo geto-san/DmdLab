@@ -49,13 +49,13 @@ export default async function TeamPage() {
       {alumni.length > 0 && (
         <section className="hairline-t border-t border-line bg-surface">
           <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-            <div className="mb-8 flex items-baseline justify-between">
+            <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <h2 className="font-display text-3xl tracking-tight sm:text-4xl">
                 Alumni
               </h2>
-              <span className="font-mono-x text-xs text-muted">
-                {alumni.length} member{alumni.length !== 1 ? "s" : ""}
-              </span>
+              <p className="max-w-sm text-sm leading-relaxed text-muted">
+                {alumni.length} former member{alumni.length !== 1 ? "s" : ""} who helped shape the lab&apos;s work before moving on to new adventures.
+              </p>
             </div>
             <ul className="divide-y divide-line">
               {alumni.map((a) => (
