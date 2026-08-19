@@ -28,6 +28,9 @@ export const members = pgTable("members", {
   bio: text("bio"),
   photo: text("photo"),
   category: text("category").notNull().default("Researchers"),
+  alumni: boolean("alumni").notNull().default(false),
+  location: text("location"),
+  experience: text("experience"),
 });
 
 export const about = pgTable("about", {
@@ -78,12 +81,13 @@ export const youtubeOauth = pgTable("youtube_oauth", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// One row per IP; window_start/count implement a fixed-window rate limit
-// that survives serverless cold starts (unlike an in-memory Map).
-export const contactRateLimits = pgTable("contact_rate_limits", {
-  ip: text("ip").primaryKey(),
-  windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
-  count: integer("count").notNull().default(1),
+export const siteSettings = pgTable("site_settings", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  key: text("key").notNull().unique(),
+  section: text("section").notNull().default("general"),
+  value: jsonb("value"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const contentBlocks = pgTable("content_blocks", {

@@ -100,12 +100,10 @@ export default async function HomePage() {
         <Marquee
           className="hairline-t border-t border-line py-4"
           items={[
-            "Deep Learning",
-            "Protein Folding",
-            "Drug Discovery",
-            "Wildlife Conflict",
-            "Sign Language",
-            "Molecular Dynamics",
+            "Quantum Computing",
+            "Prompt Engineering",
+            "Natural Language Processing",
+            "Statistics",
           ]}
         />
         <a

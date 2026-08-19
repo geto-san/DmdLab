@@ -8,11 +8,11 @@ export function Footer() {
       <Marquee
         className="border-b border-line py-5"
         items={[
-          "DeepMinds Research Lab",
-          "Applied Machine Learning",
-          "MUST",
-          "Wildlife Conflict Reporting",
-          "Sign Language Translation",
+          "Vibe Coding",
+          "Quantum Computing",
+          "Prompt Engineering",
+          "Natural Language Processing",
+          "Statistics",
         ]}
       />
 
@@ -24,12 +24,6 @@ export function Footer() {
             from real-time wildlife conflict reporting to automated Sign Language
             translation.
           </p>
-          <a
-            href="mailto:hello@dmdlab.example"
-            className="mt-6 inline-block font-mono-x text-accent2 underline-offset-4 hover:underline"
-          >
-            hello@dmdlab.example
-          </a>
         </div>
 
         {[

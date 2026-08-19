@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ArrowUpRight, BookOpen, Quote } from "lucide-react";
+import { ArrowUpRight, BookOpen } from "lucide-react";
 import { getContentMap } from "@/lib/content";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
@@ -107,17 +106,6 @@ export default async function PublicationsPage() {
           </ul>
         </div>
 
-        <div className="mt-20 flex items-start gap-4 rounded-blob border border-line bg-surface p-8">
-          <Quote className="mt-1 size-6 shrink-0 text-accent2" />
-          <p className="text-lg leading-relaxed text-muted">
-            Preprints and working papers are shared as they become available. For
-            collaboration or reprints, reach out via the{" "}
-            <Link href="/contact" className="text-accent2 underline underline-offset-4">
-              contact page
-            </Link>
-            .
-          </p>
-        </div>
           </>
         )}
       </section>

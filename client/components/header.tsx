@@ -13,7 +13,6 @@ const NAV_LINKS = [
   { label: "Research", to: "/research" },
   { label: "Publications", to: "/publications" },
   { label: "Team", to: "/team" },
-  { label: "Contact", to: "/contact" },
 ];
 
 export function Header() {

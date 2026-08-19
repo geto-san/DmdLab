@@ -4,7 +4,6 @@ import { ArrowRight, FlaskConical } from "lucide-react";
 import { getContentMap } from "@/lib/content";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
-import { Button } from "@/components/ui";
 import { EditItem } from "@/components/cms/edit-item";
 
 export const revalidate = 3600;
@@ -86,14 +85,6 @@ export default async function ResearchPage() {
         </div>
         )}
 
-        <div className="mt-24 flex flex-col items-center gap-6 rounded-blob border border-line bg-surface py-16 text-center">
-          <p className="font-display text-4xl tracking-tight sm:text-5xl">
-            Have a question about our work?
-          </p>
-          <Button href="/contact" variant="outline" icon>
-            Get in touch
-          </Button>
-        </div>
       </section>
       </EditItem>
     </div>

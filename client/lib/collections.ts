@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
-import { announcements, members, posts, about, videos, contentBlocks } from "@/db/schema";
+import { announcements, members, posts, about, videos, contentBlocks, siteSettings } from "@/db/schema";
+import { resetSettingsCache } from "./settings";
 
 export const TABLES = {
   announcements,
@@ -8,6 +9,7 @@ export const TABLES = {
   about,
   videos,
   content: contentBlocks,
+  settings: siteSettings,
 } as const;
 
 export type CollectionKey = keyof typeof TABLES;
@@ -34,5 +36,10 @@ export function revalidateForCollection(collection: string) {
     revalidatePath("/research");
     revalidatePath("/research/[slug]", "page");
     revalidatePath("/publications");
+  } else if (collection === "settings") {
+    resetSettingsCache();
+    revalidatePath("/");
+    revalidatePath("/articles");
+    revalidatePath("/team");
   }
 }

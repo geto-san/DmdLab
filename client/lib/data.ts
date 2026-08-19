@@ -158,6 +158,5 @@ export const FOOTER_LINKS = {
   ],
   about: [
     { label: "Team", to: "/team" },
-    { label: "Contact", to: "/contact" },
   ],
 };

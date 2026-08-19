@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
 import { toSafeString } from "@/lib/to-string";
+import { resetSettingsCache } from "@/lib/settings";
 import { requireAdmin } from "../../guard";
 
 export const dynamic = "force-dynamic";
@@ -44,17 +45,35 @@ export async function PUT(
         data.payload = {};
       }
     }
+    if (collection === "settings") {
+      if (data.key !== undefined && !CONTENT_KEY_PATTERN.test(String(data.key))) {
+        return NextResponse.json(
+          { error: "key must be lowercase alphanumeric with dashes (e.g. nav)" },
+          { status: 400 }
+        );
+      }
+      if (
+        data.value !== undefined &&
+        (typeof data.value !== "object" || Array.isArray(data.value))
+      ) {
+        data.value = {};
+      }
+    }
     const [updated] = await db
       .update(table)
       .set(data as never)
       .where(eq(table.id, recordId))
       .returning();
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (collection === "settings") resetSettingsCache();
     revalidateForCollection(collection);
     return NextResponse.json(updated);
   } catch (err) {
-    if (collection === "content" && (err as { code?: string })?.code === "23505") {
-      return NextResponse.json({ error: "Content key already exists" }, { status: 400 });
+    if (
+      (collection === "content" || collection === "settings") &&
+      (err as { code?: string })?.code === "23505"
+    ) {
+      return NextResponse.json({ error: "Key already exists" }, { status: 400 });
     }
     return NextResponse.json({ error: (err as Error).message }, { status: 400 });
   }
@@ -80,6 +99,7 @@ export async function DELETE(
       .where(eq(table.id, recordId))
       .returning({ id: table.id });
     if (!removed) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (collection === "settings") resetSettingsCache();
     revalidateForCollection(collection);
     return NextResponse.json({ success: true });
   } catch (err) {

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
-import { contentBlocks } from "@/db/schema";
+import { contentBlocks, siteSettings } from "@/db/schema";
 import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
 import { toSafeString } from "@/lib/to-string";
+import { resetSettingsCache } from "@/lib/settings";
 import { requireAdmin } from "../guard";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,24 @@ function normalizeContentInput(body: Record<string, unknown>) {
       enabled: enabled !== false,
       payload:
         payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {},
+    },
+  };
+}
+
+function normalizeSettingsInput(body: Record<string, unknown>) {
+  const { key, section, value } = body;
+  if (!key || !CONTENT_KEY_PATTERN.test(String(key))) {
+    return {
+      error: "key must be lowercase alphanumeric with dashes (e.g. nav)" as string | null,
+      data: null,
+    };
+  }
+  return {
+    error: null,
+    data: {
+      key: String(key).trim().toLowerCase(),
+      section: String(section || "general").trim(),
+      value: value && typeof value === "object" && !Array.isArray(value) ? value : {},
     },
   };
 }
@@ -73,11 +92,22 @@ export async function POST(
       revalidateForCollection(collection);
       return NextResponse.json(saved, { status: 201 });
     }
+    if (collection === "settings") {
+      const { error, data } = normalizeSettingsInput(body);
+      if (error) return NextResponse.json({ error }, { status: 400 });
+      const [saved] = await db.insert(siteSettings).values(data as never).returning();
+      resetSettingsCache();
+      revalidateForCollection(collection);
+      return NextResponse.json(saved, { status: 201 });
+    }
     const [saved] = await db.insert(table).values(body as never).returning();
     revalidateForCollection(collection);
     return NextResponse.json(saved, { status: 201 });
   } catch (err) {
-    if (collection === "content" && (err as { code?: string })?.code === "23505") {
+    if (
+      (collection === "content" || collection === "settings") &&
+      (err as { code?: string })?.code === "23505"
+    ) {
       return duplicateKeyError();
     }
     return NextResponse.json({ error: (err as Error).message }, { status: 400 });

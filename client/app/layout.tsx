@@ -3,6 +3,8 @@ import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { EditModeProvider } from "@/components/cms/edit-mode";
+import { SidePanelProvider } from "@/components/cms/side-panel-context";
+import { CmsPanel } from "@/components/cms/cms-panel";
 import { SiteChrome } from "@/components/site-chrome";
 
 const instrument = Instrument_Serif({
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s · DeepMinds Research Lab",
   },
   description:
-    "AI research lab at MUST — real-time wildlife conflict reporting, Sign Language translation, and applied machine learning.",
+    "AI research lab at MUST — Quantum Computing.",
 };
 
 export const viewport: Viewport = {
@@ -51,7 +53,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           disableTransitionOnChange
         >
           <EditModeProvider>
-            <SiteChrome>{children}</SiteChrome>
+            <SidePanelProvider>
+              <SiteChrome>{children}</SiteChrome>
+              <CmsPanel />
+            </SidePanelProvider>
           </EditModeProvider>
         </ThemeProvider>
       </body>

@@ -20,14 +20,16 @@ export const COLLECTION_FIELDS: Record<string, FieldDef[]> = {
   members: [
     { name: "name", label: "Name", type: "text", required: true },
     { name: "role", label: "Role", type: "text" },
-    {
-      name: "category",
-      label: "Category",
-      type: "text",
-      hint: "Grouping shown on the Team page, e.g. PI, Postdocs, PhD Students",
-    },
+    { name: "experience", label: "Experience", type: "text", hint: "e.g. 5+ Years" },
+    { name: "location", label: "Location", type: "text", hint: "e.g. Warsaw, Poland" },
     { name: "bio", label: "Bio", type: "textarea" },
     { name: "photo", label: "Photo URL", type: "text" },
+    {
+      name: "alumni",
+      label: "Alumni",
+      type: "checkbox",
+      hint: "Show in the Alumni section at the bottom of the Team page",
+    },
   ],
   posts: [
     { name: "title", label: "Title", type: "text", required: true },
