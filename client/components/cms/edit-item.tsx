@@ -2,6 +2,7 @@
 
 import { Pencil, Plus } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { ArticleEditorModal } from "./article-editor";
 import { ContentEditorModal } from "./content-editor";
 import { CollectionEditorModal } from "./editor";
 import { VideoEditorModal } from "./video-editor";
@@ -12,15 +13,20 @@ function EditorSwitch({
   collection,
   blockKey,
   item,
+  redirectTo,
   onDeleted,
   onClose,
 }: Readonly<{
   collection: string;
   blockKey?: string;
   item: Record<string, unknown> | null;
+  redirectTo?: string;
   onDeleted?: () => void;
   onClose: () => void;
 }>) {
+  if (collection === "article") {
+    return <ArticleEditorModal article={item} redirectTo={redirectTo} onClose={onClose} />;
+  }
   if (collection === "content") {
     return <ContentEditorModal blockKey={blockKey as string} onClose={onClose} />;
   }
@@ -40,12 +46,14 @@ export function EditItem({
   collection,
   blockKey,
   item,
+  redirectTo,
   onDeleted,
   children,
 }: Readonly<{
   collection: string;
   blockKey?: string;
   item: Record<string, unknown>;
+  redirectTo?: string;
   onDeleted?: () => void;
   children: ReactNode;
 }>) {
@@ -71,6 +79,7 @@ export function EditItem({
           collection={collection}
           blockKey={blockKey}
           item={item}
+          redirectTo={redirectTo}
           onDeleted={onDeleted}
           onClose={() => setOpen(false)}
         />

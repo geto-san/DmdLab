@@ -1,14 +1,17 @@
-import { ArrowDown, Radio } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { ArrowDown, ArrowRight, Radio } from "lucide-react";
 import { desc, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { announcements, members } from "@/db/schema";
+import { articles, announcements, members } from "@/db/schema";
 import { getContentMap, mergeBlock } from "@/lib/content";
 import { getTotalRecordedHours } from "@/lib/youtube";
-import { HERO, STATS_ACTIVE_TOPICS_DEFAULT } from "@/lib/data";
+import { HERO, FEATURED_PROJECTS, STATS_ACTIVE_TOPICS_DEFAULT } from "@/lib/data";
 import { Button } from "@/components/ui";
 import { Marquee } from "@/components/marquee";
 import { Reveal } from "@/components/reveal";
 import { StatCounter } from "@/components/stat-counter";
+import { ArticleCard } from "@/components/article-card";
 import { EditItem, AddButton } from "@/components/cms/edit-item";
 
 export const revalidate = 3600;
@@ -23,8 +26,9 @@ type HeroBlock = {
 };
 
 export default async function HomePage() {
-  const [content, announcementRows, teamCount, recordedHours] = await Promise.all([
+  const [content, articleRows, announcementRows, teamCount, recordedHours] = await Promise.all([
     getContentMap(),
+    db.select().from(articles).orderBy(desc(articles.date)).limit(3),
     db.select().from(announcements).orderBy(desc(announcements.date)).limit(3),
     db
       .select({ count: sql<number>`count(*)::int` })
@@ -35,6 +39,11 @@ export default async function HomePage() {
   ]);
 
   const hero = mergeBlock(HERO as unknown as Record<string, unknown>, content.hero) as unknown as HeroBlock;
+  const featured = mergeBlock(FEATURED_PROJECTS as unknown as Record<string, unknown>, content["featured-projects"]) as unknown as {
+    heading: string;
+    cta: { label: string; to: string };
+    projects: { title: string; slug: string; description: string; image: string; status: string }[];
+  };
 
   // "Researchers" (live member count) and "Recorded Hours" (live YouTube
   // total) are always computed — the CMS "stats" block can only override
@@ -145,6 +154,92 @@ export default async function HomePage() {
           </ul>
         </section>
       )}
+
+      {/* Featured projects */}
+      <EditItem collection="content" blockKey="featured-projects" item={{ title: "Featured projects" }}>
+        <section className="hairline-t border-t border-line bg-surface">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+          <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
+            <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+              {String(featured.heading)}
+            </h2>
+            <Button href={String(featured.cta.to)} variant="outline" icon>
+              {String(featured.cta.label)}
+            </Button>
+          </div>
+          <div className="grid gap-10 md:grid-cols-3">
+            {featured.projects.map((p, i) => (
+                <Reveal key={p.slug} delay={i * 100}>
+                  <Link href={`/research/${p.slug}`} className="group block">
+                    <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-blob bg-surface">
+                      <Image
+                        src={p.image}
+                        alt={p.title}
+                        fill
+                        sizes="(min-width: 768px) 33vw, 100vw"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                      />
+                      <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 font-mono-x text-[0.625rem] text-accent-ink">
+                        {p.status}
+                      </span>
+                    </div>
+                    <h3 className="font-display text-2xl leading-snug tracking-tight transition-colors group-hover:text-accent2">
+                      {p.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">
+                      {p.description}
+                    </p>
+                    <span className="mt-4 inline-flex items-center gap-1.5 font-mono-x text-ink transition-colors group-hover:text-accent2">
+                      View project <ArrowRight className="size-3.5" />
+                    </span>
+                  </Link>
+                </Reveal>
+              )
+            )}
+          </div>
+        </div>
+      </section>
+      </EditItem>
+
+      {/* Latest articles */}
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="mb-4 font-mono-x text-muted">
+              <span className="mr-2 text-accent2">03</span>/
+            </p>
+            <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+              From the Journal
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <AddButton collection="article" label="Add article" />
+            <Button href="/articles" variant="outline" icon>
+              All articles
+            </Button>
+          </div>
+        </div>
+        {articleRows.length ? (
+          <div className="grid gap-10 md:grid-cols-3">
+            {articleRows.map((a, i) => (
+              <EditItem key={a.id} collection="article" item={a}>
+                <ArticleCard
+                  id={String(a.id)}
+                  title={a.title}
+                  description={a.description}
+                  category={a.category}
+                  date={a.date}
+                  author={a.author}
+                  image={a.image}
+                  index={i}
+                />
+              </EditItem>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted">No articles published yet — check back soon.</p>
+        )}
+      </section>
 
       {/* CTA */}
       <section className="hairline-t border-t border-line">

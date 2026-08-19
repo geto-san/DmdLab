@@ -1,6 +1,100 @@
 // Static fallback content merged against CMS blocks from the DB (see lib/content.ts).
 // iconName values resolve through the allowlisted ICON_MAP in components/ui.tsx.
 
+export const RESEARCH_PROJECTS = [
+  {
+    title: "AI-Driven Drug Discovery Platform",
+    slug: "ai-driven-drug-discovery-platform",
+    status: "Active",
+    duration: "2023–2026",
+    team: ["Dr. Martinez (PI)", "Dr. Chen (Lead)", "Maya Patel", "Sam Taylor"],
+    funding: "NSF CAREER Award ($500,000)",
+    description:
+      "Developing deep learning models to predict drug-target binding affinity, reducing the time and cost of early-stage drug discovery by 75%. Our platform has screened over 2 million compounds and identified 15 promising candidates currently in preclinical testing.",
+    image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=800",
+    iconName: "sparkles",
+  },
+  {
+    title: "Understanding Protein Misfolding in Neurodegenerative Diseases",
+    slug: "protein-misfolding-neurodegenerative-diseases",
+    status: "Active",
+    duration: "2022–2025",
+    team: ["Dr. Martinez (PI)", "Dr. Williams (Lead)", "Alex Rivera", "Jordan Kim"],
+    funding: "NIH R01 ($1.2M)",
+    description:
+      "Investigating the molecular mechanisms of protein aggregation in Alzheimer's and Parkinson's diseases using advanced molecular dynamics simulations. Our work has revealed novel intermediate states in the aggregation pathway that could serve as therapeutic targets.",
+    image: "https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=800",
+    iconName: "brain",
+  },
+  {
+    title: "Novel Therapeutic Targets for Cancer Treatment",
+    slug: "novel-therapeutic-targets-cancer",
+    status: "Active",
+    duration: "2024–2027",
+    team: ["Dr. Martinez (PI)", "Maya Patel (Lead)", "Priya Sharma"],
+    funding: "American Cancer Society Research Grant ($400,000)",
+    description:
+      "Identifying and validating novel protein-protein interactions in cancer signaling pathways. Using computational screening and experimental validation, we've discovered 3 new druggable targets currently being evaluated by pharmaceutical partners.",
+    image: "https://images.pexels.com/photos/3938022/pexels-photo-3938022.jpeg?auto=compress&cs=tinysrgb&w=800",
+    iconName: "target",
+  },
+  {
+    title: "Computational Methods for Antibody Design",
+    slug: "computational-methods-antibody-design",
+    status: "In Planning",
+    duration: "2025–2028",
+    team: ["Dr. Martinez (PI)", "Dr. Chen", "Priya Sharma"],
+    funding: "Proposal submitted to DOE",
+    description:
+      "Developing next-generation computational tools for rational antibody design, enabling faster and more effective therapeutic antibody development for infectious diseases and cancer immunotherapy.",
+    image: "https://images.pexels.com/photos/2280547/pexels-photo-2280547.jpeg?auto=compress&cs=tinysrgb&w=800",
+    iconName: "wrench",
+  },
+];
+
+export const PUBLICATIONS = [
+  {
+    year: 2024,
+    title: "Deep Learning Approaches for Predicting Protein-Drug Binding Affinity",
+    slug: "deep-learning-protein-drug-binding",
+    authors: "Chen, J., Patel, M., Martinez, E.",
+    journal: "Nature Communications 15, 2847",
+    doi: "10.1038/s41467-024-xxxxx",
+    citations: 45,
+    featured: true,
+  },
+  {
+    year: 2024,
+    title: "Conformational Dynamics of α-Synuclein in Parkinson's Disease",
+    slug: "conformational-dynamics-alpha-synuclein",
+    authors: "Rivera, A., Williams, S., Kim, J., Martinez, E.",
+    journal: "Biophysical Journal 116(4), 823-834",
+    doi: "10.1016/j.bpj.2024.xxxxx",
+    citations: 23,
+    featured: false,
+  },
+  {
+    year: 2024,
+    title: "Computational Identification of Cancer Drug Targets",
+    slug: "computational-identification-cancer-drug-targets",
+    authors: "Sharma, P., Martinez, E.",
+    journal: "ACS Chemical Biology 19(3), 445-456",
+    doi: "10.1021/acschembio.xxxxx",
+    citations: 12,
+    featured: false,
+  },
+  {
+    year: 2023,
+    title: "Machine Learning-Guided Drug Discovery: A Computational Framework",
+    slug: "machine-learning-guided-drug-discovery",
+    authors: "Martinez, E., Chen, J., Zhang, M.",
+    journal: "Nature Reviews Drug Discovery 22, 687-702",
+    doi: "10.1038/s41573-023-xxxxx",
+    citations: 156,
+    featured: true,
+  },
+];
+
 export type TeamMember = {
   name: string;
   role: string;
@@ -118,6 +212,15 @@ export const LAB_MEMBERS = [
   "Hassan",
 ];
 
+export const ARTICLE_CATEGORIES = [
+  "Research",
+  "Announcement",
+  "Publication",
+  "Event",
+  "Tutorial",
+  "General",
+];
+
 // Stats band on the homepage. "Researchers" and "Recorded Hours" are always
 // computed live (member count from the DB, video hours from the YouTube API)
 // and are never read from here or from the CMS payload. "Active Topics" has
@@ -130,12 +233,51 @@ export const HERO = {
   title: { before: "AI Research that ", highlight: "Watches", after: ", Listens, and Translates." },
   description:
     "We are a multidisciplinary lab at MUST building applied ML solutions — from real-time wildlife conflict reporting to automated Sign Language translation.",
-  primaryCta: { label: "Watch Lab Activities", to: "/videos" },
-  secondaryCta: { label: "Meet the Team", to: "/team" },
+  primaryCta: { label: "Explore Research", to: "/articles" },
+  secondaryCta: { label: "Watch Lab Activities", to: "/videos" },
+};
+
+export const FEATURED_PROJECTS = {
+  heading: "Featured Projects",
+  cta: { label: "Browse Portfolio", to: "/research" },
+  projects: [
+    {
+      title: "AI-Driven Drug Discovery Platform",
+      status: "Active",
+      slug: "ai-driven-drug-discovery-platform",
+      iconName: "sparkles",
+      description:
+        "Developing deep learning models to predict drug-target binding affinity, reducing the time and cost of early-stage drug discovery by 75%.",
+      image: "https://images.pexels.com/photos/3825527/pexels-photo-3825527.jpeg?auto=compress&cs=tinysrgb&w=800",
+    },
+    {
+      title: "Understanding Protein Misfolding in Neurodegenerative Diseases",
+      status: "Active",
+      slug: "protein-misfolding-neurodegenerative-diseases",
+      iconName: "brain",
+      description:
+        "Investigating the molecular mechanisms of protein aggregation in Alzheimer's and Parkinson's diseases using advanced molecular dynamics simulations.",
+      image: "https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=800",
+    },
+    {
+      title: "Novel Therapeutic Targets for Cancer Treatment",
+      status: "Active",
+      slug: "novel-therapeutic-targets-cancer",
+      iconName: "target",
+      description:
+        "Identifying and validating novel protein-protein interactions in cancer signaling pathways using computational screening and experimental validation.",
+      image: "https://images.pexels.com/photos/3938022/pexels-photo-3938022.jpeg?auto=compress&cs=tinysrgb&w=800",
+    },
+  ],
 };
 
 export const FOOTER_LINKS = {
-  explore: [{ label: "Videos", to: "/videos" }],
+  explore: [
+    { label: "Articles", to: "/articles" },
+    { label: "Videos", to: "/videos" },
+    { label: "Research", to: "/research" },
+    { label: "Publications", to: "/publications" },
+  ],
   about: [
     { label: "Team", to: "/team" },
     { label: "Contact", to: "/contact" },

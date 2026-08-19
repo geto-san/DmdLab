@@ -1,19 +1,46 @@
-// Seeds sample Announcements, CMS Content blocks, and Team Members so the
-// public site and its endpoints have something real to render during local
-// testing. Reads DATABASE_URL from client/.env.
+// Seeds sample Articles, Announcements, CMS Content blocks, and Team Members
+// so the public site and its endpoints have something real to render during
+// local testing. Reads DATABASE_URL from client/.env.
 //
 // Usage:
 //   npm run seed          # adds sample docs (keeps existing data)
-//   npm run seed:reset    # wipes Announcement + Content + Members first
-import { announcements, contentBlocks, members } from "../db/schema";
+//   npm run seed:reset    # wipes Article + Announcement + Content + Members first
+import { articles, announcements, contentBlocks, members } from "../db/schema";
 import { TEAM_CATEGORIES } from "../lib/data";
 import { loadEnv } from "./load-env";
 
 loadEnv();
 
+const sampleArticles = [
+  {
+    title: "Welcome to DeepMinds Research Lab",
+    description: "An introduction to what the lab works on and why.",
+    content: "Full article body goes here...",
+    author: "Lab Admin",
+    category: "General",
+    tags: ["intro"],
+  },
+  {
+    title: "WildWatch: Reporting Human-Wildlife Conflict",
+    description: "How the WildWatch sighting tool helps communities report incidents.",
+    content: "Full article body goes here...",
+    author: "Lab Admin",
+    category: "Research",
+    tags: ["wildwatch", "hwc"],
+  },
+  {
+    title: "Uganda Sign Language Avatar: Progress Update",
+    description: "Latest progress translating speech/text into an animated avatar.",
+    content: "Full article body goes here...",
+    author: "Lab Admin",
+    category: "Research",
+    tags: ["sign-language", "ml"],
+  },
+];
+
 const sampleAnnouncements = [
   { title: "Site backend is live", body: "Public API endpoints are now serving real data." },
-  { title: "New videos posted", body: "Check the Video Library page for the latest uploads." },
+  { title: "New research articles posted", body: "Check the Articles page for the latest updates." },
 ];
 
 const sampleContent = [
@@ -31,8 +58,8 @@ const sampleContent = [
       },
       description:
         "We are a multidisciplinary lab at MUST building applied ML solutions — from real-time wildlife conflict reporting to automated Sign Language translation.",
-      primaryCta: { label: "Watch Lab Activities", to: "/videos" },
-      secondaryCta: { label: "Meet the Team", to: "/team" },
+      primaryCta: { label: "Explore Research", to: "/articles" },
+      secondaryCta: { label: "Watch Lab Activities", to: "/videos" },
     },
   },
   {
@@ -70,18 +97,20 @@ async function main() {
 
   const reset = process.argv.includes("--reset");
   if (reset) {
+    await db.delete(articles);
     await db.delete(announcements);
     await db.delete(contentBlocks);
     await db.delete(members);
-    console.log("Cleared existing Announcements + Content + Members");
+    console.log("Cleared existing Articles + Announcements + Content + Members");
   }
 
+  const articleRows = await db.insert(articles).values(sampleArticles).returning();
   const announcementRows = await db.insert(announcements).values(sampleAnnouncements).returning();
   const contentRows = await db.insert(contentBlocks).values(sampleContent).returning();
   const memberRows = await db.insert(members).values(sampleMembers).returning();
 
   console.log(
-    `Inserted ${announcementRows.length} announcements, ${contentRows.length} content blocks, ${memberRows.length} members`
+    `Inserted ${articleRows.length} articles, ${announcementRows.length} announcements, ${contentRows.length} content blocks, ${memberRows.length} members`
   );
 }
 

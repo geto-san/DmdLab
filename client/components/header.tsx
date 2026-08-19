@@ -8,7 +8,10 @@ import { Menu, Moon, Sun, X } from "lucide-react";
 import { EditModeToggle } from "@/components/cms/toolbar";
 
 const NAV_LINKS = [
+  { label: "Articles", to: "/articles" },
   { label: "Videos", to: "/videos" },
+  { label: "Research", to: "/research" },
+  { label: "Publications", to: "/publications" },
   { label: "Team", to: "/team" },
   { label: "Contact", to: "/contact" },
 ];
