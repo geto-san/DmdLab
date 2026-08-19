@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ListVideo, Loader2, Plus, Trash2 } from "lucide-react";
 import { api } from "./api";
 import { useEditMode } from "./edit-mode";
-import { Modal } from "./modal";
+import { SidePanel } from "./side-panel";
 import { FieldLabel } from "./fields";
 import { Skeleton } from "@/components/skeleton";
 
@@ -33,7 +33,7 @@ export function PlaylistsManager() {
       >
         <ListVideo className="size-3.5" /> Playlists
       </button>
-      {open && <PlaylistsModal onClose={() => setOpen(false)} />}
+      {open && <PlaylistsPanel onClose={() => setOpen(false)} />}
     </div>
   );
 }
@@ -89,7 +89,7 @@ function PlaylistRows({
   );
 }
 
-function PlaylistsModal({ onClose }: Readonly<{ onClose: () => void }>) {
+function PlaylistsPanel({ onClose }: Readonly<{ onClose: () => void }>) {
   const router = useRouter();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [title, setTitle] = useState("");
@@ -149,7 +149,7 @@ function PlaylistsModal({ onClose }: Readonly<{ onClose: () => void }>) {
   }
 
   return (
-    <Modal title="YouTube playlists" onClose={onClose}>
+    <SidePanel title="YouTube playlists" onClose={onClose}>
       <div className="space-y-6">
         <div className="rounded-xl border border-line bg-bg/50 p-5">
           <div className="mb-4 flex items-center gap-2 font-mono-x text-xs text-accent2">
@@ -195,6 +195,6 @@ function PlaylistsModal({ onClose }: Readonly<{ onClose: () => void }>) {
           <PlaylistRows loading={loading} playlists={playlists} busy={busy} onRemove={remove} />
         </div>
       </div>
-    </Modal>
+    </SidePanel>
   );
 }

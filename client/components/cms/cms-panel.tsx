@@ -5,7 +5,7 @@ import { SidePanel } from "./side-panel";
 import { PanelForm } from "./panel-form";
 import { ArticlePanelForm } from "./article-panel-form";
 import { ContentPanelForm } from "./content-panel-form";
-import { VideoEditorModal } from "./video-editor";
+import { VideoEditorForm } from "./video-editor";
 
 export function CmsPanel() {
   const { panel, closePanel } = useSidePanel();
@@ -19,11 +19,13 @@ export function CmsPanel() {
 
   if (collection === "video") {
     return (
-      <VideoEditorModal
-        video={{ _id: String(item?._id ?? ""), title: String(item?.title ?? "") }}
-        onDeleted={onDeleted}
-        onClose={closePanel}
-      />
+      <SidePanel title="Edit video" onClose={closePanel} wide>
+        <VideoEditorForm
+          video={{ _id: String(item?._id ?? ""), title: String(item?.title ?? "") }}
+          onDeleted={onDeleted}
+          onClose={closePanel}
+        />
+      </SidePanel>
     );
   }
 

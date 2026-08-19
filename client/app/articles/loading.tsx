@@ -1,4 +1,4 @@
-import { Skeleton, PageHeaderSkeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/skeleton";
 
 function ArticleCardSkeleton() {
   return (
@@ -17,8 +17,8 @@ function ArticleCardSkeleton() {
 export default function ArticlesLoading() {
   return (
     <div>
-      <PageHeaderSkeleton />
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
+        <Skeleton className="mb-10 h-9 w-64" />
         <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 9 }).map((_, i) => (
             <ArticleCardSkeleton key={i} />

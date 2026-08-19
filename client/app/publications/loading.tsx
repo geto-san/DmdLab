@@ -1,10 +1,10 @@
-import { Skeleton, PageHeaderSkeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/skeleton";
 
 export default function PublicationsLoading() {
   return (
     <div>
-      <PageHeaderSkeleton />
-      <section className="mx-auto max-w-4xl px-5 py-16 sm:px-0">
+      <section className="mx-auto max-w-4xl px-5 pb-16 pt-32 sm:px-0 sm:pt-40">
+        <Skeleton className="mb-10 h-9 w-64" />
         <div className="mb-16">
           <Skeleton className="mb-8 h-4 w-24" />
           <div className="grid gap-6 sm:grid-cols-2">

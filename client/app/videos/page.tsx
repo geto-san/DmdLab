@@ -1,5 +1,4 @@
 import { fetchChannelVideos } from "@/lib/youtube";
-import { PageHeader } from "@/components/page-header";
 import { VideoCard } from "@/components/video-card";
 import { VideoAdminBar } from "@/components/cms/video-admin-bar";
 import { EditItem } from "@/components/cms/edit-item";
@@ -63,18 +62,7 @@ export default async function VideosPage() {
 
   return (
     <div>
-      <PageHeader
-        index="02"
-        eyebrow="Lab activities on YouTube"
-        title={
-          <>
-            Video <em className="text-accent2">Library</em>
-          </>
-        }
-        lead="Lectures, meetings, and demos recorded by the lab — streamed straight from our channel."
-      />
-
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
         <VideoAdminBar />
         {error ? <VideosUnavailable error={error} /> : <VideoGrid videos={videos} />}
       </section>

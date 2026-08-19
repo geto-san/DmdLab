@@ -1,7 +1,6 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { members } from "@/db/schema";
-import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { TeamShowcase } from "@/components/team-showcase";
 import { AddButton } from "@/components/cms/edit-item";
@@ -16,18 +15,16 @@ export default async function TeamPage() {
 
   return (
     <div>
-      <PageHeader
-        index="05"
-        eyebrow="The people"
-        title={
-          <>
-            Our <em className="text-accent2">Team</em>
-          </>
-        }
-        lead="A multidisciplinary group of researchers, engineers, and students building applied machine learning."
-      />
+      <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
+        <div className="mb-14 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl">
+            Meet our <em className="text-accent2">team members</em>
+          </h1>
+          <p className="max-w-sm text-sm leading-relaxed text-muted sm:text-base">
+            We are a multidisciplinary team of researchers, engineers, and students working together to build applied machine learning.
+          </p>
+        </div>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
         {active.length === 0 ? (
           <div className="flex flex-col items-center gap-5 rounded-blob border border-line bg-surface py-24 text-center">
             <p className="font-display text-3xl">No team members yet</p>

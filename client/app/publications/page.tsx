@@ -1,6 +1,5 @@
 import { ArrowUpRight, BookOpen } from "lucide-react";
 import { getContentMap } from "@/lib/content";
-import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { EditItem } from "@/components/cms/edit-item";
 
@@ -26,15 +25,8 @@ export default async function PublicationsPage() {
 
   return (
     <div>
-      <PageHeader
-        index="04"
-        eyebrow="Peer-reviewed output"
-        title={<em className="text-accent2">Publications</em>}
-        lead="Selected papers from the lab, with full-text links where available."
-      />
-
       <EditItem collection="content" blockKey="publications" item={{ title: "Publications" }}>
-        <section className="mx-auto max-w-4xl px-5 py-16 sm:px-0">
+        <section className="mx-auto max-w-4xl px-5 pb-16 pt-32 sm:px-0 sm:pt-40">
         {all.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-blob border border-line bg-surface py-24 text-center">
             <BookOpen className="size-6 text-muted" />

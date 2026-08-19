@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getArticlesPage } from "@/lib/articles";
-import { PageHeader } from "@/components/page-header";
 import { ArticleFilter } from "@/components/article-filter";
 import { ArticleCard } from "@/components/article-card";
 import { EditItem, AddButton } from "@/components/cms/edit-item";
@@ -23,21 +22,9 @@ export default async function ArticlesPage({
 
   return (
     <div>
-      <PageHeader
-        index="01"
-        eyebrow="Publications & write-ups"
-        title={
-          <>
-            The <em className="text-accent2">Journal</em>
-          </>
-        }
-        lead="Research notes, project updates, and announcements from the lab — filtered by topic."
-      >
+      <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
         <ArticleFilter />
-      </PageHeader>
-
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
-        <AddButton collection="article" label="Add article" className="mb-10 flex justify-end" />
+        <AddButton collection="article" label="Add article" className="mb-10 mt-8 flex justify-end" />
         {rows.length ? (
           <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
             {rows.map((a, i) => (

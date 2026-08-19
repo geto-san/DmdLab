@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { api, uploadFileWithProgress, UploadAbortError } from "./api";
 import { useEditMode } from "./edit-mode";
-import { Modal } from "./modal";
+import { SidePanel } from "./side-panel";
 import { FieldLabel } from "./fields";
 import { Skeleton } from "@/components/skeleton";
 
@@ -62,12 +62,12 @@ export function VideoUploadButton() {
       >
         <UploadCloud className="size-3.5" /> Upload video
       </button>
-      {open && <VideoUploadModal onClose={() => setOpen(false)} />}
+      {open && <VideoUploadPanel onClose={() => setOpen(false)} />}
     </div>
   );
 }
 
-function VideoUploadModal({ onClose }: Readonly<{ onClose: () => void }>) {
+function VideoUploadPanel({ onClose }: Readonly<{ onClose: () => void }>) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<{ uid: string; abort: () => void } | null>(null);
@@ -182,7 +182,7 @@ function VideoUploadModal({ onClose }: Readonly<{ onClose: () => void }>) {
     uploadableCount > 0 ? `${uploadableCount} video${uploadableCount === 1 ? "" : "s"}` : "";
 
   return (
-    <Modal title="Upload videos to YouTube" onClose={onClose} wide>
+    <SidePanel title="Upload videos to YouTube" onClose={onClose} wide>
       <div className="space-y-6">
         {/* Dropzone */}
         <button
@@ -450,6 +450,6 @@ function VideoUploadModal({ onClose }: Readonly<{ onClose: () => void }>) {
           </button>
         </div>
       </div>
-    </Modal>
+    </SidePanel>
   );
 }

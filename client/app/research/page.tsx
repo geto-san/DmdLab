@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, FlaskConical } from "lucide-react";
 import { getContentMap } from "@/lib/content";
-import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { EditItem } from "@/components/cms/edit-item";
 
@@ -26,19 +25,8 @@ export default async function ResearchPage() {
 
   return (
     <div>
-      <PageHeader
-        index="03"
-        eyebrow="Active work"
-        title={
-          <>
-            Research <em className="text-accent2">Projects</em>
-          </>
-        }
-        lead="Ongoing investigations across computational chemistry, drug discovery, and applied machine learning."
-      />
-
       <EditItem collection="content" blockKey="research" item={{ title: "Research projects" }}>
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
         {projects.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-blob border border-line bg-surface py-24 text-center">
             <FlaskConical className="size-6 text-muted" />

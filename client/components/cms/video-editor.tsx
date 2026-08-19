@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
 import { api, uploadFileWithProgress } from "./api";
-import { Modal } from "./modal";
 import { FieldLabel } from "./fields";
 import { Skeleton } from "@/components/skeleton";
 
@@ -82,7 +81,7 @@ function PlaylistsSection({
   );
 }
 
-export function VideoEditorModal({
+export function VideoEditorForm({
   video,
   onClose,
   onDeleted,
@@ -214,157 +213,155 @@ export function VideoEditorModal({
   }
 
   return (
-    <Modal title="Edit video" onClose={onClose} wide>
-      <div className="grid gap-10 lg:grid-cols-[1fr_260px]">
-        <div className="space-y-5">
+    <div className="space-y-8">
+      <div className="space-y-5">
+        <div>
+          <FieldLabel>Title</FieldLabel>
+          {metaLoading ? (
+            <Skeleton className="h-[46px] w-full rounded-xl" />
+          ) : (
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
+          )}
+        </div>
+
+        <div>
+          <FieldLabel>Description</FieldLabel>
+          {metaLoading ? (
+            <Skeleton className="h-32 w-full rounded-xl" />
+          ) : (
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={6}
+              className="min-h-32 w-full resize-y rounded-xl border border-line bg-bg px-4 py-3 font-mono-x text-xs outline-none transition-colors focus:border-accent2"
+            />
+          )}
+        </div>
+
+        <div>
+          <FieldLabel>Tags (comma separated)</FieldLabel>
+          {metaLoading ? (
+            <Skeleton className="h-[46px] w-full rounded-xl" />
+          ) : (
+            <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} />
+          )}
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
           <div>
-            <FieldLabel>Title</FieldLabel>
+            <FieldLabel>Category</FieldLabel>
             {metaLoading ? (
               <Skeleton className="h-[46px] w-full rounded-xl" />
             ) : (
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
+              <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputCls}>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
-
           <div>
-            <FieldLabel>Description</FieldLabel>
-            {metaLoading ? (
-              <Skeleton className="h-32 w-full rounded-xl" />
-            ) : (
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={6}
-                className="min-h-32 w-full resize-y rounded-xl border border-line bg-bg px-4 py-3 font-mono-x text-xs outline-none transition-colors focus:border-accent2"
-              />
-            )}
-          </div>
-
-          <div>
-            <FieldLabel>Tags (comma separated)</FieldLabel>
+            <FieldLabel>Privacy</FieldLabel>
             {metaLoading ? (
               <Skeleton className="h-[46px] w-full rounded-xl" />
             ) : (
-              <input type="text" value={tags} onChange={(e) => setTags(e.target.value)} className={inputCls} />
+              <select value={privacy} onChange={(e) => setPrivacy(e.target.value)} className={inputCls}>
+                <option value="private">Private</option>
+                <option value="unlisted">Unlisted</option>
+                <option value="public">Public</option>
+              </select>
             )}
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <FieldLabel>Category</FieldLabel>
-              {metaLoading ? (
-                <Skeleton className="h-[46px] w-full rounded-xl" />
-              ) : (
-                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className={inputCls}>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.title}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-            <div>
-              <FieldLabel>Privacy</FieldLabel>
-              {metaLoading ? (
-                <Skeleton className="h-[46px] w-full rounded-xl" />
-              ) : (
-                <select value={privacy} onChange={(e) => setPrivacy(e.target.value)} className={inputCls}>
-                  <option value="private">Private</option>
-                  <option value="unlisted">Unlisted</option>
-                  <option value="public">Public</option>
-                </select>
-              )}
-            </div>
-          </div>
-
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div className="flex justify-end gap-3 border-t border-line pt-5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-full border border-line px-5 py-2 font-mono-x text-xs text-muted transition-colors hover:border-ink hover:text-ink"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={saveMetadata}
-              disabled={busy !== null}
-              className="inline-flex items-center gap-2 rounded-full bg-accent2 px-5 py-2 font-mono-x text-xs text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {busy === "save" && <Loader2 className="size-3.5 animate-spin" />}
-              Save changes
-            </button>
           </div>
         </div>
 
-        <aside className="space-y-6">
-          <div>
-            <FieldLabel>Custom thumbnail</FieldLabel>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setThumbnail(e.target.files?.[0] ?? null)}
-              className="w-full cursor-pointer rounded-xl border border-line bg-bg px-4 py-3 text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-full file:border-none file:bg-accent2/10 file:px-3 file:py-1.5 file:font-mono-x file:text-xs file:text-accent2"
-            />
-            <button
-              type="button"
-              onClick={uploadThumbnail}
-              disabled={!thumbnail || busy !== null}
-              className="mt-3 w-full rounded-full border border-accent2/60 px-4 py-2 font-mono-x text-xs text-accent2 transition-colors hover:bg-accent2/10 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {thumbButtonLabel(busy, thumbProgress)}
-            </button>
-            {busy === "thumb" && (
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
-                {thumbProgress !== null && thumbProgress < 100 ? (
-                  <div
-                    className="h-full rounded-full bg-accent2 transition-[width] duration-200"
-                    style={{ width: `${thumbProgress}%` }}
-                  />
-                ) : (
-                  <div className="h-full w-full animate-pulse rounded-full bg-accent2" />
-                )}
-              </div>
-            )}
-          </div>
+        {error && <p className="text-sm text-red-500">{error}</p>}
 
-          <div>
-            <FieldLabel>Playlists</FieldLabel>
-            <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
-              <PlaylistsSection
-                loading={playlistsLoading}
-                playlists={playlists}
-                videoId={videoId}
-                busy={busy}
-                onToggle={togglePlaylist}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4">
-            <FieldLabel>Danger zone</FieldLabel>
-            <button
-              type="button"
-              onClick={() => (confirmDelete ? removeVideo() : setConfirmDelete(true))}
-              disabled={busy !== null}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-red-500/50 px-4 py-2 font-mono-x text-xs text-red-500 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {busy === "delete" ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Trash2 className="size-3.5" />
-              )}
-              {confirmDelete ? "Click again to permanently delete" : "Delete video"}
-            </button>
-            <p className="mt-2 text-[0.6875rem] leading-relaxed text-muted">
-              Deletes the video from the YouTube channel. This cannot be undone.
-            </p>
-          </div>
-        </aside>
+        <div className="flex justify-end gap-3 border-t border-line pt-5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-line px-5 py-2 font-mono-x text-xs text-muted transition-colors hover:border-ink hover:text-ink"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={saveMetadata}
+            disabled={busy !== null}
+            className="inline-flex items-center gap-2 rounded-full bg-accent2 px-5 py-2 font-mono-x text-xs text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {busy === "save" && <Loader2 className="size-3.5 animate-spin" />}
+            Save changes
+          </button>
+        </div>
       </div>
-    </Modal>
+
+      <div className="space-y-6 border-t border-line pt-8">
+        <div>
+          <FieldLabel>Custom thumbnail</FieldLabel>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setThumbnail(e.target.files?.[0] ?? null)}
+            className="w-full cursor-pointer rounded-xl border border-line bg-bg px-4 py-3 text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-full file:border-none file:bg-accent2/10 file:px-3 file:py-1.5 file:font-mono-x file:text-xs file:text-accent2"
+          />
+          <button
+            type="button"
+            onClick={uploadThumbnail}
+            disabled={!thumbnail || busy !== null}
+            className="mt-3 w-full rounded-full border border-accent2/60 px-4 py-2 font-mono-x text-xs text-accent2 transition-colors hover:bg-accent2/10 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {thumbButtonLabel(busy, thumbProgress)}
+          </button>
+          {busy === "thumb" && (
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
+              {thumbProgress !== null && thumbProgress < 100 ? (
+                <div
+                  className="h-full rounded-full bg-accent2 transition-[width] duration-200"
+                  style={{ width: `${thumbProgress}%` }}
+                />
+              ) : (
+                <div className="h-full w-full animate-pulse rounded-full bg-accent2" />
+              )}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <FieldLabel>Playlists</FieldLabel>
+          <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+            <PlaylistsSection
+              loading={playlistsLoading}
+              playlists={playlists}
+              videoId={videoId}
+              busy={busy}
+              onToggle={togglePlaylist}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4">
+          <FieldLabel>Danger zone</FieldLabel>
+          <button
+            type="button"
+            onClick={() => (confirmDelete ? removeVideo() : setConfirmDelete(true))}
+            disabled={busy !== null}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-red-500/50 px-4 py-2 font-mono-x text-xs text-red-500 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {busy === "delete" ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="size-3.5" />
+            )}
+            {confirmDelete ? "Click again to permanently delete" : "Delete video"}
+          </button>
+          <p className="mt-2 text-[0.6875rem] leading-relaxed text-muted">
+            Deletes the video from the YouTube channel. This cannot be undone.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

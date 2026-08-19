@@ -6,10 +6,12 @@ import { useEffect, useRef, type ReactNode } from "react";
 export function SidePanel({
   title,
   onClose,
+  wide = false,
   children,
 }: Readonly<{
   title: string;
   onClose: () => void;
+  wide?: boolean;
   children: ReactNode;
 }>) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -29,7 +31,9 @@ export function SidePanel({
       />
       <div
         ref={panelRef}
-        className="absolute right-0 top-0 flex h-full w-full max-w-lg flex-col border-l border-line bg-surface shadow-2xl animate-in slide-in-from-right"
+        className={`absolute right-0 top-0 flex h-full w-full flex-col border-l border-line bg-surface shadow-2xl animate-in slide-in-from-right ${
+          wide ? "max-w-2xl" : "max-w-lg"
+        }`}
       >
         <div className="flex items-center justify-between gap-4 border-b border-line px-6 py-4">
           <h2 className="font-display text-xl tracking-tight">{title}</h2>

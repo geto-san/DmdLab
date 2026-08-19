@@ -1,4 +1,4 @@
-import { Skeleton, PageHeaderSkeleton } from "@/components/skeleton";
+import { Skeleton } from "@/components/skeleton";
 
 function VideoCardSkeleton() {
   return (
@@ -17,8 +17,8 @@ function VideoCardSkeleton() {
 export default function VideosLoading() {
   return (
     <div>
-      <PageHeaderSkeleton />
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
+        <Skeleton className="mb-10 h-10 w-56 rounded-blob" />
         <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 9 }).map((_, i) => (
             <VideoCardSkeleton key={i} />
