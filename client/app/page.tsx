@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { articles, announcements, members } from "@/db/schema";
 import { getContentMap, mergeBlock } from "@/lib/content";
 import { getTotalRecordedHours } from "@/lib/youtube";
-import { HERO, FEATURED_PROJECTS, STATS_ACTIVE_TOPICS_DEFAULT } from "@/lib/data";
+import { HERO, STATS_ACTIVE_TOPICS_DEFAULT } from "@/lib/data";
 import { Button } from "@/components/ui";
 import { Marquee } from "@/components/marquee";
 import { Reveal } from "@/components/reveal";
@@ -39,11 +39,21 @@ export default async function HomePage() {
   ]);
 
   const hero = mergeBlock(HERO as unknown as Record<string, unknown>, content.hero) as unknown as HeroBlock;
-  const featured = mergeBlock(FEATURED_PROJECTS as unknown as Record<string, unknown>, content["featured-projects"]) as unknown as {
-    heading: string;
-    cta: { label: string; to: string };
-    projects: { title: string; slug: string; description: string; image: string; status: string }[];
-  };
+
+  // No hardcoded fallback: an admin-curated "featured-projects" block wins;
+  // otherwise the most recent Research projects (DB/CMS-driven, see
+  // app/research/page.tsx) stand in. The section itself is hidden when
+  // neither source has anything yet.
+  type FeaturedProject = { title: string; slug: string; description: string; image: string; status: string };
+  const featuredBlock = content["featured-projects"] as
+    | { heading?: string; cta?: { label: string; to: string }; projects?: FeaturedProject[] }
+    | undefined;
+  const researchBlock = content.research as { projects?: FeaturedProject[] } | undefined;
+  const featuredProjects = featuredBlock?.projects?.length
+    ? featuredBlock.projects
+    : (researchBlock?.projects ?? []).slice(0, 3);
+  const featuredHeading = featuredBlock?.heading || "Featured Projects";
+  const featuredCta = featuredBlock?.cta || { label: "Browse Portfolio", to: "/research" };
 
   // "Researchers" (live member count) and "Recorded Hours" (live YouTube
   // total) are always computed — the CMS "stats" block can only override
@@ -156,19 +166,20 @@ export default async function HomePage() {
       )}
 
       {/* Featured projects */}
+      {featuredProjects.length > 0 && (
       <EditItem collection="content" blockKey="featured-projects" item={{ title: "Featured projects" }}>
         <section className="hairline-t border-t border-line bg-surface">
         <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
             <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-              {String(featured.heading)}
+              {featuredHeading}
             </h2>
-            <Button href={String(featured.cta.to)} variant="outline" icon>
-              {String(featured.cta.label)}
+            <Button href={featuredCta.to} variant="outline" icon>
+              {featuredCta.label}
             </Button>
           </div>
           <div className="grid gap-10 md:grid-cols-3">
-            {featured.projects.map((p, i) => (
+            {featuredProjects.map((p, i) => (
                 <Reveal key={p.slug} delay={i * 100}>
                   <Link href={`/research/${p.slug}`} className="group block">
                     <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-blob bg-surface">
@@ -200,6 +211,7 @@ export default async function HomePage() {
         </div>
       </section>
       </EditItem>
+      )}
 
       {/* Latest articles */}
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">

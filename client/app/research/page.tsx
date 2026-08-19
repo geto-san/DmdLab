@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
-import { getContentMap, mergeBlock } from "@/lib/content";
-import { RESEARCH_PROJECTS } from "@/lib/data";
+import { ArrowRight, FlaskConical } from "lucide-react";
+import { getContentMap } from "@/lib/content";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { Button } from "@/components/ui";
@@ -23,11 +22,8 @@ type Project = {
 
 export default async function ResearchPage() {
   const content = await getContentMap();
-  const block = mergeBlock(
-    { projects: RESEARCH_PROJECTS } as unknown as Record<string, unknown>,
-    content.research as Record<string, unknown> | undefined
-  );
-  const projects = (block.projects as Project[]) || RESEARCH_PROJECTS;
+  const researchBlock = content.research as { projects?: Project[] } | undefined;
+  const projects = researchBlock?.projects ?? [];
 
   return (
     <div>
@@ -44,6 +40,15 @@ export default async function ResearchPage() {
 
       <EditItem collection="content" blockKey="research" item={{ title: "Research projects" }}>
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+        {projects.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-blob border border-line bg-surface py-24 text-center">
+            <FlaskConical className="size-6 text-muted" />
+            <p className="font-display text-3xl">No research projects yet</p>
+            <p className="max-w-sm text-sm text-muted">
+              Projects added through the CMS will appear here.
+            </p>
+          </div>
+        ) : (
         <div className="grid gap-x-10 gap-y-16 md:grid-cols-2">
           {projects.map((p, i) => (
             <Reveal key={p.slug} delay={(i % 2) * 100}>
@@ -79,6 +84,7 @@ export default async function ResearchPage() {
             </Reveal>
           ))}
         </div>
+        )}
 
         <div className="mt-24 flex flex-col items-center gap-6 rounded-blob border border-line bg-surface py-16 text-center">
           <p className="font-display text-4xl tracking-tight sm:text-5xl">

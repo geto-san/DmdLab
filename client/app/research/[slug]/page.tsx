@@ -4,8 +4,7 @@ import Image from "next/image";
 import { cache } from "react";
 import type { Metadata } from "next";
 import { ArrowLeft, Calendar, DollarSign, Users } from "lucide-react";
-import { getContentMap, mergeBlock } from "@/lib/content";
-import { RESEARCH_PROJECTS } from "@/lib/data";
+import { getContentMap } from "@/lib/content";
 import { Badge } from "@/components/ui";
 
 export const revalidate = 3600;
@@ -29,11 +28,8 @@ type Project = {
 
 const getProject = cache(async (slug: string) => {
   const content = await getContentMap();
-  const block = mergeBlock(
-    { projects: RESEARCH_PROJECTS } as unknown as Record<string, unknown>,
-    content.research as Record<string, unknown> | undefined
-  );
-  const projects = (block.projects as Project[]) || RESEARCH_PROJECTS;
+  const researchBlock = content.research as { projects?: Project[] } | undefined;
+  const projects = researchBlock?.projects ?? [];
   return projects.find((p) => p.slug === slug) ?? null;
 });
 

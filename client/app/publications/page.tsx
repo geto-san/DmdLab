@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, BookOpen, Quote } from "lucide-react";
-import { PUBLICATIONS } from "@/lib/data";
-import { getContentMap, mergeBlock } from "@/lib/content";
+import { getContentMap } from "@/lib/content";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { EditItem } from "@/components/cms/edit-item";
@@ -21,11 +20,8 @@ type Publication = {
 
 export default async function PublicationsPage() {
   const content = await getContentMap();
-  const block = mergeBlock(
-    { publications: PUBLICATIONS } as unknown as Record<string, unknown>,
-    content.publications as Record<string, unknown> | undefined
-  );
-  const all = (block.publications as Publication[]) || PUBLICATIONS;
+  const publicationsBlock = content.publications as { publications?: Publication[] } | undefined;
+  const all = publicationsBlock?.publications ?? [];
   const featured = all.filter((p) => p.featured);
   const rest = all.filter((p) => !p.featured);
 
@@ -40,6 +36,16 @@ export default async function PublicationsPage() {
 
       <EditItem collection="content" blockKey="publications" item={{ title: "Publications" }}>
         <section className="mx-auto max-w-4xl px-5 py-16 sm:px-0">
+        {all.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-blob border border-line bg-surface py-24 text-center">
+            <BookOpen className="size-6 text-muted" />
+            <p className="font-display text-3xl">No publications yet</p>
+            <p className="max-w-sm text-sm text-muted">
+              Papers added through the CMS will appear here, grouped as featured and full list.
+            </p>
+          </div>
+        ) : (
+          <>
         {featured.length > 0 && (
           <div className="mb-16">
             <h2 className="mb-8 font-mono-x text-muted">Featured</h2>
@@ -112,6 +118,8 @@ export default async function PublicationsPage() {
             .
           </p>
         </div>
+          </>
+        )}
       </section>
       </EditItem>
     </div>
