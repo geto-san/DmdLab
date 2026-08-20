@@ -207,7 +207,7 @@ function VideoUploadPanel({ onClose }: Readonly<{ onClose: () => void }>) {
           <p className="font-display text-xl">
             Drag &amp; drop videos <span className="text-accent2">here</span>
           </p>
-          <p className="font-mono-x text-xs text-muted">or click to browse — select multiple files</p>
+          <p className="font-mono-x text-xs text-muted">or click to browse, select multiple files</p>
         </button>
         <input
           ref={inputRef}
@@ -402,7 +402,7 @@ function VideoUploadPanel({ onClose }: Readonly<{ onClose: () => void }>) {
                     disabled={running}
                     className={inputCls}
                   >
-                    <option value="">— None —</option>
+                    <option value="">None</option>
                     {playlists.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.title}
@@ -418,7 +418,7 @@ function VideoUploadPanel({ onClose }: Readonly<{ onClose: () => void }>) {
         {error && <p className="text-sm text-red-500">{error}</p>}
         {doneCount > 0 && (
           <p className="rounded-xl border border-emerald-600/30 bg-emerald-600/5 px-4 py-2.5 text-sm text-emerald-700">
-            Uploaded {doneCount} video{doneCount === 1 ? "" : "s"} — processing on YouTube.
+            Uploaded {doneCount} video{doneCount === 1 ? "" : "s"}. Processing on YouTube.
           </p>
         )}
 

@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s · DeepMinds Research Lab",
   },
   description:
-    "AI research lab at MUST — Quantum Computing.",
+    "A multidisciplinary AI research lab at MUST building applied machine learning, from real-time wildlife conflict reporting to automated Sign Language translation.",
 };
 
 export const viewport: Viewport = {

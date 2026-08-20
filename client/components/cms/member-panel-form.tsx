@@ -15,11 +15,11 @@ const PHOTO_URL_FIELD: FieldDef = {
   name: "photo",
   label: "Photo URL",
   type: "text",
-  hint: "Paste an image URL, or upload a file below instead — uploading replaces this.",
+  hint: "Paste an image URL, or upload a file below instead. Uploading replaces this.",
 };
 
 const CONTACT_FIELDS: FieldDef[] = [
-  { name: "email", label: "Email", type: "text", hint: "Not shown publicly used to notify members of new articles, research, and publications" },
+  { name: "email", label: "Email", type: "text", hint: "Not shown publicly. Used to notify members of new articles, research, and publications." },
   { name: "linkedin", label: "LinkedIn URL", type: "text", hint: "Shown as an icon if provided" },
   { name: "github", label: "GitHub URL", type: "text", hint: "Shown as an icon if provided" },
   { name: "otherUrl", label: "Other URL", type: "text", hint: "Personal site, X/Twitter, etc. shown as an icon if provided" },

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { Inbox, LogOut, Menu, Moon, Sun, X } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
@@ -24,6 +24,8 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
 
   const handleLogout = async () => {
     await authClient.signOut();
@@ -50,11 +52,34 @@ export function Header() {
 
   useEffect(() => {
     if (!menuOpen) return;
+    const dialog = dialogRef.current;
+    const focusable = dialog?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled])'
+    );
+    focusable?.[0]?.focus();
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        return;
+      }
+      if (e.key !== "Tab" || !focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    const trigger = menuTriggerRef.current;
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      trigger?.focus();
+    };
   }, [menuOpen]);
 
   const isDark = mounted && resolvedTheme === "dark";
@@ -67,8 +92,7 @@ export function Header() {
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-baseline gap-2" aria-label="DeepMinds Research Lab home">
-            <span className="font-display text-2xl leading-none tracking-tight">DM▪️rLab</span>
-            {/* <span className="font-mono-x hidden text-muted sm:inline">DeepMinds Research</span> */}
+            <span className="font-display text-2xl leading-none tracking-tight">DM·Lab</span>
           </Link>
 
           <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
@@ -126,6 +150,7 @@ export function Header() {
               {mounted && isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
             </button>
             <button
+              ref={menuTriggerRef}
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-expanded={menuOpen}
@@ -140,6 +165,7 @@ export function Header() {
       </header>
 
       <dialog
+        ref={dialogRef}
         open
         className={`fixed inset-0 z-[60] m-0 flex h-dvh max-h-none w-dvw max-w-none flex-col border-0 bg-bg p-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           menuOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-3 opacity-0"

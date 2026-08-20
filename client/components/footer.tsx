@@ -1,28 +1,14 @@
 import Link from "next/link";
 import { FOOTER_LINKS } from "@/lib/data";
-import { Marquee } from "./marquee";
 
 export function Footer() {
   return (
     <footer className="hairline-t mt-24 bg-surface">
-      <Marquee
-        className="border-b border-line py-5"
-        items={[
-          "Vibe Coding",
-          "Quantum Computing",
-          "Prompt Engineering",
-          "Natural Language Processing",
-          "Statistics",
-        ]}
-      />
-
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-10 px-5 py-16 sm:px-8 md:grid-cols-4">
-        <div className="col-span-2 md:col-span-2">
-          <p className="font-display text-3xl tracking-tight">DM·Lab</p>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            A multidisciplinary AI research lab building applied machine learning —
-            from real-time wildlife conflict reporting to automated Sign Language
-            translation.
+      <div className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:grid-cols-[1.6fr_1fr_1fr] sm:px-8">
+        <div>
+          <p className="font-display text-2xl tracking-tight">DM·Lab</p>
+          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
+            DeepMinds Research Lab, Mbarara University of Science and Technology.
           </p>
         </div>
 
@@ -51,9 +37,14 @@ export function Footer() {
       <div className="hairline-t">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-6 sm:px-8">
           <p className="font-mono-x text-muted">
-            © {new Date().getFullYear()} DeepMinds Research Lab
+            © {new Date().getFullYear()} DeepMinds Research Lab. All rights reserved.
           </p>
-          <p className="font-mono-x text-muted">Built with Next.js · Mongo · Cloudinary</p>
+          <a
+            href="#"
+            className="font-mono-x text-muted transition-colors hover:text-accent2"
+          >
+            Back to top ↑
+          </a>
         </div>
       </div>
     </footer>

@@ -1,5 +1,4 @@
 import { asc } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { db } from "@/db";
 import { members } from "@/db/schema";
 import { Reveal } from "@/components/reveal";
@@ -7,22 +6,10 @@ import { TeamShowcase } from "@/components/team-showcase";
 import { AddButton } from "@/components/cms/edit-item";
 import { JoinTeamForm } from "@/components/join-team-form";
 
-// Reads cookies() for Google-verification state, which makes this page
-// dynamic per-request regardless — no ISR revalidate window applies.
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
-export default async function TeamPage({
-  searchParams,
-}: Readonly<{
-  searchParams: Promise<{ applied?: string }>;
-}>) {
-  const [dbRows, { applied }, cookieStore] = await Promise.all([
-    db.select().from(members).orderBy(asc(members.id)),
-    searchParams,
-    cookies(),
-  ]);
-  const verifiedEmail = cookieStore.get("apply_verified_email")?.value ?? null;
-  const verifiedName = cookieStore.get("apply_verified_name")?.value ?? "";
+export default async function TeamPage() {
+  const dbRows = await db.select().from(members).orderBy(asc(members.id));
 
   const active = dbRows.filter((m) => !m.alumni);
   const alumni = dbRows.filter((m) => m.alumni);
@@ -102,17 +89,13 @@ export default async function TeamPage({
               Join the <em className="text-accent2">team</em>
             </h2>
             <p className="mt-5 max-w-md text-sm leading-relaxed text-muted sm:text-base">
-              We&apos;re always looking for curious students to work alongside the lab —
+              We&apos;re always looking for curious students to work alongside the lab,
               across research, engineering, and everything in between. Tell us a bit
               about yourself and we&apos;ll be in touch.
             </p>
           </Reveal>
           <Reveal delay={100}>
-            <JoinTeamForm
-              verifiedEmail={verifiedEmail}
-              verifiedName={verifiedName}
-              googleError={applied === "error"}
-            />
+            <JoinTeamForm />
           </Reveal>
         </div>
       </section>

@@ -1,5 +1,4 @@
 // Static fallback content merged against CMS blocks from the DB (see lib/content.ts).
-// iconName values resolve through the allowlisted ICON_MAP in components/ui.tsx.
 //
 // Publications, Research Projects, and the homepage Featured Projects have no
 // static fallback by design — they are strictly DB/CMS-driven (see
@@ -144,7 +143,7 @@ export const HERO = {
   eyebrow: "Deepminds Research Lab · MUST",
   title: { before: "AI Research that ", highlight: "Watches", after: ", Listens, and Translates." },
   description:
-    "We are a multidisciplinary lab at MUST building applied ML solutions — from real-time wildlife conflict reporting to automated Sign Language translation.",
+    "We are a multidisciplinary lab at MUST building applied ML solutions, from real-time wildlife conflict reporting to automated Sign Language translation.",
   primaryCta: { label: "Explore Research", to: "/articles" },
   secondaryCta: { label: "Watch Lab Activities", to: "/videos" },
 };

@@ -88,7 +88,7 @@ export default function ApplicationsPage() {
         Join-the-team inbox
       </h1>
       <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-        What applicants submit is shown as-is — mark an application reviewed once
+        What applicants submit is shown as-is. Mark an application reviewed once
         you&apos;ve followed up, or remove it.
       </p>
 

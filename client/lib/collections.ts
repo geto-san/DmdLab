@@ -5,10 +5,8 @@ import {
   about,
   videos,
   contentBlocks,
-  siteSettings,
   applications,
 } from "@/db/schema";
-import { resetSettingsCache } from "./settings";
 
 // "members" (like "article") has its own dedicated /api/admin/members
 // routes it needs multipart form + Cloudinary upload handling that this
@@ -19,7 +17,6 @@ export const TABLES = {
   about,
   videos,
   content: contentBlocks,
-  settings: siteSettings,
   applications,
 } as const;
 
@@ -45,11 +42,6 @@ export function revalidateForCollection(collection: string) {
     revalidatePath("/research");
     revalidatePath("/research/[slug]", "page");
     revalidatePath("/publications");
-  } else if (collection === "settings") {
-    resetSettingsCache();
-    revalidatePath("/");
-    revalidatePath("/articles");
-    revalidatePath("/team");
   } else if (collection === "applications") {
     revalidatePath("/manage/applications");
   }

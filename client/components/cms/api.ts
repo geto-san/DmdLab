@@ -19,33 +19,6 @@ export class AuthError extends Error {
   }
 }
 
-export function uploadWithProgress(
-  path: string,
-  form: FormData,
-  onProgress: (sentBytes: number, totalBytes: number) => void
-): Promise<unknown> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `/api${path}`);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress(e.loaded, e.total);
-    };
-    xhr.onload = () => {
-      let data: unknown = {};
-      try {
-        data = JSON.parse(xhr.responseText);
-      } catch {
-        // non-JSON body
-      }
-      if (xhr.status === 401) reject(new AuthError());
-      else if (xhr.status >= 200 && xhr.status < 300) resolve(data);
-      else reject(new Error((data as { error?: string }).error || `Request failed (${xhr.status})`));
-    };
-    xhr.onerror = () => reject(new Error("Network error"));
-    xhr.send(form);
-  });
-}
-
 export class UploadAbortError extends Error {
   constructor() {
     super("Upload cancelled");

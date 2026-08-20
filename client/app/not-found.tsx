@@ -8,7 +8,7 @@ export default function NotFound() {
         Lost in the lab
       </h1>
       <p className="mt-6 max-w-md text-muted">
-        This page doesn&apos;t exist — maybe it was moved, or never made it out of
+        This page doesn&apos;t exist. Maybe it was moved, or never made it out of
         the notebook.
       </p>
       <div className="mt-10">
