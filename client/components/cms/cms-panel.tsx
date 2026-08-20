@@ -6,6 +6,7 @@ import { PanelForm } from "./panel-form";
 import { ArticlePanelForm } from "./article-panel-form";
 import { ContentPanelForm } from "./content-panel-form";
 import { VideoEditorForm } from "./video-editor";
+import { MemberPanelForm } from "./member-panel-form";
 
 export function CmsPanel() {
   const { panel, closePanel } = useSidePanel();
@@ -33,6 +34,14 @@ export function CmsPanel() {
     return (
       <SidePanel title={title} onClose={closePanel}>
         <ArticlePanelForm article={item} redirectTo={redirectTo} />
+      </SidePanel>
+    );
+  }
+
+  if (collection === "members") {
+    return (
+      <SidePanel title={title} onClose={closePanel}>
+        <MemberPanelForm member={item} redirectTo={redirectTo} />
       </SidePanel>
     );
   }

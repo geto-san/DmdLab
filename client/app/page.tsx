@@ -56,7 +56,7 @@ export default async function HomePage() {
   const featuredCta = featuredBlock?.cta || { label: "Browse Portfolio", to: "/research" };
 
   // "Researchers" (live member count) and "Recorded Hours" (live YouTube
-  // total) are always computed — the CMS "stats" block can only override
+  // total) are always computed the CMS "stats" block can only override
   // "Active Topics", which has no underlying table to count from.
   const statsBlock = content.stats as { activeTopics?: { value: number; suffix: string } } | undefined;
   const activeTopics = statsBlock?.activeTopics ?? STATS_ACTIVE_TOPICS_DEFAULT;
@@ -117,20 +117,25 @@ export default async function HomePage() {
       </EditItem>
 
       {/* Stats band */}
-      <EditItem collection="content" blockKey="stats" item={{ title: "Stats band" }}>
-        <section className="hairline-b border-b border-line bg-surface">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px px-5 py-16 sm:px-8 sm:grid-cols-3">
-            {stats.map((s, i) => (
-              <div key={s.label} className={i > 0 ? "sm:border-l sm:border-line sm:pl-10" : ""}>
-                <p className="font-display text-5xl tracking-tight sm:text-6xl">
-                  <StatCounter value={s.value} suffix={s.suffix} />
-                </p>
-                <p className="mt-2 font-mono-x text-xs text-muted">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </EditItem>
+      <section className="hairline-b border-b border-line bg-surface">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-px px-5 py-16 sm:px-8 sm:grid-cols-3">
+          {stats.map((s, i) => (
+            <div
+              key={s.label}
+              className={
+                i > 0
+                  ? "border-t border-line pt-6 sm:border-l sm:border-t-0 sm:pl-10 sm:pt-0"
+                  : ""
+              }
+            >
+              <p className="font-display text-5xl tracking-tight sm:text-6xl">
+                <StatCounter value={s.value} suffix={s.suffix} />
+              </p>
+              <p className="mt-2 font-mono-x text-xs text-muted">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Announcements */}
       {announcementRows.length > 0 && (
@@ -146,7 +151,7 @@ export default async function HomePage() {
           <ul className="divide-y divide-line">
             {announcementRows.map((a) => (
               <EditItem key={a.id} collection="announcements" item={a}>
-                <li className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4">
+                <li className="flex flex-wrap items-baseline gap-x-6 gap-y-1 rounded-xl px-3 py-4 -mx-3 transition-colors hover:bg-surface">
                   <span className="font-mono-x text-xs text-muted">
                     {new Date(a.date).toLocaleDateString("en-US", {
                       month: "short",
@@ -180,7 +185,7 @@ export default async function HomePage() {
             {featuredProjects.map((p, i) => (
                 <Reveal key={p.slug} delay={i * 100}>
                   <Link href={`/research/${p.slug}`} className="group block">
-                    <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-blob bg-surface">
+                    <div className="relative mb-5 aspect-[4/3] overflow-hidden rounded-blob bg-surface shadow-soft transition-shadow duration-300 group-hover:shadow-soft-lg">
                       <Image
                         src={p.image}
                         alt={p.title}
@@ -247,7 +252,7 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <p className="text-muted">No articles published yet — check back soon.</p>
+          <p className="text-muted">No articles published yet check back soon.</p>
         )}
       </section>
 

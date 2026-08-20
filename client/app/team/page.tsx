@@ -1,14 +1,28 @@
 import { asc } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { db } from "@/db";
 import { members } from "@/db/schema";
 import { Reveal } from "@/components/reveal";
 import { TeamShowcase } from "@/components/team-showcase";
 import { AddButton } from "@/components/cms/edit-item";
+import { JoinTeamForm } from "@/components/join-team-form";
 
-export const revalidate = 3600;
+// Reads cookies() for Google-verification state, which makes this page
+// dynamic per-request regardless — no ISR revalidate window applies.
+export const dynamic = "force-dynamic";
 
-export default async function TeamPage() {
-  const dbRows = await db.select().from(members).orderBy(asc(members.id));
+export default async function TeamPage({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<{ applied?: string }>;
+}>) {
+  const [dbRows, { applied }, cookieStore] = await Promise.all([
+    db.select().from(members).orderBy(asc(members.id)),
+    searchParams,
+    cookies(),
+  ]);
+  const verifiedEmail = cookieStore.get("apply_verified_email")?.value ?? null;
+  const verifiedName = cookieStore.get("apply_verified_name")?.value ?? "";
 
   const active = dbRows.filter((m) => !m.alumni);
   const alumni = dbRows.filter((m) => m.alumni);
@@ -16,13 +30,22 @@ export default async function TeamPage() {
   return (
     <div>
       <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
-        <div className="mb-14 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-          <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl">
+        <div className="mb-14">
+          <p className="mb-6 flex items-center gap-3 font-mono-x text-muted">
+            <span className="inline-block size-1.5 rounded-full bg-accent2" />
+            Team · {active.length} researcher{active.length !== 1 ? "s" : ""}
+          </p>
+          <h1 className="max-w-3xl font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
             Meet our <em className="text-accent2">team members</em>
           </h1>
-          <p className="max-w-sm text-sm leading-relaxed text-muted sm:text-base">
-            We are a multidisciplinary team of researchers, engineers, and students working together to build applied machine learning.
-          </p>
+          <div className="mt-8 grid gap-x-12 gap-y-4 sm:grid-cols-2">
+            <p className="text-sm leading-relaxed text-muted sm:text-base">
+              We are a multidisciplinary team of researchers, engineers, and students working together to build applied machine learning.
+            </p>
+            <p className="text-sm leading-relaxed text-muted sm:text-base">
+              Each person brings a distinct discipline to the lab quantum computing, NLP, prompt engineering, statistics operating as one integrated unit.
+            </p>
+          </div>
         </div>
 
         {active.length === 0 ? (
@@ -61,7 +84,7 @@ export default async function TeamPage() {
               {alumni.map((a) => (
                 <li
                   key={a.id}
-                  className="flex flex-wrap items-baseline gap-x-6 gap-y-1 py-4"
+                  className="flex flex-wrap items-baseline gap-x-6 gap-y-1 rounded-xl px-3 py-4 -mx-3 transition-colors hover:bg-bg"
                 >
                   <span className="font-display text-xl">{a.name}</span>
                   {a.role && <span className="text-sm text-muted">{a.role}</span>}
@@ -71,6 +94,28 @@ export default async function TeamPage() {
           </div>
         </section>
       )}
+
+      <section id="join-team" className="hairline-t border-t border-line bg-surface">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-2 lg:gap-16">
+          <Reveal>
+            <h2 className="font-display text-5xl leading-[1.02] tracking-tight sm:text-6xl">
+              Join the <em className="text-accent2">team</em>
+            </h2>
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-muted sm:text-base">
+              We&apos;re always looking for curious students to work alongside the lab —
+              across research, engineering, and everything in between. Tell us a bit
+              about yourself and we&apos;ll be in touch.
+            </p>
+          </Reveal>
+          <Reveal delay={100}>
+            <JoinTeamForm
+              verifiedEmail={verifiedEmail}
+              verifiedName={verifiedName}
+              googleError={applied === "error"}
+            />
+          </Reveal>
+        </div>
+      </section>
     </div>
   );
 }

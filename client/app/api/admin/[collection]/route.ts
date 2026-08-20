@@ -5,7 +5,10 @@ import { contentBlocks, siteSettings } from "@/db/schema";
 import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
 import { toSafeString } from "@/lib/to-string";
 import { resetSettingsCache } from "@/lib/settings";
+import { notifyMembersOfUpdate } from "@/lib/notify-members";
 import { requireAdmin } from "../guard";
+
+const NOTIFIABLE_CONTENT_KEYS = new Set(["research", "publications"]);
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +93,9 @@ export async function POST(
       if (error) return NextResponse.json({ error }, { status: 400 });
       const [saved] = await db.insert(contentBlocks).values(data as never).returning();
       revalidateForCollection(collection);
+      if (NOTIFIABLE_CONTENT_KEYS.has(saved.key)) {
+        await notifyMembersOfUpdate(saved.key as "research" | "publications", saved.title || "", `/${saved.key}`);
+      }
       return NextResponse.json(saved, { status: 201 });
     }
     if (collection === "settings") {

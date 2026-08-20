@@ -4,7 +4,10 @@ import { db } from "@/db";
 import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
 import { toSafeString } from "@/lib/to-string";
 import { resetSettingsCache } from "@/lib/settings";
+import { notifyMembersOfUpdate } from "@/lib/notify-members";
 import { requireAdmin } from "../../guard";
+
+const NOTIFIABLE_CONTENT_KEYS = new Set(["research", "publications"]);
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +70,10 @@ export async function PUT(
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (collection === "settings") resetSettingsCache();
     revalidateForCollection(collection);
+    if (collection === "content" && NOTIFIABLE_CONTENT_KEYS.has((updated as { key: string }).key)) {
+      const key = (updated as { key: string; title: string | null }).key as "research" | "publications";
+      await notifyMembersOfUpdate(key, (updated as { title: string | null }).title || "", `/${key}`);
+    }
     return NextResponse.json(updated);
   } catch (err) {
     if (

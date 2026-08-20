@@ -27,10 +27,26 @@ export const members = pgTable("members", {
   role: text("role"),
   bio: text("bio"),
   photo: text("photo"),
+  photoPublicId: text("photo_public_id"),
   category: text("category").notNull().default("Researchers"),
   alumni: boolean("alumni").notNull().default(false),
   location: text("location"),
   experience: text("experience"),
+  // Not shown publicly used only to notify members when articles,
+  // research, or publications are added/updated. See lib/notify-members.ts.
+  email: text("email"),
+  linkedin: text("linkedin"),
+  github: text("github"),
+  otherUrl: text("other_url"),
+});
+
+export const applications = pgTable("applications", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  message: text("message"),
+  reviewed: boolean("reviewed").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const about = pgTable("about", {

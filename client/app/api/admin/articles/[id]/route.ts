@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { articles } from "@/db/schema";
 import { destroyImage } from "@/lib/cloudinary";
 import { parseArticleForm, uploadArticleImage, revalidateArticlePaths } from "@/lib/articles-form";
+import { notifyMembersOfUpdate } from "@/lib/notify-members";
 import { requireAdmin } from "../../guard";
 
 export const dynamic = "force-dynamic";
@@ -44,6 +45,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
     revalidateArticlePaths(articleId);
+    await notifyMembersOfUpdate("article", updated.title, `/articles/${updated.id}`);
     return NextResponse.json(updated);
   } catch (err) {
     return NextResponse.json(
