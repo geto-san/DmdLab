@@ -91,7 +91,7 @@ export function formatDuration(iso: string | null | undefined): string | null {
   return h ? `${h}:${pad(min)}:${pad(s)}` : `${min}:${pad(s)}`;
 }
 
-function parseDurationSeconds(iso: string | null | undefined): number {
+export function parseDurationSeconds(iso: string | null | undefined): number {
   if (!iso) return 0;
   const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
   if (!m) return 0;
@@ -262,6 +262,7 @@ export type RelatedVideo = {
   thumbnail?: string;
   author?: string;
   uploadDate: string;
+  category: string;
   durationLabel?: string | null;
 };
 
@@ -279,6 +280,7 @@ export async function fetchRelatedVideos(id: string, maxResults = RELATED_POOL_S
       thumbnail: v.thumbnail,
       author: v.author,
       uploadDate: v.uploadDate,
+      category: v.category,
       durationLabel: v.durationLabel,
     }));
 

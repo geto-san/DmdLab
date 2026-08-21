@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { formatDate } from "@/lib/format";
+import { formatRelativeTime } from "@/lib/format";
 
 type RelatedItem = {
   _id: string;
@@ -13,6 +13,7 @@ type RelatedItem = {
   thumbnail?: string;
   author?: string;
   uploadDate: string;
+  category?: string;
   durationLabel?: string | null;
 };
 
@@ -63,15 +64,13 @@ export function RelatedVideos({ fromId, items }: Readonly<{ fromId: string; item
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="font-mono-x text-[0.6875rem] text-muted">
-                {formatDate(v.uploadDate)}
-              </p>
-              <h3 className="mt-1 line-clamp-2 font-display text-lg leading-snug tracking-tight transition-colors group-hover:text-accent2 sm:text-xl">
+              <h3 className="line-clamp-2 font-display text-lg leading-snug tracking-tight transition-colors group-hover:text-accent2 sm:text-xl">
                 {v.title}
               </h3>
-              {v.author && (
-                <p className="mt-1 font-mono-x text-[0.6875rem] text-muted">{v.author}</p>
-              )}
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono-x text-[0.6875rem] text-muted">
+                {v.category && <span className="text-accent2">{v.category}</span>}
+                <span>{formatRelativeTime(v.uploadDate)}</span>
+              </p>
             </div>
             <ArrowUpRight className="size-5 shrink-0 text-muted transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ink" />
           </Link>

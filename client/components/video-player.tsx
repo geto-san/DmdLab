@@ -4,7 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import { Play } from "lucide-react";
 
-export function VideoPlayer({ videoId, title }: Readonly<{ videoId: string; title: string }>) {
+export function VideoPlayer({
+  videoId,
+  title,
+  durationLabel,
+}: Readonly<{ videoId: string; title: string; durationLabel?: string | null }>) {
   const [playing, setPlaying] = useState(false);
 
   return (
@@ -35,6 +39,11 @@ export function VideoPlayer({ videoId, title }: Readonly<{ videoId: string; titl
           <span className="relative flex size-20 items-center justify-center rounded-full bg-accent text-accent-ink transition-transform duration-300 group-hover:scale-110">
             <Play className="size-8 fill-current" />
           </span>
+          {durationLabel && (
+            <span className="absolute bottom-4 right-4 rounded-md bg-ink/80 px-2.5 py-1 font-mono-x text-xs text-bg">
+              {durationLabel}
+            </span>
+          )}
         </button>
       )}
     </div>

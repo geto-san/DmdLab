@@ -1,14 +1,15 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeft, Calendar, Eye, ThumbsUp } from "lucide-react";
+import { ArrowLeft, Calendar, Clock } from "lucide-react";
 import { fetchVideoById, fetchRelatedVideos, type RelatedVideo, type YouTubeVideo } from "@/lib/youtube";
 import { VideoPlayer } from "@/components/video-player";
 import { RelatedVideos } from "@/components/related-videos";
+import { VideoDescription } from "@/components/video-description";
+import { ShareButton } from "@/components/share-button";
 import { VideoDetailEdit } from "@/components/cms/video-detail-edit";
 import { Badge } from "@/components/ui";
-import { formatDate, formatViews } from "@/lib/format";
-import { keyFor } from "@/lib/react-keys";
+import { formatRelativeTime } from "@/lib/format";
 
 export const revalidate = 300;
 
@@ -29,46 +30,36 @@ function VideoDetailContent({
   video,
   related,
 }: Readonly<{ video: YouTubeVideo; related: RelatedVideo[] }>) {
-  const seen = new Map<string, number>();
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_360px]">
       <div>
-        <VideoPlayer videoId={video._id} title={video.title} />
+        <VideoPlayer videoId={video._id} title={video.title} durationLabel={video.durationLabel} />
         <VideoDetailEdit video={{ _id: video._id, title: video.title }}>
           <div className="mt-8">
             <div className="mb-4 flex flex-wrap items-center gap-3 font-mono-x text-xs text-muted">
-              <Badge>{video.category}</Badge>
               <span className="inline-flex items-center gap-1.5">
-                <Calendar className="size-3.5" /> {formatDate(video.uploadDate)}
+                <Calendar className="size-3.5" /> {formatRelativeTime(video.uploadDate)}
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Eye className="size-3.5" /> {formatViews(video.views)} views
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <ThumbsUp className="size-3.5" /> {formatViews(video.likes)}
-              </span>
+              {video.durationLabel && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="size-3.5" /> {video.durationLabel}
+                </span>
+              )}
             </div>
             <h1 className="font-display text-3xl leading-tight tracking-tight sm:text-5xl">
               {video.title}
             </h1>
-            {video.author && (
-              <p className="mt-3 font-mono-x text-sm text-muted">
-                {video.author} · {formatDate(video.uploadDate)}
-              </p>
-            )}
-            {video.description && (
-              <div className="prose-lab mt-6">
-                {video.description
-                  .split(/\n\s*\n/)
-                  .map((para) => <p key={keyFor(para, seen)}>{para}</p>)}
-              </div>
-            )}
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Badge>{video.category}</Badge>
+              <ShareButton />
+            </div>
+            {video.description && <VideoDescription text={video.description} />}
           </div>
         </VideoDetailEdit>
       </div>
 
       <aside>
-        <h2 className="mb-4 font-mono-x text-muted">Related</h2>
+        <h2 className="mb-4 font-mono-x text-muted">More {video.category} videos</h2>
         {related.length ? (
           <RelatedVideos fromId={video._id} items={related} />
         ) : (
