@@ -80,6 +80,22 @@ async function getChannelId(): Promise<string | null> {
   return resolvingPromise;
 }
 
+// Best-effort public URL for the configured channel — resolved straight
+// from the raw env value with no API call. Server pages pass this down to
+// client components as a plain prop.
+export function getChannelUrl(): string | null {
+  if (!CHANNEL_ID_RAW) return null;
+  if (/^UC[\w-]{22}$/.test(CHANNEL_ID_RAW)) {
+    return `https://www.youtube.com/channel/${CHANNEL_ID_RAW}`;
+  }
+  const urlMatch = /youtube\.com\/(@[\w.-]+)/i.exec(CHANNEL_ID_RAW);
+  if (urlMatch) return `https://www.youtube.com/${urlMatch[1]}`;
+  if (CHANNEL_ID_RAW.startsWith("@")) {
+    return `https://www.youtube.com/${CHANNEL_ID_RAW}`;
+  }
+  return null;
+}
+
 export function formatDuration(iso: string | null | undefined): string | null {
   if (!iso) return null;
   const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);

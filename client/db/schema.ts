@@ -86,6 +86,18 @@ export const videoClicks = pgTable(
   (table) => [index("video_clicks_from_to_idx").on(table.fromVideoId, table.toVideoId)]
 );
 
+export const videoComments = pgTable(
+  "video_comments",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    videoId: text("video_id").notNull(),
+    name: text("name").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("video_comments_video_idx").on(table.videoId, table.createdAt)]
+);
+
 export const youtubeOauth = pgTable("youtube_oauth", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   accessToken: text("access_token").notNull(),

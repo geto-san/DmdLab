@@ -1,12 +1,25 @@
-import { fetchChannelVideos, parseDurationSeconds, type YouTubeVideo } from "@/lib/youtube";
-import { VideoCard } from "@/components/video-card";
-import { VideoFilters } from "@/components/video-filters";
+import { fetchChannelVideos, getChannelUrl, parseDurationSeconds, type YouTubeVideo } from "@/lib/youtube";
+import { WatchView } from "@/components/watch/watch-view";
+import type { PlaylistEntry } from "@/components/watch/types";
 import { VideoAdminBar } from "@/components/cms/video-admin-bar";
-import { EditItem } from "@/components/cms/edit-item";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = { topic?: string; length?: string; sort?: string };
+function toEntry(v: YouTubeVideo): PlaylistEntry {
+  return {
+    _id: v._id,
+    title: v.title,
+    description: v.description,
+    thumbnail: v.thumbnail,
+    author: v.author,
+    uploadDate: v.uploadDate,
+    category: v.category,
+    views: v.views,
+    likes: v.likes,
+    durationLabel: v.durationLabel,
+    durationSeconds: parseDurationSeconds(v.duration),
+  };
+}
 
 function VideosUnavailable({ error }: Readonly<{ error: string }>) {
   return (
@@ -21,81 +34,7 @@ function VideosUnavailable({ error }: Readonly<{ error: string }>) {
   );
 }
 
-function VideoGrid({
-  videos,
-  filtered,
-}: Readonly<{ videos: YouTubeVideo[]; filtered: boolean }>) {
-  if (!videos.length) {
-    return (
-      <div className="rounded-blob border border-line bg-surface py-24 text-center">
-        <p className="font-display text-3xl">{filtered ? "No matches" : "No videos yet"}</p>
-        <p className="mt-3 text-sm text-muted">
-          {filtered
-            ? "No videos match these filters — try widening your search."
-            : "Videos will appear here once the channel publishes content."}
-        </p>
-      </div>
-    );
-  }
-  return (
-    <div className="grid gap-x-10 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
-      {videos.map((v) => (
-        <EditItem
-          key={v._id}
-          collection="video"
-          item={{ _id: v._id, title: v.title, description: v.description }}
-        >
-          <VideoCard
-            id={v._id}
-            title={v.title}
-            thumbnail={v.thumbnail}
-            durationLabel={v.durationLabel}
-            views={v.views}
-            uploadDate={v.uploadDate}
-            category={v.category}
-          />
-        </EditItem>
-      ))}
-    </div>
-  );
-}
-
-function applyFilters(videos: YouTubeVideo[], { topic, length, sort }: SearchParams) {
-  let list = videos;
-
-  if (topic && topic !== "all") {
-    list = list.filter((v) => v.category === topic);
-  }
-
-  if (length && length !== "any") {
-    list = list.filter((v) => {
-      const secs = parseDurationSeconds(v.duration);
-      if (length === "short") return secs > 0 && secs < 300;
-      if (length === "medium") return secs >= 300 && secs <= 1200;
-      if (length === "long") return secs > 1200;
-      return true;
-    });
-  }
-
-  list = [...list];
-  if (sort === "oldest") {
-    list.sort((a, b) => new Date(a.uploadDate).getTime() - new Date(b.uploadDate).getTime());
-  } else if (sort === "title") {
-    list.sort((a, b) => a.title.localeCompare(b.title));
-  } else {
-    list.sort((a, b) => new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime());
-  }
-
-  return list;
-}
-
-export default async function VideosPage({
-  searchParams,
-}: Readonly<{
-  searchParams: Promise<SearchParams>;
-}>) {
-  const params = await searchParams;
-
+export default async function VideosPage() {
   let videos: YouTubeVideo[] = [];
   let error: string | null = null;
 
@@ -105,39 +44,40 @@ export default async function VideosPage({
     error = (err as Error).message;
   }
 
-  const topics = Array.from(new Set(videos.map((v) => v.category))).sort();
-  const isFiltered = Boolean(
-    (params.topic && params.topic !== "all") || (params.length && params.length !== "any")
-  );
-  const displayed = applyFilters(videos, params);
-
-  return (
-    <div>
+  if (error || videos.length === 0) {
+    return (
       <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
-        <div className="mb-14">
-          <p className="mb-6 flex items-center gap-3 font-mono-x text-muted">
-            <span className="inline-block size-1.5 rounded-full bg-accent2" />
-            Video Library · {videos.length} recording{videos.length !== 1 ? "s" : ""}
-          </p>
-          <h1 className="max-w-3xl font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
-            Browse the <em className="text-accent2">video library</em>
-          </h1>
-          <p className="mt-8 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-            Talks, tutorials, and research walkthroughs from the lab. Filter by topic or length
-            to find what you&apos;re after.
-          </p>
-        </div>
-
-        {!error && videos.length > 0 && <VideoFilters topics={topics} />}
-
-        <VideoAdminBar />
-
         {error ? (
           <VideosUnavailable error={error} />
         ) : (
-          <VideoGrid videos={displayed} filtered={isFiltered} />
+          <div className="rounded-blob border border-line bg-surface py-24 text-center">
+            <p className="font-display text-3xl">No videos yet</p>
+            <p className="mt-3 text-sm text-muted">
+              Videos will appear here once the channel publishes content.
+            </p>
+          </div>
         )}
       </section>
-    </div>
+    );
+  }
+
+  const entries = videos.map(toEntry);
+  const featured = entries[0];
+
+  return (
+    <section className="mx-auto max-w-7xl px-5 pb-20 pt-28 sm:px-8 sm:pt-36">
+      <WatchView
+        video={featured}
+        entries={entries}
+        channelUrl={getChannelUrl()}
+        header={
+          <p className="mb-6 flex items-center gap-3 font-mono-x text-muted">
+            <span className="inline-block size-1.5 rounded-full bg-accent2" />
+            Video Library · {entries.length} recording{entries.length !== 1 ? "s" : ""}
+          </p>
+        }
+        adminBar={<VideoAdminBar />}
+      />
+    </section>
   );
 }
