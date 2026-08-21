@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { ArrowLeft, ArrowRight, Lock, Moon, Sun } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lock, Loader2, Moon, Sun } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
+import { ErrorBanner } from "@/components/cms/editor-ui";
 
 export function Login() {
   const router = useRouter();
@@ -47,14 +48,14 @@ export function Login() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 font-mono-x text-muted transition-colors hover:text-accent2"
+          className="flex items-center gap-2 rounded-full font-mono-x text-muted transition-colors hover:text-accent2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
         >
           <ArrowLeft className="size-3.5" /> Back to site
         </Link>
         <button
           type="button"
           onClick={() => setTheme(isDark ? "light" : "dark")}
-          className="flex size-10 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
+          className="flex size-10 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           aria-label="Toggle theme"
         >
           {mounted && isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -93,7 +94,7 @@ export function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="username"
                   required
-                  className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2"
+                  className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2 focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 />
               </label>
               <label className="block">
@@ -104,22 +105,23 @@ export function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   required
-                  className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2"
+                  className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2 focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                 />
               </label>
             </div>
 
             {error && (
-              <p className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-500">
-                {error}
-              </p>
+              <div className="mt-4">
+                <ErrorBanner message={error} />
+              </div>
             )}
 
             <button
               type="submit"
               disabled={busy}
-              className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-mono-x text-accent-ink transition-all duration-300 hover:bg-accent2 hover:text-accent2-ink disabled:opacity-60"
+              className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-mono-x text-accent-ink transition-all duration-300 hover:bg-accent2 hover:text-accent2-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-60"
             >
+              {busy && <Loader2 className="size-4 animate-spin" />}
               {busy ? "Signing in…" : "Sign in"}
               {!busy && (
                 <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />

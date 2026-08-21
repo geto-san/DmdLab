@@ -45,7 +45,7 @@ export function FieldInput({
         onChange={(e) => onChange(e.target.value)}
         required={def.required}
         spellCheck={def.type !== "json"}
-        className={`min-h-28 w-full resize-y rounded-xl border border-line bg-bg px-4 py-3 font-mono-x text-xs outline-none transition-colors focus:border-accent2 ${
+        className={`min-h-28 w-full resize-y rounded-xl border border-line bg-bg px-4 py-3 font-mono-x text-xs outline-none transition-colors focus:border-accent2 focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
           def.type === "json" ? "min-h-56 whitespace-pre" : ""
         }`}
       />
@@ -57,7 +57,7 @@ export function FieldInput({
         type="checkbox"
         checked={value === true}
         onChange={(e) => onChange(e.target.checked)}
-        className="size-4 accent-[var(--accent)]"
+        className="size-4 rounded accent-[var(--accent)] focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
       />
     );
   }
@@ -67,7 +67,7 @@ export function FieldInput({
       value={String(value)}
       onChange={(e) => onChange(e.target.value)}
       required={def.required}
-      className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2"
+      className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2 focus-visible:ring-2 focus-visible:ring-accent2/50 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
     />
   );
 }

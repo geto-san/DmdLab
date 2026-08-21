@@ -77,7 +77,6 @@ export function JoinTeamForm() {
           required
           className="w-full rounded-xl border border-line bg-bg px-4 py-3 text-sm outline-none transition-colors focus:border-accent2"
         />
-        <span className="mt-1.5 block text-xs text-muted">{DOMAIN_HINT}</span>
       </label>
       <label className="block">
         <span className="mb-2 block font-mono-x text-xs text-muted">

@@ -10,8 +10,8 @@ import { useEditMode } from "@/components/cms/edit-mode";
 
 const NAV_LINKS = [
   { label: "Articles", to: "/articles" },
-  { label: "Videos", to: "/videos" },
   { label: "Research", to: "/research" },
+  { label: "Videos", to: "/videos" },
   { label: "Publications", to: "/publications" },
   { label: "Team", to: "/team" },
 ];
@@ -90,12 +90,12 @@ export function Header() {
           scrolled ? "glass hairline-b shadow-soft" : "bg-transparent"
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-baseline gap-2" aria-label="DeepMinds Research Lab home">
-            <span className="font-display text-2xl leading-none tracking-tight">DM·Lab</span>
+            <span className="font-display text-[1.55rem] leading-none tracking-[-0.06em]">DM·Lab</span>
           </Link>
 
-          <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
             {NAV_LINKS.map((link) => {
               const isActive = pathname.startsWith(link.to);
               return (
@@ -103,14 +103,14 @@ export function Header() {
                   key={link.to}
                   href={link.to}
                   aria-current={isActive ? "page" : undefined}
-                  className={`group relative flex flex-col items-center gap-2 py-1 font-mono-x transition-colors hover:text-accent2 ${
-                    isActive ? "text-ink" : "text-muted"
+                  className={`group relative flex items-center pb-1 pt-1 text-[10px] font-medium uppercase tracking-[0.28em] transition-colors hover:text-accent2 ${
+                    isActive ? "text-ink" : "text-muted/80"
                   }`}
                 >
                   {link.label}
                   <span
-                    className={`h-1 w-1 rounded-full bg-accent2 transition-opacity ${
-                      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-40"
+                    className={`absolute inset-x-0 -bottom-1 h-px bg-accent2/90 transition-transform duration-200 ${
+                      isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-50"
                     }`}
                     aria-hidden
                   />
@@ -119,15 +119,15 @@ export function Header() {
             })}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {isAdmin && (
               <Link
                 href="/manage/applications"
                 title="Team applications"
                 aria-label="Team applications"
-                className="flex size-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
+                className="flex size-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
               >
-                <Inbox className="size-4" />
+                <Inbox className="size-3.5" />
               </Link>
             )}
             {isAdmin && (
@@ -136,18 +136,18 @@ export function Header() {
                 onClick={handleLogout}
                 title="Log out"
                 aria-label="Log out"
-                className="flex size-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
+                className="flex size-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
               >
-                <LogOut className="size-4" />
+                <LogOut className="size-3.5" />
               </button>
             )}
             <button
               type="button"
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="flex size-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
+              className="flex size-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2"
               aria-label="Toggle theme"
             >
-              {mounted && isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+              {mounted && isDark ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
             </button>
             <button
               ref={menuTriggerRef}
@@ -155,10 +155,10 @@ export function Header() {
               onClick={() => setMenuOpen(true)}
               aria-expanded={menuOpen}
               aria-haspopup="dialog"
-              className="flex size-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2 lg:hidden"
+              className="flex size-9 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-accent2 hover:text-accent2 lg:hidden"
               aria-label="Open menu"
             >
-              <Menu className="size-4" />
+              <Menu className="size-3.5" />
             </button>
           </div>
         </div>
@@ -172,8 +172,8 @@ export function Header() {
         }`}
         aria-label="Menu"
       >
-        <div className="flex h-16 items-center justify-between px-5 sm:px-8">
-          <span className="font-display text-2xl leading-none tracking-tight">DM·Lab</span>
+        <div className="flex h-14 items-center justify-between px-5 sm:px-8">
+          <span className="font-display text-[1.55rem] leading-none tracking-[-0.06em]">DM·Lab</span>
           <button
             type="button"
             onClick={() => setMenuOpen(false)}
@@ -191,12 +191,12 @@ export function Header() {
                 key={link.to}
                 href={link.to}
                 aria-current={isActive ? "page" : undefined}
-                className="flex items-baseline gap-4 border-b border-line py-5"
+                className="flex items-baseline gap-4 border-b border-line py-4"
                 style={{ transitionDelay: `${i * 60}ms` }}
               >
-                <span className="font-mono-x text-xs text-accent2">0{i + 1}</span>
+                <span className="font-mono-x text-[10px] uppercase tracking-[0.2em] text-accent2">0{i + 1}</span>
                 <span
-                  className={`font-display text-5xl leading-none tracking-tight transition-colors hover:text-accent2 ${
+                  className={`font-display text-4xl leading-none tracking-[-0.06em] transition-colors hover:text-accent2 ${
                     isActive ? "text-accent2" : ""
                   }`}
                 >

@@ -10,7 +10,6 @@ import { SiteChrome } from "@/components/site-chrome";
 const instrument = Instrument_Serif({
   subsets: ["latin"],
   weight: ["400"],
-  style: ["normal", "italic"],
   variable: "--font-instrument",
 });
 

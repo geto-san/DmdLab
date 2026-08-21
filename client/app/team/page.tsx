@@ -90,7 +90,7 @@ export default async function TeamPage() {
             </h2>
             <p className="mt-5 max-w-md text-sm leading-relaxed text-muted sm:text-base">
               We&apos;re always looking for curious students to work alongside the lab,
-              across research, engineering, and everything in between. Tell us a bit
+              across research, engineering, and learning. Tell us a bit
               about yourself and we&apos;ll be in touch.
             </p>
           </Reveal>
