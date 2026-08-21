@@ -1,4 +1,6 @@
-import { fetchChannelVideos, getChannelUrl, parseDurationSeconds, type YouTubeVideo } from "@/lib/youtube";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { fetchChannelVideos, fetchVideoById, getChannelUrl, parseDurationSeconds, type YouTubeVideo } from "@/lib/youtube";
 import { WatchView } from "@/components/watch/watch-view";
 import type { PlaylistEntry } from "@/components/watch/types";
 import { VideoAdminBar } from "@/components/cms/video-admin-bar";
@@ -34,7 +36,33 @@ function VideosUnavailable({ error }: Readonly<{ error: string }>) {
   );
 }
 
-export default async function VideosPage() {
+export async function generateMetadata({
+  params,
+}: Readonly<{
+  params: Promise<{ videoId?: string[] }>;
+}>): Promise<Metadata> {
+  const id = (await params).videoId?.[0];
+  if (!id) return { title: "Videos" };
+  const video = await fetchVideoById(id).catch(() => null);
+  if (!video) return {};
+  return {
+    title: video.title,
+    description: video.description?.slice(0, 300) || undefined,
+    openGraph: {
+      title: video.title,
+      description: video.description?.slice(0, 300) || undefined,
+      images: video.thumbnail ? [video.thumbnail] : undefined,
+    },
+  };
+}
+
+export default async function VideosPage({
+  params,
+}: Readonly<{
+  params: Promise<{ videoId?: string[] }>;
+}>) {
+  const requestedId = (await params).videoId?.[0];
+
   let videos: YouTubeVideo[] = [];
   let error: string | null = null;
 
@@ -45,6 +73,7 @@ export default async function VideosPage() {
   }
 
   if (error || videos.length === 0) {
+    if (requestedId) notFound();
     return (
       <section className="mx-auto max-w-7xl px-5 pb-16 pt-32 sm:px-8 sm:pt-40">
         {error ? (
@@ -62,14 +91,22 @@ export default async function VideosPage() {
   }
 
   const entries = videos.map(toEntry);
-  const featured = entries[0];
+  let current = requestedId ? entries.find((e) => e._id === requestedId) : entries[0];
+
+  if (!current) {
+    const direct = requestedId ? await fetchVideoById(requestedId).catch(() => null) : null;
+    if (!direct) notFound();
+    current = toEntry(direct);
+    entries.unshift(current);
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-5 pb-20 pt-28 sm:px-8 sm:pt-36">
       <WatchView
-        video={featured}
+        initialVideoId={current._id}
         entries={entries}
         channelUrl={getChannelUrl()}
+        editableInfo
         header={
           <p className="mb-6 flex items-center gap-3 font-mono-x text-muted">
             <span className="inline-block size-1.5 rounded-full bg-accent2" />

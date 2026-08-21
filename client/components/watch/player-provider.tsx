@@ -25,6 +25,7 @@ type YTPlayer = {
   setPlaybackRate: (rate: number) => void;
   loadModule: (name: string) => void;
   unloadModule: (name: string) => void;
+  loadVideoById: (videoId: string) => void;
   destroy: () => void;
 };
 
@@ -79,7 +80,10 @@ export function formatTime(totalSeconds: number): string {
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
 
+export type PlayerApi = { load: (videoId: string) => void };
+
 type PlayerContextValue = {
+  videoId: string;
   phase: "idle" | "loading" | "ready";
   playing: boolean;
   currentTime: number;
@@ -104,20 +108,23 @@ type PlayerContextValue = {
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 export function PlayerProvider({
-  videoId,
-  fallbackDuration = 0,
+  initialVideoId,
+  durations = {},
   onEnded,
+  apiRef,
   children,
 }: Readonly<{
-  videoId: string;
-  fallbackDuration?: number;
+  initialVideoId: string;
+  durations?: Record<string, number>;
   onEnded?: () => void;
+  apiRef?: { current: PlayerApi | null };
   children: ReactNode;
 }>) {
+  const [videoId, setVideoId] = useState(initialVideoId);
   const [phase, setPhase] = useState<"idle" | "loading" | "ready">("idle");
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(fallbackDuration);
+  const [duration, setDuration] = useState(0);
   const [restoredFrac, setRestoredFrac] = useState<number | null>(null);
   const [volume, setVolume] = useState(100);
   const [muted, setMuted] = useState(false);
@@ -127,11 +134,20 @@ export function PlayerProvider({
   const playerRef = useRef<YTPlayer | null>(null);
   const ytRef = useRef<YTNamespace | null>(null);
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const videoIdRef = useRef(videoId);
+  const pendingLoadRef = useRef<string | null>(null);
   const lastSaveRef = useRef(0);
   const onEndedRef = useRef(onEnded);
+  const containerRefNode = useRef<HTMLDivElement | null>(null);
 
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const containerRef = useCallback((node: HTMLDivElement | null) => setContainer(node), []);
+  const containerRef = useCallback((node: HTMLDivElement | null) => {
+    containerRefNode.current = node;
+  }, []);
+
+  const phaseRef = useRef(phase);
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -141,17 +157,22 @@ export function PlayerProvider({
     setVolume(Number(window.localStorage.getItem("dm:vol") ?? 100));
     setMuted(window.localStorage.getItem("dm:muted") === "1");
     setCcOn(window.localStorage.getItem("dm:cc") === "1");
-    setRestoredFrac(readProgress(videoId));
     return () => {
       playerRef.current?.destroy();
       playerRef.current = null;
       hostRef.current?.remove();
       hostRef.current = null;
     };
+  }, []);
+
+  useEffect(() => {
+    videoIdRef.current = videoId;
+    setRestoredFrac(readProgress(videoId));
+    setCurrentTime(0);
   }, [videoId]);
 
   useEffect(() => {
-    if (!playerRef.current || phase !== "ready") return;
+    if (phase !== "ready") return;
     const id = window.setInterval(() => {
       const p = playerRef.current;
       if (!p) return;
@@ -162,33 +183,35 @@ export function PlayerProvider({
       const now = Date.now();
       if (now - lastSaveRef.current > 5000 && d > 0) {
         lastSaveRef.current = now;
-        saveProgress(videoId, t / d);
+        saveProgress(videoIdRef.current, t / d);
       }
     }, 500);
     return () => window.clearInterval(id);
-  }, [phase, videoId]);
+  }, [phase]);
 
   const start = useCallback(
     (seekSeconds?: number) => {
+      const container = containerRefNode.current;
       if (playerRef.current || !container || phase === "loading") return;
       setPhase("loading");
       const mutedPref = window.localStorage.getItem("dm:muted") === "1";
       const volPref = Number(window.localStorage.getItem("dm:vol") ?? 100);
       const ccPref = window.localStorage.getItem("dm:cc") === "1";
+      const fallbackDur = durations[videoIdRef.current] ?? 0;
+      const frac = restoredFrac;
       const restored =
-        seekSeconds ?? (restoredFrac !== null && fallbackDuration > 5 ? restoredFrac * fallbackDuration : undefined);
+        seekSeconds ?? (frac !== null && fallbackDur > 5 ? frac * fallbackDur : undefined);
       const startAt = restored && restored > 5 ? Math.floor(restored) : undefined;
 
       loadIframeApi()
         .then((YT) => {
           ytRef.current = YT;
-          if (!container || playerRef.current) return;
           const host = document.createElement("div");
+          host.className = "size-full [&_iframe]:size-full";
           container.appendChild(host);
           hostRef.current = host;
-          host.className = "size-full [&_iframe]:size-full";
           playerRef.current = new YT.Player(host, {
-            videoId,
+            videoId: videoIdRef.current,
             playerVars: {
               autoplay: 1,
               controls: 0,
@@ -199,7 +222,7 @@ export function PlayerProvider({
               mute: mutedPref ? 1 : 0,
               cc_load_policy: ccPref ? 1 : 0,
               cc_lang_pref: "en",
-              ...(startAt && startAt > 5 ? { start: Math.floor(startAt) } : {}),
+              ...(startAt ? { start: startAt } : {}),
             },
             events: {
               onReady: () => {
@@ -207,8 +230,13 @@ export function PlayerProvider({
                 const p = playerRef.current;
                 if (!p) return;
                 p.setVolume(mutedPref ? 0 : Math.min(100, Math.max(0, volPref)));
+                if (pendingLoadRef.current) {
+                  p.loadVideoById(pendingLoadRef.current);
+                  pendingLoadRef.current = null;
+                  return;
+                }
                 p.playVideo();
-                if (startAt && startAt > 5) setCurrentTime(startAt);
+                if (startAt) setCurrentTime(startAt);
               },
               onStateChange: (e) => {
                 const S = ytRef.current?.PlayerState;
@@ -217,7 +245,7 @@ export function PlayerProvider({
                 else if (e.data === S.PAUSED) setPlaying(false);
                 else if (e.data === S.ENDED) {
                   setPlaying(false);
-                  saveProgress(videoId, 1);
+                  saveProgress(videoIdRef.current, 1);
                   onEndedRef.current?.();
                 }
               },
@@ -226,8 +254,32 @@ export function PlayerProvider({
         })
         .catch(() => setPhase("idle"));
     },
-    [container, fallbackDuration, phase, restoredFrac, videoId]
+    [durations, phase, restoredFrac]
   );
+
+  const load = useCallback((nextId: string) => {
+    if (nextId === videoIdRef.current) return;
+    videoIdRef.current = nextId;
+    lastSaveRef.current = Date.now();
+    setVideoId(nextId);
+    setRestoredFrac(null);
+    const p = playerRef.current;
+    if (!p) {
+      if (phaseRef.current === "loading") pendingLoadRef.current = nextId;
+      return;
+    }
+    setPlaying(true);
+    setCurrentTime(0);
+    setDuration(0);
+    p.loadVideoById(nextId);
+  }, []);
+
+  useEffect(() => {
+    if (apiRef) apiRef.current = { load };
+    return () => {
+      if (apiRef) apiRef.current = null;
+    };
+  }, [apiRef, load]);
 
   const toggle = useCallback(() => {
     const p = playerRef.current;
@@ -242,7 +294,7 @@ export function PlayerProvider({
   const seekFraction = useCallback(
     (fraction: number) => {
       const p = playerRef.current;
-      const dur = duration || fallbackDuration;
+      const dur = duration || durations[videoIdRef.current] || 0;
       const target = fraction * dur;
       if (!p) {
         start(target);
@@ -251,25 +303,22 @@ export function PlayerProvider({
       p.seekTo(Math.min(Math.max(0, target), Math.max(0, dur - 1)), true);
       setCurrentTime(target);
     },
-    [duration, fallbackDuration, start]
+    [duration, durations, start]
   );
 
-  const changeVolume = useCallback(
-    (v: number) => {
-      const clamped = Math.min(100, Math.max(0, v));
-      setVolume(clamped);
-      const isMute = clamped === 0;
-      setMuted(isMute);
-      window.localStorage.setItem("dm:vol", String(clamped));
-      window.localStorage.setItem("dm:muted", isMute ? "1" : "0");
-      const p = playerRef.current;
-      if (!p) return;
-      p.setVolume(clamped);
-      if (isMute) p.mute();
-      else p.unMute();
-    },
-    []
-  );
+  const changeVolume = useCallback((v: number) => {
+    const clamped = Math.min(100, Math.max(0, v));
+    setVolume(clamped);
+    const isMute = clamped === 0;
+    setMuted(isMute);
+    window.localStorage.setItem("dm:vol", String(clamped));
+    window.localStorage.setItem("dm:muted", isMute ? "1" : "0");
+    const p = playerRef.current;
+    if (!p) return;
+    p.setVolume(clamped);
+    if (isMute) p.mute();
+    else p.unMute();
+  }, []);
 
   const toggleMute = useCallback(() => changeVolume(volume === 0 ? 100 : 0), [changeVolume, volume]);
 
@@ -285,11 +334,8 @@ export function PlayerProvider({
       const p = playerRef.current;
       if (p) {
         try {
-          if (next) {
-            p.loadModule("captions");
-          } else {
-            p.unloadModule("captions");
-          }
+          if (next) p.loadModule("captions");
+          else p.unloadModule("captions");
         } catch {
           // Module control can fail pre-cue; preference still applies to next load.
         }
@@ -298,11 +344,13 @@ export function PlayerProvider({
     });
   }, []);
 
-  const scrubMax = duration || fallbackDuration || 0;
-  const scrubValue = phase === "idle" ? (restoredFrac ?? 0) * scrubMax : currentTime;
+  const fallbackForCurrent = durations[videoId] ?? 0;
+  const scrubMax = duration || fallbackForCurrent;
+  const scrubValue = phase === "idle" ? (restoredFrac ?? 0) * fallbackForCurrent : currentTime;
 
   const value = useMemo<PlayerContextValue>(
     () => ({
+      videoId,
       phase,
       playing,
       currentTime,
@@ -324,6 +372,7 @@ export function PlayerProvider({
       toggleCc,
     }),
     [
+      videoId,
       phase,
       playing,
       currentTime,
@@ -346,10 +395,10 @@ export function PlayerProvider({
 
   useEffect(() => {
     if (phase !== "idle") return;
-    const handler = () => setRestoredFrac(readProgress(videoId));
+    const handler = () => setRestoredFrac(readProgress(videoIdRef.current));
     window.addEventListener(PROGRESS_EVENT, handler);
     return () => window.removeEventListener(PROGRESS_EVENT, handler);
-  }, [phase, videoId]);
+  }, [phase]);
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
 }

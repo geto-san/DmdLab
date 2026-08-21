@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { Play, User } from "lucide-react";
 import { formatViews, formatRelativeTime } from "@/lib/format";
@@ -25,8 +24,8 @@ function trackClick(fromId: string, toId: string) {
 function PlaylistRow({
   entry,
   active,
-  fromId,
-}: Readonly<{ entry: PlaylistEntry; active: boolean; fromId?: string | null }>) {
+  onSelect,
+}: Readonly<{ entry: PlaylistEntry; active: boolean; onSelect?: (id: string) => void }>) {
   const [progress, setProgress] = useState<number | null>(null);
 
   useEffect(() => {
@@ -36,17 +35,13 @@ function PlaylistRow({
     return () => window.removeEventListener(PROGRESS_EVENT, sync);
   }, [entry._id]);
 
-  function handleClick() {
-    if (fromId && !active) trackClick(fromId, entry._id);
-  }
-
   return (
     <EditItem collection="video" item={{ _id: entry._id, title: entry.title }}>
-      <Link
-        href={`/videos/${entry._id}`}
-        onClick={handleClick}
+      <button
+        type="button"
+        onClick={() => onSelect?.(entry._id)}
         aria-current={active ? "true" : undefined}
-        className="group flex items-start gap-4 py-4"
+        className="group flex w-full cursor-pointer items-start gap-4 py-4 text-left"
       >
         <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-xl bg-surface shadow-soft transition-shadow duration-300 group-hover:shadow-soft-lg sm:w-40">
           {entry.thumbnail ? (
@@ -105,7 +100,7 @@ function PlaylistRow({
         >
           <Play className={`size-3 ${active ? "fill-current" : ""}`} />
         </span>
-      </Link>
+      </button>
     </EditItem>
   );
 }
@@ -113,12 +108,12 @@ function PlaylistRow({
 export function PlaylistPanel({
   entries,
   activeId,
-  fromId,
+  onSelect,
   channelUrl,
 }: Readonly<{
   entries: PlaylistEntry[];
   activeId?: string;
-  fromId?: string | null;
+  onSelect: (id: string) => void;
   channelUrl?: string | null;
 }>) {
   const { query } = useVideoSearch();
@@ -158,7 +153,14 @@ export function PlaylistPanel({
         <ul className="divide-y divide-line/60">
           {filtered.map((entry) => (
             <li key={entry._id}>
-              <PlaylistRow entry={entry} active={entry._id === activeId} fromId={fromId} />
+              <PlaylistRow
+                entry={entry}
+                active={entry._id === activeId}
+                onSelect={(id) => {
+                  if (activeId && id !== activeId) trackClick(activeId, id);
+                  onSelect(id);
+                }}
+              />
             </li>
           ))}
         </ul>
