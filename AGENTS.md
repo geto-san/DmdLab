@@ -32,7 +32,7 @@ npm run dev                          # http://localhost:3000
 
 ## API facts
 
-- Public: `GET /api/articles`, `/api/articles/[id]`, `/api/announcements`, `/api/content`, `/api/content/[key]`, `/api/videos`, `/api/videos/[id]`, `/api/videos/[id]/click` (POST), `/api/videos/[id]/related`, `POST /api/contact`. Read-only by design; no public write endpoints.
+- Public: `GET /api/articles`, `/api/articles/[id]`, `/api/announcements`, `/api/content`, `/api/content/[key]`, `/api/videos`, `/api/videos/[id]`, `/api/videos/[id]/click` (POST), `POST /api/apply`, `POST /api/videos/[id]/comments`. Read-only by design; the write endpoints are per-IP rate-limited (`lib/rate-limit.ts`).
 - Admin: `/api/admin/articles` + `/[id]` (multipart, Cloudinary `image` upload/destroy via `imagePublicId`, tags via `form.getAll("tags")`), `/api/admin/[collection]` + `/[id]` for announcements/members/posts/about/videos/content (JSON). All protected by `requireAdmin()`.
 - Video admin (OAuth, all `requireAdmin()`-gated): `POST /api/videos/upload` (multipart), `GET /api/videos/[id]/manage` (owner snippet+status), `PUT`/`DELETE /api/videos/[id]`, `POST /api/videos/[id]/thumbnail` (multipart), `GET /api/videos/categories`, `GET`/`POST /api/videos/playlists`, `DELETE /api/videos/playlists/[id]`, `POST /api/videos/playlists/[id]/items`, `DELETE /api/videos/playlists/[id]/items/[itemId]`.
 - Auth endpoints are mounted at `/api/auth/[...path]` (better-auth/Neon handler). The browser auth client (`lib/auth/client.ts`) defaults to same-origin `/api/auth`; the CMS components use `authClient.useSession()` (edit toggle) + session cookies — do not reintroduce token headers.

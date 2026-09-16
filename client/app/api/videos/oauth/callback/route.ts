@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { connectYouTubeWithCode } from "@/lib/youtube-oauth";
-import { auth } from "@/lib/auth/server";
+import { requireAdmin } from "@/app/api/admin/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +11,14 @@ export async function GET(req: Request) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
 
-  const { data: session } = await auth.getSession();
-  const isAdmin = session?.user?.role === "admin";
-  const backTo = isAdmin ? "/videos" : "/manage/login";
+  const origin = new URL(req.url).origin;
+  if (await requireAdmin()) {
+    return NextResponse.redirect(`${origin}/manage/login?youtuberror=Google authorization failed.`);
+  }
+  const backTo = "/videos";
 
   const redirect = (params: Record<string, string>) =>
-    NextResponse.redirect(`${new URL(req.url).origin}${backTo}?${new URLSearchParams(params)}`);
+    NextResponse.redirect(`${origin}${backTo}?${new URLSearchParams(params)}`);
 
   if (error) return redirect({ youtuberror: "Google authorization was cancelled." });
 
@@ -34,5 +36,5 @@ export async function GET(req: Request) {
     return redirect({ youtuberror: "Could not connect the YouTube account." });
   }
 
-  return NextResponse.redirect(`${new URL(req.url).origin}/videos`);
+  return NextResponse.redirect(`${origin}/videos`);
 }

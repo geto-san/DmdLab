@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { applications } from "@/db/schema";
+import { clientIp, isRateLimited } from "@/lib/rate-limit";
 import { toSafeString } from "@/lib/to-string";
 import { ALLOWED_EMAIL_DOMAINS, isAllowedApplicantEmail } from "@/lib/allowed-email-domains";
 
@@ -9,6 +10,10 @@ export const dynamic = "force-dynamic";
 const DOMAIN_HINT = `Please use a ${ALLOWED_EMAIL_DOMAINS.map((d) => `@${d}`).join(", ")} email address.`;
 
 export async function POST(req: Request) {
+  if (isRateLimited(`apply:${clientIp(req)}`, 5, 15 * 60 * 1000)) {
+    return NextResponse.json({ error: "Too many applications — try again later." }, { status: 429 });
+  }
+
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
 
   const name = toSafeString(body.name).trim().slice(0, 200);

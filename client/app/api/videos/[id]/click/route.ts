@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { videoClicks } from "@/db/schema";
+import { clientIp, isRateLimited } from "@/lib/rate-limit";
 import { toSafeString } from "@/lib/to-string";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    if (isRateLimited(`click:${clientIp(req)}`, 20, 60 * 1000)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const { toVideoId } = body as { toVideoId?: unknown };
@@ -17,7 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       fromVideoId: id,
       toVideoId: toSafeString(toVideoId),
       userAgent: req.headers.get("user-agent") || "",
-      ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "",
+      ip: clientIp(req),
     });
     return NextResponse.json({ success: true });
   } catch (err) {

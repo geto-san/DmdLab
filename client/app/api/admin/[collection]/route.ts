@@ -35,7 +35,8 @@ export async function GET(
     const rows = await db.select().from(table).orderBy(asc(table.id));
     return NextResponse.json(rows);
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+    console.error(`Failed to list collection "${collection}":`, err);
+    return NextResponse.json({ error: "Failed to load records" }, { status: 400 });
   }
 }
 
@@ -76,6 +77,7 @@ export async function POST(
     if (collection === "content" && (err as { code?: string })?.code === "23505") {
       return duplicateKeyError();
     }
-    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+    console.error(`Failed to create "${collection}" record:`, err);
+    return NextResponse.json({ error: "Failed to create record" }, { status: 400 });
   }
 }

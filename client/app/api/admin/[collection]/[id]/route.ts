@@ -60,7 +60,8 @@ export async function PUT(
     if (collection === "content" && (err as { code?: string })?.code === "23505") {
       return NextResponse.json({ error: "Key already exists" }, { status: 400 });
     }
-    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+    console.error(`Failed to update "${collection}" record ${recordId}:`, err);
+    return NextResponse.json({ error: "Failed to update record" }, { status: 400 });
   }
 }
 
@@ -87,6 +88,7 @@ export async function DELETE(
     revalidateForCollection(collection);
     return NextResponse.json({ success: true });
   } catch (err) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+    console.error(`Failed to delete "${collection}" record ${recordId}:`, err);
+    return NextResponse.json({ error: "Failed to delete record" }, { status: 400 });
   }
 }

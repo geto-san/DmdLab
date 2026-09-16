@@ -43,7 +43,8 @@ export async function generateMetadata({
 }>): Promise<Metadata> {
   const id = (await params).videoId?.[0];
   if (!id) return { title: "Videos" };
-  const video = await fetchVideoById(id).catch(() => null);
+  const list = await fetchChannelVideos().catch(() => null);
+  const video = (list && list.find((v) => v._id === id)) || (await fetchVideoById(id).catch(() => null));
   if (!video) return {};
   return {
     title: video.title,

@@ -1,9 +1,6 @@
 import "server-only";
 
 import axios from "axios";
-import { and, eq, inArray, sql } from "drizzle-orm";
-import { db } from "@/db";
-import { videoClicks } from "@/db/schema";
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 const CHANNEL_ID_RAW = process.env.YOUTUBE_CHANNEL_ID;
@@ -269,59 +266,4 @@ export async function fetchVideoById(id: string): Promise<YouTubeVideo | null> {
 
   cacheSet(cacheKey, formatted, DETAIL_TTL);
   return formatted;
-}
-
-export type RelatedVideo = {
-  _id: string;
-  title: string;
-  description: string;
-  thumbnail?: string;
-  author?: string;
-  uploadDate: string;
-  category: string;
-  durationLabel?: string | null;
-};
-
-const RELATED_POOL_SIZE = 50;
-
-export async function fetchRelatedVideos(id: string, maxResults = RELATED_POOL_SIZE): Promise<RelatedVideo[]> {
-  const pool = await fetchChannelVideos(maxResults);
-
-  const items = pool
-    .filter((v) => v._id !== id)
-    .map((v) => ({
-      _id: v._id,
-      title: v.title,
-      description: v.description,
-      thumbnail: v.thumbnail,
-      author: v.author,
-      uploadDate: v.uploadDate,
-      category: v.category,
-      durationLabel: v.durationLabel,
-    }));
-
-  const ids = items.map((i) => i._id);
-  const clickMap: Record<string, number> = {};
-  if (ids.length) {
-    const rows = await db
-      .select({ toVideoId: videoClicks.toVideoId, clicks: sql<number>`count(*)::int` })
-      .from(videoClicks)
-      .where(and(eq(videoClicks.fromVideoId, id), inArray(videoClicks.toVideoId, ids)))
-      .groupBy(videoClicks.toVideoId);
-    for (const r of rows) clickMap[r.toVideoId] = r.clicks;
-  }
-
-  const scored = items.map((i) => {
-    const clicks = clickMap[i._id] || 0;
-    const ageDays = Math.max(
-      0,
-      Math.floor((Date.now() - new Date(i.uploadDate).getTime()) / (1000 * 60 * 60 * 24))
-    );
-    const recencyScore = Math.max(0, 30 - ageDays);
-    const score = clicks * 10 + recencyScore;
-    return { item: i, score };
-  });
-
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, 6).map((s) => s.item);
 }
