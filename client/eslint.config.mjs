@@ -5,7 +5,15 @@ const config = [
   ...nextCoreWebVitals,
   ...nextTypeScript,
   {
-    ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts', 'drizzle/**'],
+    ignores: [
+      '.next/**',
+      'node_modules/**',
+      'next-env.d.ts',
+      'drizzle/**',
+      // Standalone CommonJS doc-generation scratch scripts (no ESM conversion).
+      'build_doc.js',
+      'p.js',
+    ],
   },
   {
     rules: {

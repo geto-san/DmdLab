@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { resolveTable, CONTENT_KEY_PATTERN, revalidateForCollection } from "@/lib/collections";
-import { toSafeString } from "@/lib/to-string";
+import {
+  resolveTable,
+  revalidateForCollection,
+  pickEditable,
+  normalizeContentPatch,
+} from "@/lib/collections";
 import { notifyMembersOfUpdate } from "@/lib/notify-members";
 import { requireAdmin } from "../../guard";
 
@@ -31,21 +35,14 @@ export async function PUT(
 
   try {
     const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
-    const data: Record<string, unknown> = { ...body };
-    delete data.id;
+    let data: Record<string, unknown>;
     if (collection === "content") {
-      if (data.key !== undefined && !CONTENT_KEY_PATTERN.test(toSafeString(data.key))) {
-        return NextResponse.json(
-          { error: "key must be lowercase alphanumeric with dashes (e.g. hero)" },
-          { status: 400 }
-        );
-      }
-      if (
-        data.payload !== undefined &&
-        (typeof data.payload !== "object" || Array.isArray(data.payload))
-      ) {
-        data.payload = {};
-      }
+      delete body.id;
+      const error = normalizeContentPatch(body);
+      if (error) return NextResponse.json({ error }, { status: 400 });
+      data = body;
+    } else {
+      data = pickEditable(collection, body);
     }
     const [updated] = await db
       .update(table)

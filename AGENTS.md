@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single Next.js app; the old Express/Mongo `server/` package was deleted in the Postgres migration. No root manifest, no tests, no CI. Verification is `npm run typecheck`, `npm run lint`, and `npm run build` in `client/` (all currently clean).
+Single Next.js app; the old Express/Mongo `server/` package was deleted in the Postgres migration. No root manifest, no CI. Unit tests live in `client/tests/` (Vitest). Verification is `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` in `client/` (currently clean; the generic admin routes' column allowlist lives in `client/lib/collections.ts` as `pickEditable`/`normalizeContentPatch`).
 
 ## Layout & stack
 
