@@ -9,6 +9,10 @@ export function StatCounter({ value, suffix = "" }: Readonly<{ value: number; su
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDisplay(value);
+      return;
+    }
     let raf = 0;
     const observer = new IntersectionObserver(
       ([entry]) => {
