@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Loader2, Play, Volume2, VolumeX } from "lucide-react";
 import { usePlayer } from "./player-provider";
@@ -39,15 +39,24 @@ export function PlayerStage(props: StageProps) {
     volume,
     muted,
     containerRef,
+    registerFullscreenTarget,
     start,
     toggle,
     changeVolume,
     toggleMute,
   } = usePlayer();
   const idle = phase === "idle";
+  const stageRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    registerFullscreenTarget(stageRef.current);
+  }, [registerFullscreenTarget]);
 
   return (
-    <div className="group/stage relative aspect-video w-full overflow-hidden bg-ink/[0.06]">
+    <div
+      ref={stageRef}
+      className="group/stage relative aspect-video w-full overflow-hidden bg-ink/[0.06]"
+    >
       <div ref={containerRef} className={`absolute inset-0 ${idle ? "invisible" : "visible"}`} />
 
       {idle && (
@@ -58,7 +67,7 @@ export function PlayerStage(props: StageProps) {
             type="button"
             onClick={() => start()}
             aria-label={`Play ${props.title}`}
-            className="absolute inset-0 flex cursor-pointer items-center justify-center"
+            className="absolute inset-0 flex cursor-pointer items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             <span className="flex size-16 items-center justify-center rounded-full border-2 border-bg/80 bg-bg/10 text-bg backdrop-blur-sm transition-all duration-300 group-hover/stage:scale-105 group-hover/stage:border-accent group-hover/stage:bg-accent group-hover/stage:text-accent-ink sm:size-20">
               <Play className="ml-1 size-7 fill-current sm:size-9" />
@@ -82,7 +91,7 @@ export function PlayerStage(props: StageProps) {
           type="button"
           onClick={toggleMute}
           aria-label={muted ? "Unmute" : "Mute"}
-          className="transition-colors hover:text-accent"
+          className="rounded-full transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2"
         >
           {muted || volume === 0 ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
         </button>
@@ -103,7 +112,7 @@ export function PlayerStage(props: StageProps) {
           type="button"
           onClick={toggle}
           aria-label="Play"
-          className="absolute inset-0 z-[5] flex cursor-pointer items-center justify-center bg-ink/25"
+          className="absolute inset-0 z-[5] flex cursor-pointer items-center justify-center bg-ink/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
           <span className="flex size-16 items-center justify-center rounded-full border-2 border-bg/90 bg-bg/15 text-bg backdrop-blur-sm transition-transform duration-300 hover:scale-105 sm:size-18">
             <Play className="ml-1 size-7 fill-current" />

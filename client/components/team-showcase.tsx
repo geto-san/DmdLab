@@ -7,6 +7,9 @@ type Member = {
   name: string;
   role?: string | null;
   photo?: string | null;
+  bio?: string | null;
+  location?: string | null;
+  experience?: string | null;
   linkedin?: string | null;
   github?: string | null;
   otherUrl?: string | null;
@@ -62,6 +65,9 @@ export function TeamShowcase({
                 {m.role && (
                   <p className="font-mono-x text-[0.6875rem] text-accent2">{m.role}</p>
                 )}
+                {m.location && (
+                  <p className="font-mono-x text-[0.6875rem] text-muted">{m.location}</p>
+                )}
                 {SOCIAL_ICONS.filter(({ key }) => m[key]).map(({ key, Icon, label }) => (
                   <a
                     key={key}
@@ -75,6 +81,12 @@ export function TeamShowcase({
                   </a>
                 ))}
               </div>
+              {m.experience && (
+                <p className="mt-2 font-mono-x text-xs text-muted">{m.experience}</p>
+              )}
+              {m.bio && (
+                <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{m.bio}</p>
+              )}
             </div>
           </div>
         </EditItem>

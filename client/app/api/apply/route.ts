@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { applications } from "@/db/schema";
 import { clientIp, isRateLimited } from "@/lib/rate-limit";
@@ -27,7 +28,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: DOMAIN_HINT }, { status: 400 });
   }
 
-  await db.insert(applications).values({ name, email, message: message || null });
+  try {
+    const existing = await db
+      .select({ id: applications.id })
+      .from(applications)
+      .where(eq(applications.email, email))
+      .limit(1);
+    if (existing.length > 0) {
+      return NextResponse.json(
+        { error: "Looks like you've already applied — we'll be in touch." },
+        { status: 409 }
+      );
+    }
 
-  return NextResponse.json({ success: true }, { status: 201 });
+    await db.insert(applications).values({ name, email, message: message || null });
+
+    return NextResponse.json({ success: true }, { status: 201 });
+  } catch (err) {
+    console.error("Failed to record application:", err);
+    return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

@@ -51,17 +51,41 @@ function WatchShell({
     window.history.pushState(history.state, "", `/videos/${id}`);
   }, [activeId]);
 
+  // Sync state if the server prop changes (e.g. via a real link click elsewhere)
+  const lastInitialId = useRef(initialVideoId);
   useEffect(() => {
-    if (initialVideoId !== activeId) {
+    if (initialVideoId !== lastInitialId.current) {
+      lastInitialId.current = initialVideoId;
       apiRef.current?.load(initialVideoId);
       setActiveId(initialVideoId);
     }
-  }, [initialVideoId, activeId]);
+  }, [initialVideoId]);
+
+  // Handle browser Back/Forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const match = window.location.pathname.match(/\/videos\/([^/]+)/);
+      const id = match ? match[1] : entries[0]?._id;
+      if (id && id !== activeId) {
+        apiRef.current?.load(id);
+        setActiveId(id);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [activeId, entries]);
 
   const durations = useMemo(
     () => Object.fromEntries(entries.map((e) => [e._id, e.durationSeconds ?? 0])),
     [entries]
   );
+
+  // Keep the browser tab title in sync as videos swap without a page reload.
+  useEffect(() => {
+    document.title = active.title
+      ? `${active.title} · DeepMinds Research Lab`
+      : "Videos · DeepMinds Research Lab";
+  }, [active.title]);
 
   if (!active) return null;
 

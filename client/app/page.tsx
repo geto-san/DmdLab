@@ -66,6 +66,13 @@ export default async function HomePage() {
     { label: "Recorded Hours", value: recordedHours, suffix: "" },
   ];
 
+  // DB-driven "events" content block (see ContentPanelForm): admin-curated
+  // seminars, reading-group meetups, and deadlines. Hidden when empty.
+  type EventItem = { date: string; title: string; body?: string; link?: string };
+  const eventsBlock = content.events as { heading?: string; items?: EventItem[] } | undefined;
+  const events = eventsBlock?.items?.length ? eventsBlock.items : [];
+  const eventsHeading = eventsBlock?.heading || "Events & Reading Group";
+
   return (
     <div>
       {/* Hero */}
@@ -166,6 +173,51 @@ export default async function HomePage() {
             ))}
           </ul>
         </section>
+      )}
+
+      {/* Events & Reading Group (DB-driven content block) */}
+      {events.length > 0 && (
+        <EditItem collection="content" blockKey="events" item={{ title: "Events & Reading Group" }}>
+          <section className="hairline-t border-t border-line bg-surface">
+            <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+              <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                <h2 className="font-display text-3xl tracking-tight sm:text-4xl">{eventsHeading}</h2>
+              </div>
+              <ul className="divide-y divide-line">
+                {events.map((e, i) => {
+                  const when = new Date(e.date);
+                  const dateLabel = Number.isNaN(when.getTime())
+                    ? e.date
+                    : when.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      });
+                  return (
+                    <li
+                      key={`${e.title}-${i}`}
+                      className="flex flex-wrap gap-x-6 gap-y-1 rounded-xl px-3 py-4 -mx-3 transition-colors hover:bg-bg"
+                    >
+                      <span className="font-mono-x text-xs text-accent2">{dateLabel}</span>
+                      <span className="font-display text-xl sm:text-2xl">{e.title}</span>
+                      {e.body && <span className="w-full text-sm text-muted sm:w-auto">{e.body}</span>}
+                      {e.link && (
+                        <a
+                          href={e.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-mono-x text-xs text-ink transition-colors hover:text-accent2"
+                        >
+                          More info <ArrowRight className="size-3.5" />
+                        </a>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </section>
+        </EditItem>
       )}
 
       {/* Featured projects */}

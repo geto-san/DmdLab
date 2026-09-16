@@ -27,7 +27,11 @@ export function EditItem({
   if (!enabled) return <>{children}</>;
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onDoubleClick={() => openPanel({ collection, item, blockKey, redirectTo, onDeleted })}
+      title="Double-click to edit (or use the pencil)"
+    >
       {children}
       <button
         type="button"

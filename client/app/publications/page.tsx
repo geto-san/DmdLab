@@ -2,24 +2,16 @@ import { ArrowUpRight, BookOpen } from "lucide-react";
 import { getContentMap } from "@/lib/content";
 import { Reveal } from "@/components/reveal";
 import { EditItem } from "@/components/cms/edit-item";
+import { PublicationList, type Publication } from "@/components/publication-list";
 
 export const revalidate = 3600;
 
-type Publication = {
-  year: number;
-  title: string;
-  slug: string;
-  authors: string;
-  journal: string;
-  doi: string;
-  citations: number;
-  featured: boolean;
-};
+type PublicationRow = Publication & { featured: boolean };
 
 export default async function PublicationsPage() {
   const content = await getContentMap();
-  const publicationsBlock = content.publications as { publications?: Publication[] } | undefined;
-  const all = publicationsBlock?.publications ?? [];
+  const publicationsBlock = content.publications as { publications?: PublicationRow[] } | undefined;
+  const all = (publicationsBlock?.publications ?? []) as PublicationRow[];
   const featured = all.filter((p) => p.featured);
   const rest = all.filter((p) => !p.featured);
 
@@ -70,32 +62,8 @@ export default async function PublicationsPage() {
         )}
 
         <div>
-          <h2 className="mb-8 font-mono-x text-muted">All publications</h2>
-          <ul className="divide-y divide-line">
-            {[...featured, ...rest].map((p) => (
-              <li key={p.slug}>
-                <a
-                  href={`https://doi.org/${p.doi}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group grid gap-2 py-6 sm:grid-cols-[64px_1fr_auto] sm:items-baseline sm:gap-6"
-                >
-                  <span className="font-mono-x text-xs text-accent2">{p.year}</span>
-                  <span>
-                    <span className="font-display text-xl leading-snug tracking-tight transition-colors group-hover:text-accent2 sm:text-2xl">
-                      {p.title}
-                    </span>
-                    <span className="mt-1 block text-sm text-muted">
-                      {p.journal} · {p.authors}
-                    </span>
-                  </span>
-                  <span className="hidden font-mono-x text-xs text-muted sm:inline">
-                    {p.citations} cites
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <h2 className="mb-6 font-mono-x text-muted">All publications</h2>
+          <PublicationList publications={[...featured, ...rest] as Publication[]} />
         </div>
 
           </>

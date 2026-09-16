@@ -1,4 +1,5 @@
 import { asc } from "drizzle-orm";
+import { Github, Linkedin } from "lucide-react";
 import { db } from "@/db";
 import { members } from "@/db/schema";
 import { Reveal } from "@/components/reveal";
@@ -75,6 +76,32 @@ export default async function TeamPage() {
                 >
                   <span className="font-display text-xl">{a.name}</span>
                   {a.role && <span className="text-sm text-muted">{a.role}</span>}
+                  {a.location && <span className="text-sm text-muted">· {a.location}</span>}
+                  <span className="flex items-center gap-2">
+                    {a.linkedin && (
+                      <a
+                        href={a.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${a.name} on LinkedIn`}
+                        className="text-muted transition-colors hover:text-accent2"
+                      >
+                        <Linkedin className="size-3.5" />
+                      </a>
+                    )}
+                    {a.github && (
+                      <a
+                        href={a.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${a.name} on GitHub`}
+                        className="text-muted transition-colors hover:text-accent2"
+                      >
+                        <Github className="size-3.5" />
+                      </a>
+                    )}
+                  </span>
+                  {a.bio && <span className="w-full text-sm text-muted">{a.bio}</span>}
                 </li>
               ))}
             </ul>

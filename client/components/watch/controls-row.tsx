@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Pause, Play, Settings, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Maximize, Minimize, Pause, Play, Settings, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
 import { formatTime, usePlayer } from "./player-provider";
 import { PopoverMenu } from "./popover-menu";
 import { Slider } from "./slider";
@@ -8,11 +8,13 @@ import { Slider } from "./slider";
 function ControlButton({
   onClick,
   label,
+  title,
   disabled,
   children,
 }: Readonly<{
   onClick: () => void;
   label: string;
+  title?: string;
   disabled?: boolean;
   children: React.ReactNode;
 }>) {
@@ -21,9 +23,9 @@ function ControlButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      title={label}
+      title={title ?? label}
       disabled={disabled}
-      className="flex size-9 items-center justify-center rounded-full text-ink transition-colors hover:text-accent2 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:text-ink"
+      className="flex size-9 items-center justify-center rounded-full text-ink transition-colors hover:text-accent2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:text-ink"
     >
       {children}
     </button>
@@ -46,11 +48,13 @@ export function ControlsRow({
     muted,
     rate,
     speeds,
+    isFullscreen,
     toggle,
     seekFraction,
     changeVolume,
     toggleMute,
     setRate,
+    toggleFullscreen,
   } = usePlayer();
 
   return (
@@ -93,8 +97,8 @@ export function ControlsRow({
             type="button"
             onClick={toggle}
             aria-label={playing ? "Pause" : "Play"}
-            title={playing ? "Pause" : "Play"}
-            className="flex size-11 items-center justify-center rounded-full bg-ink text-bg transition-colors hover:bg-accent2 hover:text-accent2-ink"
+            title={playing ? "Pause (Space)" : "Play (Space)"}
+            className="flex size-11 items-center justify-center rounded-full bg-ink text-bg transition-colors hover:bg-accent2 hover:text-accent2-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 focus-visible:ring-offset-2"
           >
             {phase === "loading" ? (
               <Loader2 className="size-4.5 animate-spin" />
@@ -113,7 +117,7 @@ export function ControlsRow({
             trigger={<Settings className="size-4.5" />}
             triggerLabel="Playback settings"
             side="top"
-            buttonClass="flex size-9 items-center justify-center rounded-full text-ink transition-colors hover:text-accent2"
+            buttonClass="flex size-9 items-center justify-center rounded-full text-ink transition-colors hover:text-accent2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2"
             items={[
               ...speeds.map((s) => ({
                 label: s === 1 ? "Normal speed" : `${s}×`,
@@ -122,6 +126,14 @@ export function ControlsRow({
               })),
             ]}
           />
+
+          <ControlButton
+            onClick={toggleFullscreen}
+            label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            title={isFullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"}
+          >
+            {isFullscreen ? <Minimize className="size-4.5" /> : <Maximize className="size-4.5" />}
+          </ControlButton>
         </div>
       </div>
     </div>

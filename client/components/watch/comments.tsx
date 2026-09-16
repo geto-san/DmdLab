@@ -1,13 +1,22 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { Heart, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Heart, Loader2, Trash2 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/format";
 import { Skeleton } from "@/components/skeleton";
+import { authClient } from "@/lib/auth/client";
 import type { CommentRow } from "./types";
 
 const LIKED_KEY = "dm:comment-likes";
 const NAME_KEY = "dm:commenter-name";
+const PAGE_SIZE = 20;
+
+type CommentsResponse = {
+  comments?: CommentRow[];
+  hasMore?: boolean;
+  nextCursor?: number | null;
+  error?: string;
+};
 
 function readLiked(): Record<string, true> {
   if (typeof window === "undefined") return {};
@@ -41,20 +50,40 @@ function CommentSkeleton() {
 
 export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
   const [comments, setComments] = useState<CommentRow[] | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [name, setName] = useState("");
   const [body, setBody] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [liked, setLiked] = useState<Record<string, true>>({});
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const { data: session } = authClient.useSession();
+  const isAdmin = (session?.user as { role?: string | null } | undefined)?.role === "admin";
+
+  const loadPage = useCallback(
+    async (before?: number) => {
+      const url = `/api/videos/${videoId}/comments?limit=${PAGE_SIZE}${before ? `&before=${before}` : ""}`;
+      const res = await fetch(url);
+      const data = (await res.json()) as CommentsResponse;
+      if (!res.ok) throw new Error(data.error || "Failed to load comments");
+      return data;
+    },
+    [videoId]
+  );
 
   useEffect(() => {
     setName(window.localStorage.getItem(NAME_KEY) ?? "");
     setLiked(readLiked());
     let cancelled = false;
-    fetch(`/api/videos/${videoId}/comments`)
-      .then((res) => res.json())
-      .then((data: { comments?: CommentRow[] }) => {
-        if (!cancelled) setComments(data.comments ?? []);
+    loadPage()
+      .then((data) => {
+        if (cancelled) return;
+        setComments(data.comments ?? []);
+        setHasMore(data.hasMore ?? false);
+        setNextCursor(data.nextCursor ?? null);
       })
       .catch(() => {
         if (!cancelled) setComments([]);
@@ -62,7 +91,7 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
     return () => {
       cancelled = true;
     };
-  }, [videoId]);
+  }, [loadPage]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -80,12 +109,41 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
         return;
       }
       window.localStorage.setItem(NAME_KEY, name.trim());
-      setComments((prev) => [...(prev ?? []), data.comment as CommentRow]);
+      setComments((prev) => [data.comment as CommentRow, ...(prev ?? [])]);
       setBody("");
     } catch {
       setError("Something went wrong.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function loadOlder() {
+    if (!nextCursor) return;
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const data = await loadPage(nextCursor);
+      setComments((prev) => [...(prev ?? []), ...(data.comments ?? [])]);
+      setHasMore(data.hasMore ?? false);
+      setNextCursor(data.nextCursor ?? null);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  async function removeComment(id: number) {
+    if (!isAdmin) return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/admin/video-comments/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setComments((prev) => (prev ?? []).filter((c) => c.id !== id));
+      }
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -136,7 +194,7 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="inline-flex items-center gap-2 rounded-full border border-accent2/60 px-5 py-2 font-mono-x text-xs text-accent2 transition-colors hover:bg-accent2/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex items-center gap-2 rounded-full border border-accent2/60 px-5 py-2 font-mono-x text-xs text-accent2 transition-colors hover:bg-accent2/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting && <Loader2 className="size-3 animate-spin" />}
             Comment
@@ -153,41 +211,72 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
       ) : comments.length === 0 ? (
         <p className="text-sm text-muted">No comments yet — start the discussion above.</p>
       ) : (
-        <ul className="space-y-7">
-          {comments.map((c) => {
-            const key = String(c.id);
-            return (
-              <li key={c.id} className="flex items-start gap-3.5">
-                <div
-                  aria-hidden
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface font-display text-sm text-accent2"
-                >
-                  {c.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-baseline gap-x-3">
-                    <span className="text-sm font-semibold text-ink">{c.name}</span>
-                    <span className="font-mono-x text-[0.625rem] text-muted">
-                      {formatRelativeTime(c.createdAt)}
-                    </span>
-                  </p>
-                  <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted">{c.body}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => toggleLike(key)}
-                  aria-label={liked[key] ? "Unlike comment" : "Like comment"}
-                  aria-pressed={Boolean(liked[key])}
-                  className={`mt-1 shrink-0 transition-colors ${
-                    liked[key] ? "text-accent2" : "text-muted hover:text-ink"
-                  }`}
-                >
-                  <Heart className={`size-4 ${liked[key] ? "fill-current" : ""}`} />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          <ul className="space-y-7">
+            {comments.map((c) => {
+              const key = String(c.id);
+              return (
+                <li key={c.id} className="flex items-start gap-3.5">
+                  <div
+                    aria-hidden
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface font-display text-sm text-accent2"
+                  >
+                    {c.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-baseline gap-x-3">
+                      <span className="text-sm font-semibold text-ink">{c.name}</span>
+                      <span className="font-mono-x text-[0.625rem] text-muted">
+                        {formatRelativeTime(c.createdAt)}
+                      </span>
+                    </p>
+                    <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted">{c.body}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => removeComment(c.id)}
+                        aria-label={`Delete comment by ${c.name}`}
+                        title="Delete comment"
+                        disabled={deletingId === c.id}
+                        className="mt-1 text-muted transition-colors hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-40"
+                      >
+                        {deletingId === c.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => toggleLike(key)}
+                      aria-label={liked[key] ? "Unlike comment" : "Like comment"}
+                      aria-pressed={Boolean(liked[key])}
+                      className={`mt-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 ${
+                        liked[key] ? "text-accent2" : "text-muted hover:text-ink"
+                      }`}
+                    >
+                      <Heart className={`size-4 ${liked[key] ? "fill-current" : ""}`} />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          {hasMore && (
+            <button
+              type="button"
+              onClick={loadOlder}
+              disabled={loadingMore}
+              className="mt-8 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2 font-mono-x text-xs text-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 disabled:opacity-50"
+            >
+              {loadingMore && <Loader2 className="size-3 animate-spin" />}
+              Load older comments
+            </button>
+          )}
+        </>
       )}
     </section>
   );
