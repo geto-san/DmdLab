@@ -45,7 +45,18 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
+    if (isUniqueViolation(err)) {
+      return NextResponse.json(
+        { error: "Looks like you've already applied — we'll be in touch." },
+        { status: 409 }
+      );
+    }
     console.error("Failed to record application:", err);
     return NextResponse.json({ error: "Something went wrong. Please try again." }, { status: 500 });
   }
+}
+
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as { code?: string; message?: string };
+  return e?.code === "23505" || (typeof e?.message === "string" && e.message.includes("duplicate key"));
 }

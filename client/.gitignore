@@ -1,3 +1,7 @@
+# One-off scratch scripts (WildWatch experiments)
+build_doc.js
+p.js
+
 # Logs
 logs
 *.log

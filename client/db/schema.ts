@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, jsonb, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, jsonb, boolean, index, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const articles = pgTable("articles", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
@@ -40,14 +40,18 @@ export const members = pgTable("members", {
   otherUrl: text("other_url"),
 });
 
-export const applications = pgTable("applications", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  message: text("message"),
-  reviewed: boolean("reviewed").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const applications = pgTable(
+  "applications",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    message: text("message"),
+    reviewed: boolean("reviewed").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("applications_email_unique").on(t.email)]
+);
 
 export const about = pgTable("about", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
