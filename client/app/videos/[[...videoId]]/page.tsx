@@ -42,7 +42,14 @@ export async function generateMetadata({
   params: Promise<{ videoId?: string[] }>;
 }>): Promise<Metadata> {
   const id = (await params).videoId?.[0];
-  if (!id) return { title: "Videos" };
+  if (!id) {
+    return {
+      title: "Videos",
+      description:
+        "Watch lab activities, talks, and demos from DeepMinds Research Lab, an AI research lab at Mbarara University of Science and Technology.",
+      alternates: { canonical: "/videos" },
+    };
+  }
   const list = await fetchChannelVideos().catch(() => null);
   const video = (list && list.find((v) => v._id === id)) || (await fetchVideoById(id).catch(() => null));
   if (!video) return {};

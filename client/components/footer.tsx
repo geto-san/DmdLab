@@ -8,8 +8,16 @@ export function Footer() {
         <div>
           <p className="font-display text-2xl tracking-tight">DM·Lab</p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
-            DeepMinds Research Lab, Mbarara University of Science and Technology.
+            An AI research lab building applied machine learning — from wildlife conflict reporting to
+            Sign Language translation.
           </p>
+          <address className="mt-4 max-w-xs text-sm not-italic leading-relaxed text-muted">
+            DeepMinds Research Lab
+            <br />
+            Mbarara University of Science and Technology
+            <br />
+            Mbarara, Uganda
+          </address>
         </div>
 
         {[

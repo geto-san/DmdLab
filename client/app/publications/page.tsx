@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ArrowUpRight, BookOpen } from "lucide-react";
 import { getContentMap } from "@/lib/content";
 import { Reveal } from "@/components/reveal";
@@ -5,6 +6,13 @@ import { EditItem } from "@/components/cms/edit-item";
 import { PublicationList, type Publication } from "@/components/publication-list";
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Publications",
+  description:
+    "Peer-reviewed papers and preprints published by DeepMinds Research Lab researchers at Mbarara University of Science and Technology.",
+  alternates: { canonical: "/publications" },
+};
 
 type PublicationRow = Publication & { featured: boolean };
 

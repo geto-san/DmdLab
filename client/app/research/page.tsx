@@ -1,11 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { ArrowRight, FlaskConical } from "lucide-react";
 import { getContentMap } from "@/lib/content";
 import { Reveal } from "@/components/reveal";
 import { EditItem } from "@/components/cms/edit-item";
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Research",
+  description:
+    "Active research projects from DeepMinds Research Lab at MUST, spanning quantum computing, prompt engineering, natural language processing, and statistics.",
+  alternates: { canonical: "/research" },
+};
 
 type Project = {
   title: string;

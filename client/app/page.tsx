@@ -144,6 +144,54 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Research focus areas — always-on section (not DB-gated) that gives
+          search engines and LLMs real, crawlable text describing what the
+          lab works on, and pairs each marquee topic with an H3 so heading
+          structure isn't limited to a single H2 on pages with no DB content
+          yet. */}
+      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+        <div className="mb-12 max-w-2xl">
+          <p className="mb-4 font-mono-x text-muted">
+            <span className="mr-2 text-accent2">02</span>/
+          </p>
+          <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+            Research focus areas
+          </h2>
+          <p className="mt-6 text-lg leading-relaxed text-muted">
+            DeepMinds Research Lab is a multidisciplinary AI research group at Mbarara University of
+            Science and Technology (MUST). We build applied machine learning systems that operate in
+            the real world — from real-time wildlife conflict reporting for communities living near
+            protected areas, to automated Sign Language translation that makes information more
+            accessible. Our work spans four core areas.
+          </p>
+        </div>
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              title: "Quantum Computing",
+              body: "Exploring quantum algorithms and hybrid quantum-classical approaches to problems in optimization and simulation.",
+            },
+            {
+              title: "Prompt Engineering",
+              body: "Designing and evaluating prompting strategies that make large language models more reliable for applied research tasks.",
+            },
+            {
+              title: "Natural Language Processing",
+              body: "Building NLP systems for low-resource languages, including automated Sign Language translation and text understanding.",
+            },
+            {
+              title: "Statistics",
+              body: "Applying statistical modeling to real-world datasets, from wildlife conflict reporting to experiment design and evaluation.",
+            },
+          ].map((topic) => (
+            <div key={topic.title}>
+              <h3 className="font-display text-xl tracking-tight">{topic.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">{topic.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Announcements */}
       {announcementRows.length > 0 && (
         <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8">

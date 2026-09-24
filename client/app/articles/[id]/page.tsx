@@ -44,7 +44,9 @@ export async function generateMetadata({
   return {
     title: article.title,
     description: article.description || undefined,
+    alternates: { canonical: `/articles/${id}` },
     openGraph: {
+      type: "article",
       title: article.title,
       description: article.description || undefined,
       images: article.image ? [article.image] : undefined,
@@ -63,8 +65,23 @@ export default async function ArticleDetailPage({
 
   const body = String(article.content || article.description || "");
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description || undefined,
+    image: article.image || undefined,
+    datePublished: article.date ? new Date(article.date).toISOString() : undefined,
+    author: article.author ? { "@type": "Person", name: article.author } : undefined,
+    publisher: { "@type": "Organization", name: "DeepMinds Research Lab" },
+  };
+
   return (
     <EditItem collection="article" item={article} redirectTo="/articles">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <article className="mx-auto max-w-3xl px-5 pt-32 sm:px-0 sm:pt-40">
       <Link
         href="/articles"

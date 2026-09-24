@@ -1,4 +1,5 @@
 import { asc } from "drizzle-orm";
+import type { Metadata } from "next";
 import { Github, Linkedin } from "lucide-react";
 import { db } from "@/db";
 import { members } from "@/db/schema";
@@ -8,6 +9,13 @@ import { AddButton } from "@/components/cms/edit-item";
 import { JoinTeamForm } from "@/components/join-team-form";
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  title: "Team",
+  description:
+    "Meet the researchers, postdocs, and students of DeepMinds Research Lab at Mbarara University of Science and Technology.",
+  alternates: { canonical: "/team" },
+};
 
 export default async function TeamPage() {
   const dbRows = await db.select().from(members).orderBy(asc(members.id));

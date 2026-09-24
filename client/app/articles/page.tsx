@@ -1,10 +1,18 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getArticlesPage } from "@/lib/articles";
 import { ArticleFilter } from "@/components/article-filter";
 import { ArticleCard } from "@/components/article-card";
 import { EditItem, AddButton } from "@/components/cms/edit-item";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Articles",
+  description:
+    "Research notes and updates from DeepMinds Research Lab covering applied machine learning, wildlife conflict reporting, and Sign Language translation.",
+  alternates: { canonical: "/articles" },
+};
 
 const PER_PAGE = 9;
 
