@@ -21,8 +21,21 @@ const APP_URL = process.env.APP_URL || "http://localhost:3000";
 // it's ever written to the console, so a malicious response body can't
 // forge extra log lines or inject terminal escape sequences.
 function sanitizeForLog(value: unknown): string {
-  const text = typeof value === "object" && value !== null ? safeStringify(value) : String(value ?? "");
-  return text.replace(/[\r\n\t\p{Cc}]+/gu, " ").slice(0, 500);
+  return toDisplayString(value).replace(/[\r\n\t\p{Cc}]+/gu, " ").slice(0, 500);
+}
+
+// Never calls String() on anything whose type could still include a plain
+// object at that point — that silently falls back to Object.prototype's
+// toString ("[object Object]"). Every branch below narrows to a type that
+// stringifies sensibly before String() runs.
+function toDisplayString(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return String(value);
+  }
+  if (typeof value === "object") return safeStringify(value);
+  return String(value); // function or symbol — both have a meaningful native toString
 }
 
 // `String(someObject)` silently falls back to Object.prototype.toString

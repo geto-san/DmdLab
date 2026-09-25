@@ -511,50 +511,51 @@ export function PlayerProvider({
       const el = document.activeElement as HTMLElement | null;
       const inField =
         !!el && el.closest("input, textarea, select, [contenteditable='true']") !== null;
+      if (inField) return;
       const onButton = !!el && el.tagName === "BUTTON";
+
       switch (e.key) {
         case " ":
-          if (inField || onButton) return;
+          if (onButton) return;
           e.preventDefault();
           toggle();
-          break;
+          return;
         case "k":
         case "K":
-          if (inField) return;
           toggle();
-          break;
+          return;
         case "j":
         case "J":
-          if (inField) return;
           seekBy(-10);
-          break;
+          return;
         case "l":
         case "L":
-          if (inField) return;
           seekBy(10);
-          break;
+          return;
         case "m":
         case "M":
-          if (inField) return;
           toggleMute();
-          break;
+          return;
         case "f":
         case "F":
-          if (inField) return;
           toggleFullscreen();
-          break;
+          return;
         case "ArrowUp":
+          e.preventDefault();
+          changeVolume(volumeRef.current + 5);
+          return;
         case "ArrowDown":
-          if (inField) return;
           e.preventDefault();
-          changeVolume(volumeRef.current + (e.key === "ArrowUp" ? 5 : -5));
-          break;
+          changeVolume(volumeRef.current - 5);
+          return;
         case "Home":
-        case "End":
-          if (inField) return;
           e.preventDefault();
-          seekFraction(e.key === "Home" ? 0 : 1);
-          break;
+          seekFraction(0);
+          return;
+        case "End":
+          e.preventDefault();
+          seekFraction(1);
+          return;
       }
     };
     window.addEventListener("keydown", handler);
