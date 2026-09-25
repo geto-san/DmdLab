@@ -23,12 +23,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: client/package-lock.json
-      - run: npm ci --ignore-scripts
+      - run: npm ci
       # Generates .next/types so tsc --noEmit checks typed routes; no DB/secrets needed.
-      # --no-install ensures this resolves the version already pinned in
-      # package-lock.json (installed above) rather than letting npx fetch
-      # and execute an on-demand package from the registry.
-      - run: npx --no-install next typegen
+      - run: npx next typegen
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
+      - run: npm ci --ignore-scripts
+      # Generates .next/types so tsc --noEmit checks typed routes; no DB/secrets needed.
+      - run: npx --no-install next typegen
