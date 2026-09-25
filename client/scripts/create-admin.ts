@@ -21,7 +21,19 @@ const APP_URL = process.env.APP_URL || "http://localhost:3000";
 // it's ever written to the console, so a malicious response body can't
 // forge extra log lines or inject terminal escape sequences.
 function sanitizeForLog(value: unknown): string {
-  return String(value ?? "").replace(/[\r\n\t\p{Cc}]+/gu, " ").slice(0, 500);
+  const text = typeof value === "object" && value !== null ? safeStringify(value) : String(value ?? "");
+  return text.replace(/[\r\n\t\p{Cc}]+/gu, " ").slice(0, 500);
+}
+
+// `String(someObject)` silently falls back to Object.prototype.toString
+// ("[object Object]"), which throws away the information we actually want
+// in the log. Serialize objects explicitly instead.
+function safeStringify(value: object): string {
+  try {
+    return JSON.stringify(value) ?? "[unserializable]";
+  } catch {
+    return "[unserializable]";
+  }
 }
 
 async function main() {

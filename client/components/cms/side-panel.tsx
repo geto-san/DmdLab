@@ -14,39 +14,42 @@ export function SidePanel({
   wide?: boolean;
   children: ReactNode;
 }>) {
-  const panelRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
 
   useEffect(() => {
+    const dialog = dialogRef.current;
     document.body.style.overflow = "hidden";
     const previouslyFocused = document.activeElement as HTMLElement | null;
+    if (dialog && !dialog.open) dialog.showModal();
     closeButtonRef.current?.focus();
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
 
     return () => {
       document.body.style.overflow = "";
-      document.removeEventListener("keydown", onKeyDown);
       previouslyFocused?.focus();
     };
-  }, [onClose]);
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-[100]">
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onCancel={(e) => {
+        // The browser's own Escape-to-close; hand control back to the
+        // parent (which conditionally renders this component) instead of
+        // letting the dialog close itself out of sync with React state.
+        e.preventDefault();
+        onClose();
+      }}
+      className="fixed inset-0 z-[100] m-0 flex h-full max-h-none w-full max-w-none border-none bg-transparent p-0"
+    >
       <div
         className="absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
         className={`absolute right-0 top-0 flex h-full w-full flex-col border-l border-line bg-surface shadow-2xl animate-in slide-in-from-right ${
           wide ? "max-w-2xl" : "max-w-lg"
         }`}
@@ -67,6 +70,6 @@ export function SidePanel({
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-6">{children}</div>
       </div>
-    </div>
+    </dialog>
   );
 }

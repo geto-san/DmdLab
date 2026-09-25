@@ -42,20 +42,20 @@ function IconButton({
   );
 }
 
+async function copyText(text: string, setFlag: (value: boolean) => void) {
+  try {
+    await navigator.clipboard.writeText(text);
+    setFlag(true);
+    setTimeout(() => setFlag(false), 2000);
+  } catch {
+    // Clipboard unavailable — nothing to recover.
+  }
+}
+
 export function UtilityRow({ videoId }: Readonly<{ videoId: string }>) {
   const { ccOn, toggleCc } = usePlayer();
   const [copied, setCopied] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
-
-  async function copyText(text: string, setFlag: (value: boolean) => void) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setFlag(true);
-      setTimeout(() => setFlag(false), 2000);
-    } catch {
-      // Clipboard unavailable — nothing to recover.
-    }
-  }
 
   const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
 

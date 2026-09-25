@@ -178,8 +178,8 @@ function VideoUploadPanel({ onClose }: Readonly<{ onClose: () => void }>) {
 
   const uploadableCount = items.filter((it) => it.status === "queued").length;
   const doneCount = items.filter((it) => it.status === "done").length;
-  const uploadButtonSuffix =
-    uploadableCount > 0 ? `${uploadableCount} video${uploadableCount === 1 ? "" : "s"}` : "";
+  const videoNoun = uploadableCount === 1 ? "video" : "videos";
+  const uploadButtonSuffix = uploadableCount > 0 ? `${uploadableCount} ${videoNoun}` : "";
 
   return (
     <SidePanel title="Upload videos to YouTube" onClose={onClose} wide>

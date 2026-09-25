@@ -3,7 +3,7 @@
 // duplicate content within a single list.
 function hashKey(text: string): string {
   let h = 0;
-  for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) | 0;
+  for (const char of text) h = Math.trunc(h * 31 + (char.codePointAt(0) ?? 0));
   return h.toString(36);
 }
 

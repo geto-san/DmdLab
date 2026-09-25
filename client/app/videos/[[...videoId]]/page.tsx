@@ -51,7 +51,7 @@ export async function generateMetadata({
     };
   }
   const list = await fetchChannelVideos().catch(() => null);
-  const video = (list && list.find((v) => v._id === id)) || (await fetchVideoById(id).catch(() => null));
+  const video = list?.find((v) => v._id === id) || (await fetchVideoById(id).catch(() => null));
   if (!video) return {};
   return {
     title: video.title,

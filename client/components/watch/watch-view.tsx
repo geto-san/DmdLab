@@ -64,7 +64,7 @@ function WatchShell({
   // Handle browser Back/Forward buttons
   useEffect(() => {
     const handlePopState = () => {
-      const match = window.location.pathname.match(/\/videos\/([^/]+)/);
+      const match = /\/videos\/([^/]+)/.exec(window.location.pathname);
       const id = match ? match[1] : entries[0]?._id;
       if (id && id !== activeId) {
         apiRef.current?.load(id);

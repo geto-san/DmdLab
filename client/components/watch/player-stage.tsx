@@ -12,7 +12,9 @@ type StageProps = {
   thumbnail?: string | null;
 };
 
-function PosterImage({ videoId, thumbnail }: StageProps) {
+type PosterImageProps = Pick<StageProps, "videoId" | "thumbnail">;
+
+function PosterImage({ videoId, thumbnail }: Readonly<PosterImageProps>) {
   const [srcIdx, setSrcIdx] = useState(0);
   const sources = thumbnail
     ? [thumbnail, `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`]
@@ -32,7 +34,7 @@ function PosterImage({ videoId, thumbnail }: StageProps) {
   );
 }
 
-export function PlayerStage(props: StageProps) {
+export function PlayerStage(props: Readonly<StageProps>) {
   const {
     phase,
     playing,

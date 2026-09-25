@@ -69,6 +69,78 @@ function loadIframeApi(): Promise<YTNamespace> {
   return apiPromise;
 }
 
+// Extracted out of `start` (below) purely to keep that callback's cognitive
+// complexity down — these are plain factories that build the two YT.Player
+// event handlers from the values captured at start-time.
+function buildOnReady({
+  mutedPref,
+  volPref,
+  startAt,
+  pendingLoadRef,
+  durations,
+  playerRef,
+  setPhase,
+  setCurrentTime,
+}: {
+  mutedPref: boolean;
+  volPref: number;
+  startAt: number | undefined;
+  pendingLoadRef: { current: string | null };
+  durations: Record<string, number>;
+  playerRef: { current: YTPlayer | null };
+  setPhase: (phase: "idle" | "loading" | "ready") => void;
+  setCurrentTime: (seconds: number) => void;
+}) {
+  return () => {
+    setPhase("ready");
+    const p = playerRef.current;
+    if (!p) return;
+    p.setVolume(mutedPref ? 0 : Math.min(100, Math.max(0, volPref)));
+
+    const pendingId = pendingLoadRef.current;
+    if (pendingId) {
+      pendingLoadRef.current = null;
+      const frac = readProgress(pendingId);
+      const dur = durations[pendingId] ?? 0;
+      const pendingStartAt = frac && dur > 5 ? Math.floor(frac * dur) : 0;
+      if (pendingStartAt > 5) {
+        setCurrentTime(pendingStartAt);
+        p.loadVideoById({ videoId: pendingId, startSeconds: pendingStartAt });
+      } else {
+        p.loadVideoById(pendingId);
+      }
+      return;
+    }
+
+    p.playVideo();
+    if (startAt) setCurrentTime(startAt);
+  };
+}
+
+function buildOnStateChange({
+  ytRef,
+  videoIdRef,
+  onEndedRef,
+  setPlaying,
+}: {
+  ytRef: { current: YTNamespace | null };
+  videoIdRef: { current: string };
+  onEndedRef: { current: (() => void) | undefined };
+  setPlaying: (playing: boolean) => void;
+}) {
+  return (e: { data: number }) => {
+    const S = ytRef.current?.PlayerState;
+    if (!S) return;
+    if (e.data === S.PLAYING || e.data === S.BUFFERING) setPlaying(true);
+    else if (e.data === S.PAUSED) setPlaying(false);
+    else if (e.data === S.ENDED) {
+      setPlaying(false);
+      saveProgress(videoIdRef.current, 1);
+      onEndedRef.current?.();
+    }
+  };
+}
+
 export function formatTime(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));
   const h = Math.floor(s / 3600);
@@ -131,7 +203,7 @@ export function PlayerProvider({
   const [restoredFrac, setRestoredFrac] = useState<number | null>(null);
   const [volume, setVolume] = useState(100);
   const [muted, setMuted] = useState(false);
-  const [rate, setRateState] = useState(1);
+  const [rate, setRate] = useState(1);
   const [ccOn, setCcOn] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [announcement, setAnnouncement] = useState("");
@@ -291,39 +363,22 @@ export function PlayerProvider({
               ...(startAt ? { start: startAt } : {}),
             },
             events: {
-              onReady: () => {
-                setPhase("ready");
-                const p = playerRef.current;
-                if (!p) return;
-                p.setVolume(mutedPref ? 0 : Math.min(100, Math.max(0, volPref)));
-                if (pendingLoadRef.current) {
-                  const id = pendingLoadRef.current;
-                  pendingLoadRef.current = null;
-                  const frac = readProgress(id);
-                  const dur = durations[id] ?? 0;
-                  const startAt = frac && dur > 5 ? Math.floor(frac * dur) : 0;
-                  if (startAt > 5) {
-                    setCurrentTime(startAt);
-                    p.loadVideoById({ videoId: id, startSeconds: startAt });
-                  } else {
-                    p.loadVideoById(id);
-                  }
-                  return;
-                }
-                p.playVideo();
-                if (startAt) setCurrentTime(startAt);
-              },
-              onStateChange: (e) => {
-                const S = ytRef.current?.PlayerState;
-                if (!S) return;
-                if (e.data === S.PLAYING || e.data === S.BUFFERING) setPlaying(true);
-                else if (e.data === S.PAUSED) setPlaying(false);
-                else if (e.data === S.ENDED) {
-                  setPlaying(false);
-                  saveProgress(videoIdRef.current, 1);
-                  onEndedRef.current?.();
-                }
-              },
+              onReady: buildOnReady({
+                mutedPref,
+                volPref,
+                startAt,
+                pendingLoadRef,
+                durations,
+                playerRef,
+                setPhase,
+                setCurrentTime,
+              }),
+              onStateChange: buildOnStateChange({
+                ytRef,
+                videoIdRef,
+                onEndedRef,
+                setPlaying,
+              }),
             },
           });
         })
@@ -421,9 +476,9 @@ export function PlayerProvider({
 
   const toggleMute = useCallback(() => changeVolume(volume === 0 ? 100 : 0), [changeVolume, volume]);
 
-  const setRate = useCallback(
+  const changeRate = useCallback(
     (r: number) => {
-      setRateState(r);
+      setRate(r);
       playerRef.current?.setPlaybackRate(r);
       announce(r === 1 ? "Normal speed" : `Playback speed ${r}×`);
     },
@@ -532,7 +587,7 @@ export function PlayerProvider({
       seekFraction,
       changeVolume,
       toggleMute,
-      setRate,
+      setRate: changeRate,
       toggleCc,
       toggleFullscreen,
     }),
@@ -555,7 +610,7 @@ export function PlayerProvider({
       seekFraction,
       changeVolume,
       toggleMute,
-      setRate,
+      changeRate,
       toggleCc,
       toggleFullscreen,
     ]

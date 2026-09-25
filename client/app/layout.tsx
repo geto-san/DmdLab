@@ -105,6 +105,28 @@ const organizationJsonLd = {
   ],
 };
 
+// Local Business structured data (schema.org) — the literal "LocalBusiness"
+// type the audit's Local SEO section names, kept separate from the
+// Organization block above. Street address and phone are left out rather
+// than filled with placeholders: neither is public information we have, and
+// a fabricated address/phone in structured data is worse for SEO/trust than
+// omitting it. Add them here (as `streetAddress` and `telephone`) once real
+// values exist.
+const localBusinessJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: SITE_NAME,
+  url: SITE_URL,
+  image: `${SITE_URL}/icon.svg`,
+  description: SITE_DESCRIPTION,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Mbarara",
+    addressCountry: "UG",
+  },
+  areaServed: "UG",
+};
+
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f2efe8" },
@@ -121,6 +143,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
         <ThemeProvider
           attribute="class"

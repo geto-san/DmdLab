@@ -48,7 +48,7 @@ export function Footer() {
             © {new Date().getFullYear()} DeepMinds Research Lab. All rights reserved.
           </p>
           <a
-            href="#"
+            href="#top"
             className="font-mono-x text-muted transition-colors hover:text-accent2"
           >
             Back to top ↑

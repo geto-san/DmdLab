@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Heart, Loader2, Trash2 } from "lucide-react";
 import { formatRelativeTime } from "@/lib/format";
 import { Skeleton } from "@/components/skeleton";
@@ -65,7 +65,8 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
 
   const loadPage = useCallback(
     async (before?: number) => {
-      const url = `/api/videos/${videoId}/comments?limit=${PAGE_SIZE}${before ? `&before=${before}` : ""}`;
+      const beforeParam = before ? `&before=${before}` : "";
+      const url = `/api/videos/${videoId}/comments?limit=${PAGE_SIZE}${beforeParam}`;
       const res = await fetch(url);
       const data = (await res.json()) as CommentsResponse;
       if (!res.ok) throw new Error(data.error || "Failed to load comments");
@@ -159,6 +160,88 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
 
   const canSubmit = name.trim().length >= 2 && body.trim().length >= 2 && !submitting;
 
+  let commentsSection: ReactNode;
+  if (comments === null) {
+    commentsSection = (
+      <div className="space-y-6">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <CommentSkeleton key={i} />
+        ))}
+      </div>
+    );
+  } else if (comments.length === 0) {
+    commentsSection = <p className="text-sm text-muted">No comments yet — start the discussion above.</p>;
+  } else {
+    commentsSection = (
+      <>
+        <ul className="space-y-7">
+          {comments.map((c) => {
+            const key = String(c.id);
+            return (
+              <li key={c.id} className="flex items-start gap-3.5">
+                <div
+                  aria-hidden
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface font-display text-sm text-accent2"
+                >
+                  {c.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="flex flex-wrap items-baseline gap-x-3">
+                    <span className="text-sm font-semibold text-ink">{c.name}</span>
+                    <span className="font-mono-x text-[0.625rem] text-muted">
+                      {formatRelativeTime(c.createdAt)}
+                    </span>
+                  </p>
+                  <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted">{c.body}</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => removeComment(c.id)}
+                      aria-label={`Delete comment by ${c.name}`}
+                      title="Delete comment"
+                      disabled={deletingId === c.id}
+                      className="mt-1 text-muted transition-colors hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-40"
+                    >
+                      {deletingId === c.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-4" />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => toggleLike(key)}
+                    aria-label={liked[key] ? "Unlike comment" : "Like comment"}
+                    aria-pressed={Boolean(liked[key])}
+                    className={`mt-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 ${
+                      liked[key] ? "text-accent2" : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    <Heart className={`size-4 ${liked[key] ? "fill-current" : ""}`} />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        {hasMore && (
+          <button
+            type="button"
+            onClick={loadOlder}
+            disabled={loadingMore}
+            className="mt-8 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2 font-mono-x text-xs text-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 disabled:opacity-50"
+          >
+            {loadingMore && <Loader2 className="size-3 animate-spin" />}
+            Load older comments
+          </button>
+        )}
+      </>
+    );
+  }
+
   return (
     <section aria-label="Comments">
       <div className="mb-6 flex items-baseline gap-3">
@@ -202,82 +285,7 @@ export function CommentsSection({ videoId }: Readonly<{ videoId: string }>) {
         </div>
       </form>
 
-      {comments === null ? (
-        <div className="space-y-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <CommentSkeleton key={i} />
-          ))}
-        </div>
-      ) : comments.length === 0 ? (
-        <p className="text-sm text-muted">No comments yet — start the discussion above.</p>
-      ) : (
-        <>
-          <ul className="space-y-7">
-            {comments.map((c) => {
-              const key = String(c.id);
-              return (
-                <li key={c.id} className="flex items-start gap-3.5">
-                  <div
-                    aria-hidden
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line bg-surface font-display text-sm text-accent2"
-                  >
-                    {c.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="flex flex-wrap items-baseline gap-x-3">
-                      <span className="text-sm font-semibold text-ink">{c.name}</span>
-                      <span className="font-mono-x text-[0.625rem] text-muted">
-                        {formatRelativeTime(c.createdAt)}
-                      </span>
-                    </p>
-                    <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted">{c.body}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        onClick={() => removeComment(c.id)}
-                        aria-label={`Delete comment by ${c.name}`}
-                        title="Delete comment"
-                        disabled={deletingId === c.id}
-                        className="mt-1 text-muted transition-colors hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-40"
-                      >
-                        {deletingId === c.id ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="size-4" />
-                        )}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => toggleLike(key)}
-                      aria-label={liked[key] ? "Unlike comment" : "Like comment"}
-                      aria-pressed={Boolean(liked[key])}
-                      className={`mt-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 ${
-                        liked[key] ? "text-accent2" : "text-muted hover:text-ink"
-                      }`}
-                    >
-                      <Heart className={`size-4 ${liked[key] ? "fill-current" : ""}`} />
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-          {hasMore && (
-            <button
-              type="button"
-              onClick={loadOlder}
-              disabled={loadingMore}
-              className="mt-8 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2 font-mono-x text-xs text-muted transition-colors hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 disabled:opacity-50"
-            >
-              {loadingMore && <Loader2 className="size-3 animate-spin" />}
-              Load older comments
-            </button>
-          )}
-        </>
-      )}
+      {commentsSection}
     </section>
   );
 }

@@ -4,7 +4,8 @@ import { useState, type FormEvent } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { ALLOWED_EMAIL_DOMAINS, isAllowedApplicantEmail } from "@/lib/allowed-email-domains";
 
-const DOMAIN_HINT = `Use a ${ALLOWED_EMAIL_DOMAINS.map((d) => `@${d}`).join(", ")} email address.`;
+const DOMAIN_LIST = ALLOWED_EMAIL_DOMAINS.map((d) => `@${d}`).join(", ");
+const DOMAIN_HINT = `Use a ${DOMAIN_LIST} email address.`;
 
 export function JoinTeamForm() {
   const [name, setName] = useState("");

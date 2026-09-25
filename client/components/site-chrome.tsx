@@ -20,7 +20,9 @@ export function SiteChrome({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <>
       <Header />
-      <main className="min-h-[60vh]">{children}</main>
+      <main id="top" className="min-h-[60vh]">
+        {children}
+      </main>
       <Footer />
     </>
   );

@@ -57,6 +57,15 @@ export function ControlsRow({
     toggleFullscreen,
   } = usePlayer();
 
+  let playButtonIcon: React.ReactNode;
+  if (phase === "loading") {
+    playButtonIcon = <Loader2 className="size-4.5 animate-spin" />;
+  } else if (playing) {
+    playButtonIcon = <Pause className="size-4.5 fill-current" />;
+  } else {
+    playButtonIcon = <Play className="ml-0.5 size-4.5 fill-current" />;
+  }
+
   return (
     <div className="mt-5">
       <Slider
@@ -100,13 +109,7 @@ export function ControlsRow({
             title={playing ? "Pause (Space)" : "Play (Space)"}
             className="flex size-11 items-center justify-center rounded-full bg-ink text-bg transition-colors hover:bg-accent2 hover:text-accent2-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent2 focus-visible:ring-offset-2"
           >
-            {phase === "loading" ? (
-              <Loader2 className="size-4.5 animate-spin" />
-            ) : playing ? (
-              <Pause className="size-4.5 fill-current" />
-            ) : (
-              <Play className="ml-0.5 size-4.5 fill-current" />
-            )}
+            {playButtonIcon}
           </button>
 
           <ControlButton onClick={onNext ?? (() => {})} label="Next video" disabled={!onNext}>
