@@ -29,3 +29,6 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
+      - run: npm ci --ignore-scripts
+      # Generates .next/types so tsc --noEmit checks typed routes; no DB/secrets needed.
+      - run: npx --no-install next typegen
