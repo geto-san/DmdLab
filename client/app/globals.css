@@ -3,27 +3,32 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --bg: #f2efe8;
-  --surface: #ffffff;
-  --ink: #141414;
-  --muted: #6b6a64;
-  --line: #1414141a;
-  --accent: #a3e635;
-  --accent-ink: #141414;
-  --accent2: #7c6cff;
-  --accent2-ink: #ffffff;
+  /* Light — sun-bleached field notebook: warm khaki paper, ink annotations,
+     burnt-ochre and deep-teal accents pulled from red earth and Lake Mburo
+     water. */
+  --bg: #efe9d8;
+  --surface: #fffcf3;
+  --ink: #1c1810;
+  --muted: #6d6555;
+  --line: #1c18101f;
+  --accent: #8f5416;
+  --accent-ink: #fffaf0;
+  --accent2: #0a6b63;
+  --accent2-ink: #f4fffd;
 }
 
 .dark {
-  --bg: #0b0b0d;
-  --surface: #131316;
-  --ink: #f2efe8;
-  --muted: #8c8c86;
-  --line: #f2efe81a;
-  --accent: #c8f560;
-  --accent-ink: #141414;
-  --accent2: #8b7cff;
-  --accent2-ink: #0b0b0d;
+  /* Dark — savanna dusk: deep indigo night sky, dusk-amber firelight,
+     telemetry-teal signal. */
+  --bg: #12141c;
+  --surface: #1a1d28;
+  --ink: #f2ede0;
+  --muted: #8d90a3;
+  --line: #f2ede01a;
+  --accent: #e8a33d;
+  --accent-ink: #17130a;
+  --accent2: #38c6be;
+  --accent2-ink: #062522;
 }
 
 @theme inline {
@@ -37,9 +42,9 @@
   --color-accent2: var(--accent2);
   --color-accent2-ink: var(--accent2-ink);
 
-  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-display: var(--font-zilla), ui-serif, "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, "SFMono-Regular", monospace;
 
   --animate-marquee: marquee 28s linear infinite;
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -144,8 +149,7 @@
 @utility font-mono-x {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 @utility noise-overlay {

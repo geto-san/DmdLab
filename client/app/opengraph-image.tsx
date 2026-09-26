@@ -13,7 +13,7 @@ export default function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#0b0b0d",
+          background: "#12141c",
           padding: "72px",
           fontFamily: "sans-serif",
         }}
@@ -24,24 +24,22 @@ export default function OpengraphImage() {
               width: 20,
               height: 20,
               borderRadius: 999,
-              background: "#a3e635",
+              background: "#e8a33d",
             }}
           />
-          <div style={{ fontSize: 32, color: "#9a9a9a", letterSpacing: 2 }}>
-            DEEPMINDS RESEARCH LAB · MUST
-          </div>
+          <div style={{ fontSize: 30, color: "#8d90a3" }}>DeepMinds Research Lab</div>
         </div>
         <div
           style={{
             display: "flex",
             flexWrap: "wrap",
             fontSize: 72,
-            color: "#f2efe8",
+            color: "#f2ede0",
             lineHeight: 1.1,
             maxWidth: 980,
           }}
         >
-          AI Research that&nbsp;<span style={{ color: "#8b7cff" }}>Watches</span>,&nbsp;Listens, and Translates.
+          AI Research that&nbsp;<span style={{ color: "#38c6be" }}>Watches</span>,&nbsp;Listens, and Translates.
         </div>
       </div>
     ),

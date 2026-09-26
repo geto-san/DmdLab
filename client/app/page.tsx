@@ -151,9 +151,6 @@ export default async function HomePage() {
           yet. */}
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="mb-12 max-w-2xl">
-          <p className="mb-4 font-mono-x text-muted">
-            <span className="mr-2 text-accent2">02</span>/
-          </p>
           <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
             Research focus areas
           </h2>
@@ -320,9 +317,6 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
         <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="mb-4 font-mono-x text-muted">
-              <span className="mr-2 text-accent2">03</span>/
-            </p>
             <h2 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
               From the Journal
             </h2>

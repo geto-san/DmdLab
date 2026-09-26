@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Serif, Inter, JetBrains_Mono } from "next/font/google";
+import { Zilla_Slab, Public_Sans, Martian_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { EditModeProvider } from "@/components/cms/edit-mode";
@@ -8,20 +8,23 @@ import { CmsPanel } from "@/components/cms/cms-panel";
 import { SiteChrome } from "@/components/site-chrome";
 import { Analytics } from "@/components/analytics";
 
-const instrument = Instrument_Serif({
+const zilla = Zilla_Slab({
   subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-instrument",
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-zilla",
 });
 
-const inter = Inter({
+const publicSans = Public_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: "variable",
+  variable: "--font-public-sans",
 });
 
-const jetbrains = JetBrains_Mono({
+const martian = Martian_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains",
+  weight: "variable",
+  variable: "--font-martian",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://dmd-lab-ochre.vercel.app";
@@ -129,8 +132,8 @@ const localBusinessJsonLd = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2efe8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0b0d" },
+    { media: "(prefers-color-scheme: light)", color: "#efe9d8" },
+    { media: "(prefers-color-scheme: dark)", color: "#12141c" },
   ],
 };
 
@@ -138,7 +141,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth" data-scroll-behavior="smooth">
       <body
-        className={`${instrument.variable} ${inter.variable} ${jetbrains.variable} font-sans antialiased`}
+        className={`${zilla.variable} ${publicSans.variable} ${martian.variable} font-sans antialiased`}
       >
         <script
           type="application/ld+json"
